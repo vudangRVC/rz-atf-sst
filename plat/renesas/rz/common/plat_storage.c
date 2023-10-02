@@ -56,7 +56,11 @@ static const io_uuid_spec_t bl32_file_spec = {
 	.uuid = UUID_SECURE_PAYLOAD_BL32,
 };
 
-static const io_uuid_spec_t bl33_file_spec = {
+static const io_uuid_spec_t bl331_file_spec = {
+	.uuid = UUID_NT_FW_CONFIG,
+};
+
+static const io_uuid_spec_t bl332_file_spec = {
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 };
 
@@ -107,9 +111,13 @@ static struct plat_io_policy policies[] = {
 				&fip_dev_handle,
 				(uintptr_t) &bl32_file_spec,
 				&open_fipdrv},
-	[BL33_IMAGE_ID] = {
+	[BL331_IMAGE_ID] = {
 				&fip_dev_handle,
-				(uintptr_t) &bl33_file_spec,
+				(uintptr_t) &bl331_file_spec,
+				&open_fipdrv},
+	[BL332_IMAGE_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &bl332_file_spec,
 				&open_fipdrv},
 #if TRUSTED_BOARD_BOOT
 	[SOC_FW_KEY_CERT_ID] = {
