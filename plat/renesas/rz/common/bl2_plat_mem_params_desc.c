@@ -33,7 +33,7 @@ static bl_mem_params_node_t bl2_mem_params_descs[] = {
 # ifdef BL32_BASE
 		.next_handoff_image_id = BL32_IMAGE_ID,
 # else
-		.next_handoff_image_id = BL331_IMAGE_ID,
+		.next_handoff_image_id = FW_CONFIG_ID,
 # endif /* BL32_BASE */
 	},
 # ifdef BL32_BASE
@@ -53,6 +53,66 @@ static bl_mem_params_node_t bl2_mem_params_descs[] = {
 		.next_handoff_image_id = BL33_IMAGE_ID,
 	},
 # endif /* BL32_BASE */
+	{
+		.image_id = FW_CONFIG_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				entry_point_info_t, NON_SECURE | NON_EXECUTABLE),
+		.ep_info.pc = FW_CONFIG_BASE,
+		.ep_info.spsr = 0,
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				image_info_t, 0),
+		.image_info.image_max_size = FW_CONFIG_LIMIT - FW_CONFIG_BASE,
+		.image_info.image_base = FW_CONFIG_BASE,
+
+		.next_handoff_image_id = HW_CONFIG_ID,
+	}, /* Finish load for rzv2l_cm33_rpmsg_demo_secure_code.bin */
+	{
+		.image_id = HW_CONFIG_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				entry_point_info_t, NON_SECURE | NON_EXECUTABLE),
+		.ep_info.pc = HW_CONFIG_BASE,
+		.ep_info.spsr = 0,
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				image_info_t, 0),
+		.image_info.image_max_size = HW_CONFIG_LIMIT - HW_CONFIG_BASE,
+		.image_info.image_base = HW_CONFIG_BASE,
+
+		.next_handoff_image_id = SOC_FW_CONFIG_ID,
+	}, /* Finish load for rzv2l_cm33_rpmsg_demo_non_secure_vector.bin */
+	{
+		.image_id = SOC_FW_CONFIG_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				entry_point_info_t, NON_SECURE | NON_EXECUTABLE),
+		.ep_info.pc = SOC_FW_CONFIG_BASE,
+		.ep_info.spsr = 0,
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				image_info_t, 0),
+		.image_info.image_max_size = SOC_FW_CONFIG_LIMIT - SOC_FW_CONFIG_BASE,
+		.image_info.image_base = SOC_FW_CONFIG_BASE,
+
+		.next_handoff_image_id = RMM_IMAGE_ID,
+	}, /* Finish load for rzv2l_cm33_rpmsg_demo_secure_vector.bin */
+	{
+		.image_id = RMM_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				entry_point_info_t, NON_SECURE | EXECUTABLE),
+		.ep_info.pc = RMM_FW_BASE,
+		.ep_info.spsr = 0,
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				image_info_t, 0),
+		.image_info.image_max_size = RMM_FW_LIMIT - RMM_FW_BASE,
+		.image_info.image_base = RMM_FW_BASE,
+
+		.next_handoff_image_id = BL331_IMAGE_ID,
+	}, /* Finish load for rzv2l_cm33_rpmsg_demo_non_secure_code.bin */
 	{
 		.image_id = BL331_IMAGE_ID,
 

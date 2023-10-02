@@ -56,6 +56,22 @@ static const io_uuid_spec_t bl32_file_spec = {
 	.uuid = UUID_SECURE_PAYLOAD_BL32,
 };
 
+static const io_uuid_spec_t fw_config_file_spec = {
+	.uuid = UUID_FW_CONFIG,
+};
+
+static const io_uuid_spec_t hw_config_file_spec = {
+	.uuid = UUID_HW_CONFIG,
+};
+
+static const io_uuid_spec_t soc_fw_config_file_spec = {
+	.uuid = UUID_SOC_FW_CONFIG,
+};
+
+static const io_uuid_spec_t rmm_fw_file_spec = {
+	.uuid = UUID_REALM_MONITOR_MGMT_FIRMWARE,
+};
+
 static const io_uuid_spec_t bl331_file_spec = {
 	.uuid = UUID_NT_FW_CONFIG,
 };
@@ -110,6 +126,22 @@ static struct plat_io_policy policies[] = {
 	[BL32_IMAGE_ID] = {
 				&fip_dev_handle,
 				(uintptr_t) &bl32_file_spec,
+				&open_fipdrv},
+	[FW_CONFIG_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &fw_config_file_spec,
+				&open_fipdrv},
+	[HW_CONFIG_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &hw_config_file_spec,
+				&open_fipdrv},
+	[SOC_FW_CONFIG_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &soc_fw_config_file_spec,
+				&open_fipdrv},
+	[RMM_IMAGE_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &rmm_fw_file_spec,
 				&open_fipdrv},
 	[BL331_IMAGE_ID] = {
 				&fip_dev_handle,
