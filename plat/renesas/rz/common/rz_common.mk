@@ -32,6 +32,9 @@ $(eval $(call add_define,DDR_ECC_ENABLE))
 $(eval $(call add_define,DDR_ECC_DETECT))
 $(eval $(call add_define,DDR_ECC_DETECT_CORRECT))
 
+# Support IS25WP256 QSPI for RZ SBC board
+SPI_FLASH                                      := IS25WP256
+
 ifndef SPI_FLASH
   SPI_FLASH = MT25QU512ABB
 endif
