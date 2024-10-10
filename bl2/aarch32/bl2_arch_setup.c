@@ -5,6 +5,7 @@
  */
 
 #include "../bl2_private.h"
+#include <common/debug.h>
 
 /*******************************************************************************
  * Place holder function to perform any Secure SVC specific architectural
@@ -12,5 +13,5 @@
  ******************************************************************************/
 void bl2_arch_setup(void)
 {
-
+    NOTICE("BL2: db - 01\n");
 }

@@ -19,7 +19,9 @@
 #include <lib/extensions/pauth.h>
 #include <plat/common/platform.h>
 
+#include <lib/mmio.h>
 #include "bl2_private.h"
+#include <drivers/delay_timer.h>
 
 #ifdef __aarch64__
 #define NEXT_IMAGE	"BL31"
@@ -73,6 +75,105 @@ void bl2_setup(u_register_t arg0, u_register_t arg1, u_register_t arg2,
 #endif /* RESET_TO_BL2 */
 
 /*******************************************************************************
+ * DEFINE CM33
+ ******************************************************************************/
+#define CPG_SIPLL3_MON                                  (0x1101013C)    // PLL3 (SSCG) Monitor Register
+#define CPG_CLKON_CM33                                  (0x11010504)    // Clock Control Register Cortex-M33
+#define CPG_CLKMON_CM33                                 (0x11010684)    // Clock Monitor Register Cortex-M33
+#define CPG_RST_CM33                                    (0x11010804)    // Reset Control Register Cortex-M33
+#define CPG_RSTMON_CM33                                 (0x11010984)    // Reset Monitor Register Cortex-M33
+
+#define SYS_CM33_CFG0                                   (0x11020804)    // CM33 Config Register0
+#define SYS_CM33_CFG1                                   (0x11020808)    // CM33 Config Register1
+#define SYS_CM33_CFG2                                   (0x1102080C)    // CM33 Config Register2
+#define SYS_CM33_CFG3                                   (0x11020810)    // CM33 Config Register3
+#define SYS_CM33_CTL                                    (0x11020818)    // CM33 Control Register
+#define SYS_LSI_MODE                                    (0x11020A00)    // LSI Mode Signal Register
+#define SYS_LP_CM33CTL1                                 (0x11020D28)    // Lowpower Sequence CM33 Control Register1
+
+void write_register(uintptr_t addr, uint32_t value)
+{
+        mmio_write_32(addr, value);
+        if(mmio_read_32(addr) != value){
+                INFO("BL2: Write register addr = 0x%lx <-- value = 0x%x - failed\n", addr, value);
+        }
+        else {
+                INFO("BL2: Write register addr = 0x%lx <-- value = 0x%x - passed\n", addr, value);
+        }
+}
+
+void cm33_boot_normal_mode()
+{
+        // Supply clock to CM33_CLKIN
+        write_register(CPG_CLKON_CM33 , 0x00010001);
+
+        // Poll CPG_CLKMON_CM33 to confirm that CM33_CLKIN clock is supplied
+        while (mmio_read_32(CPG_CLKMON_CM33) != 0x1)
+                mdelay(10);
+
+        // Stop the reset signals (released from the reset state)
+        write_register(CPG_RST_CM33 , 0x00070007);
+
+        // Poll CPG_RSTMON_CM33 to confirm that all the reset signals are not applied
+        while(mmio_read_32(CPG_RSTMON_CM33) != 0)
+                mdelay(10);
+}
+
+void cm33_boot_debug_mode()
+{
+        // Supply clock to CM33_TSCLK and CM33_CLKIN
+        write_register(CPG_CLKON_CM33 , 0x00030003);
+
+        // Poll CPG_CLKMON_CM33 to confirm that both CM33_TSCLK and CM33_CLKIN clock are supplied
+        while (mmio_read_32(CPG_CLKMON_CM33) != 0x3)
+                mdelay(10);
+
+        // Set DEBUGQREQn bit of SYS_LP_CM33CTL1 to 1
+        write_register(SYS_LP_CM33CTL1 , 0x00001100);
+
+        // Poll SYS_LP_CM33CTL1 to check if DEBUGQACCEPTn bit becomes 1
+        // Fixme. Lacking of SYS_LP_CM33CTL1.DEBUGQACCEPTn info
+
+        // Set FETCHCNT bit of SYS_CM33_CTL register to 1
+        write_register(SYS_CM33_CTL , 0x00000001);
+
+        // Stop the reset signals (released from the reset state)
+        write_register(CPG_RST_CM33 , 0x00070007);
+
+        // Poll CPG_RSTMON_CM33 to confirm that all the reset signals are not applied
+        while (mmio_read_32(CPG_RSTMON_CM33) != 0)
+                mdelay(10);
+
+        // Set FETCHCNT bit of SYS_CM33_CTL register to 0
+        write_register(SYS_CM33_CTL , 0x00000000);
+}
+
+void cm33_start(unsigned char debug, uint32_t s_addr, uint32_t ns_addr)
+{
+        // Check if the SSCG PLL3 is ON or not
+        if ((CPG_SIPLL3_MON & 0x1) == 0x1) {
+                write_register(SYS_CM33_CFG0 , 0x00103CE5);
+                write_register(SYS_CM33_CFG1 , 0x00103CE5);
+        } else {
+                write_register(SYS_CM33_CFG0 , 0x00003D08);
+                write_register(SYS_CM33_CFG1 , 0x00003D08);
+        }
+
+        // Set the secure vector address of Cortex-M33
+        write_register(SYS_CM33_CFG2 , s_addr);
+
+        // Set the non secure vector address of Cortex-M33
+        write_register(SYS_CM33_CFG3 , ns_addr);
+
+        // Start the CM33 propram in normal/debug mode
+        debug ? cm33_boot_debug_mode() : cm33_boot_normal_mode();
+}
+
+void kick_cm33() {
+    cm33_start(1, 0x1001FF80, 0x00010000);
+}
+
+/*******************************************************************************
  * The only thing to do in BL2 is to load further images and pass control to
  * next BL. The memory occupied by BL2 will be reclaimed by BL3x stages. BL2
  * runs entirely in S-EL1.
@@ -83,6 +184,7 @@ void bl2_main(void)
 
 	NOTICE("BL2: %s\n", version_string);
 	NOTICE("BL2: %s\n", build_message);
+	NOTICE("BL2: db - 00\n");
 
 	/* Perform remaining generic architectural setup in S-EL1 */
 	bl2_arch_setup();
@@ -90,23 +192,35 @@ void bl2_main(void)
 #if PSA_FWU_SUPPORT
 	fwu_init();
 #endif /* PSA_FWU_SUPPORT */
-
+	NOTICE("BL2: db - 03\n");
 	crypto_mod_init();
 
+	NOTICE("BL2: db - 04\n");
 	/* Initialize authentication module */
 	auth_mod_init();
 
+	NOTICE("BL2: db - 05\n");
 	/* Initialize the Measured Boot backend */
 	bl2_plat_mboot_init();
 
+	NOTICE("BL2: db - 06\n");
 	/* Initialize boot source */
 	bl2_plat_preload_setup();
 
+	NOTICE("BL2: db - 07\n");
 	/* Load the subsequent bootloader images. */
 	next_bl_ep_info = bl2_load_images();
 
+	NOTICE("BL2: db - 08\n");
+	
+	/* Kick CM33 */
+	//kick_cm33();
+
 	/* Teardown the Measured Boot backend */
+	NOTICE("BL2: db - 09\n");
 	bl2_plat_mboot_finish();
+
+	NOTICE("BL2: db - 10\n");
 
 #if !BL2_RUNS_AT_EL3
 #ifndef __aarch64__
