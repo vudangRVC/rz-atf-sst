@@ -116,19 +116,23 @@ void bl31_main(void)
 	NOTICE("BL31: %s\n", build_message);
 
 #if FEATURE_DETECTION
+	NOTICE("BL31: main 01-1\n");
 	/* Detect if features enabled during compilation are supported by PE. */
 	detect_arch_features();
 #endif /* FEATURE_DETECTION */
 
 #ifdef SUPPORT_UNKNOWN_MPID
+	NOTICE("BL31: main 01-2\n");
 	if (unsupported_mpid_flag == 0) {
 		NOTICE("Unsupported MPID detected!\n");
 	}
 #endif
 
+	NOTICE("BL31: main 01\n");
 	/* Perform platform setup in BL31 */
 	bl31_platform_setup();
 
+	NOTICE("BL31: main 02\n");
 	/* Initialise helper libraries */
 	bl31_lib_init();
 
@@ -137,6 +141,7 @@ void bl31_main(void)
 	ehf_init();
 #endif
 
+	NOTICE("BL31: main 03\n");
 	/* Initialize the runtime services e.g. psci. */
 	INFO("BL31: Initializing runtime services\n");
 	runtime_svc_init();
@@ -187,14 +192,17 @@ void bl31_main(void)
 	 * We are ready to enter the next EL. Prepare entry into the image
 	 * corresponding to the desired security state after the next ERET.
 	 */
+	NOTICE("BL31: main 04\n");
 	bl31_prepare_next_image_entry();
 
+	NOTICE("BL31: main 05\n");
 	console_flush();
 
 	/*
 	 * Perform any platform specific runtime setup prior to cold boot exit
 	 * from BL31
 	 */
+	NOTICE("BL31: main 06\n");
 	bl31_plat_runtime_setup();
 }
 

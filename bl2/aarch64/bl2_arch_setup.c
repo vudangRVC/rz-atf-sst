@@ -7,6 +7,7 @@
 #include <arch.h>
 #include <arch_helpers.h>
 #include "../bl2_private.h"
+#include <common/debug.h>
 
 /*******************************************************************************
  * Place holder function to perform any S-EL1 specific architectural setup. At
@@ -14,6 +15,7 @@
  ******************************************************************************/
 void bl2_arch_setup(void)
 {
+	NOTICE("BL2: db - 02\n");
 	/* Give access to FP/SIMD registers */
 	write_cpacr(CPACR_EL1_FPEN(CPACR_EL1_FP_TRAP_NONE));
 }

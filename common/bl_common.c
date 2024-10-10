@@ -70,6 +70,7 @@ uintptr_t page_align(uintptr_t value, unsigned dir)
  ******************************************************************************/
 static int load_image(unsigned int image_id, image_info_t *image_data)
 {
+	NOTICE("BL2: load_image - 01\n");
 	uintptr_t dev_handle;
 	uintptr_t image_handle;
 	uintptr_t image_spec;
@@ -99,7 +100,7 @@ static int load_image(unsigned int image_id, image_info_t *image_data)
 		return io_result;
 	}
 
-	INFO("Loading image id=%u at address 0x%lx\n", image_id, image_base);
+	NOTICE("Loading image id=%u at address 0x%lx\n", image_id, image_base);
 
 	/* Find the size of the image */
 	io_result = io_size(image_handle, &image_size);
