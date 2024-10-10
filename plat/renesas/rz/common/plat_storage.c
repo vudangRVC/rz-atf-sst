@@ -23,7 +23,7 @@
 #include <sys_regs.h>
 #include <esdif.h>
 #include <io_sddrv.h>
-
+#include "platform_def.h"
 
 static uintptr_t memdrv_dev_handle;
 static uintptr_t fip_dev_handle;
