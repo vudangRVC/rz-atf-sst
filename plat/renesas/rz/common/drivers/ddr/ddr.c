@@ -9,7 +9,8 @@
 #include	<common/debug.h>
 
 #include <ddr_internal.h>
-#include	<cpg.h>
+#include <cpg.h>
+#include <rz_fconf.h>
 
 #define	CEIL(a, div)	(((a) + ((div) - 1)) / (div))
 #define	_MIN(a, b)		((a) < (b) ? (a) : (b))
@@ -29,6 +30,7 @@ extern const uint32_t mc_phy_settings_tbl[MC_PHYSET_NUM][2];
 extern const uint32_t swizzle_mc_tbl[SWIZZLE_MC_NUM][2];
 extern const uint32_t swizzle_phy_tbl[SIZZLE_PHY_NUM][2];
 extern const char ddr_an_version[];
+const struct ddr_config_t *g_ddr_fconf_cfg;
 
 // prototypes
 void ddr_setup(void);
@@ -76,6 +78,9 @@ void ddr_setup(void)
 	uint32_t	tmp;
 	int i;
 
+	/* Initialize global DDR config from DTB.  */
+	g_ddr_fconf_cfg = ddr_config_getter();
+
 	INFO("BL2: setup DDR (Rev. %s)\n", ddr_an_version);
 	// Step2 - Step11
 	cpg_active_ddr(disable_phy_clk);
@@ -101,15 +106,21 @@ void ddr_setup(void)
 
 	// Step16
 	ddr_ctrl_reten_en_n(0);
-	rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, 0x00000000);
-	rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, 0x01000000);
-	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
+	INFO("g_ddr_fconf_cfg->mc_r007: %d\n", g_ddr_fconf_cfg->mc_r007);
+	rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, g_ddr_fconf_cfg->mc_r007);
+	INFO("g_ddr_fconf_cfg->mc_r001: %d\n", g_ddr_fconf_cfg->mc_r001);
+	rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, g_ddr_fconf_cfg->mc_r001);
+	INFO("g_ddr_fconf_cfg->mc_r000: %d\n", g_ddr_fconf_cfg->mc_r000);
+	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, g_ddr_fconf_cfg->mc_r000);
 	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
 		;
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00080000);
-	rmw_mc_reg(DDRMC_R029, 0xFF0000FF, 64 << 8);
-	rmw_mc_reg(DDRMC_R027, 0xE00000FF, 111 << 8);
-	rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, 0x00000100);
+	INFO("g_ddr_fconf_cfg->mc_r029: %d\n", g_ddr_fconf_cfg->mc_r029);
+	rmw_mc_reg(DDRMC_R029, 0xFF0000FF, g_ddr_fconf_cfg->mc_r029);
+	INFO("g_ddr_fconf_cfg->mc_r027: %d\n", g_ddr_fconf_cfg->mc_r027);
+	rmw_mc_reg(DDRMC_R027, 0xE00000FF, g_ddr_fconf_cfg->mc_r027);
+	INFO("g_ddr_fconf_cfg->mc_r020: %d\n", g_ddr_fconf_cfg->mc_r020);
+	rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, g_ddr_fconf_cfg->mc_r020);
 	udelay(1);
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00000000);
 
@@ -129,14 +140,16 @@ void ddr_setup(void)
 	}
 
 	// Step21
-	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
+	INFO("g_ddr_fconf_cfg->mc_r000: %d\n", g_ddr_fconf_cfg->mc_r000);
+	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, g_ddr_fconf_cfg->mc_r000);
 
 	// Step22
 	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
 		;
 
 	// Step23
-	rmw_mc_reg(DDRMC_R023, 0xFDFFFFFF, 0x02000000);
+	INFO("g_ddr_fconf_cfg->mc_r023: %d\n", g_ddr_fconf_cfg->mc_r023);
+	rmw_mc_reg(DDRMC_R023, 0xFDFFFFFF, g_ddr_fconf_cfg->mc_r023);
 
 	// Step24
 	exec_trainingWRLVL(sl_lanes);
