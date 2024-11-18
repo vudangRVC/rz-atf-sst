@@ -23,7 +23,7 @@
 #include <sys_regs.h>
 #include <esdif.h>
 #include <io_sddrv.h>
-
+#include <platform_def.h>
 
 static uintptr_t memdrv_dev_handle;
 static uintptr_t fip_dev_handle;
@@ -56,7 +56,31 @@ static const io_uuid_spec_t bl32_file_spec = {
 	.uuid = UUID_SECURE_PAYLOAD_BL32,
 };
 
+#ifdef REMOVE_UBOOT
+static const io_uuid_spec_t fw_config_file_spec = {
+	.uuid = UUID_FW_CONFIG,
+};
+
+static const io_uuid_spec_t hw_config_file_spec = {
+	.uuid = UUID_HW_CONFIG,
+};
+
+static const io_uuid_spec_t soc_fw_config_file_spec = {
+	.uuid = UUID_SOC_FW_CONFIG,
+};
+
+static const io_uuid_spec_t rmm_fw_file_spec = {
+	.uuid = UUID_REALM_MONITOR_MGMT_FIRMWARE,
+};
+
+static const io_uuid_spec_t bl331_file_spec = {
+	.uuid = UUID_NT_FW_CONFIG,
+};
+
+static const io_uuid_spec_t bl332_file_spec = {
+#else
 static const io_uuid_spec_t bl33_file_spec = {
+#endif /* REMOVE_UBOOT */
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 };
 
@@ -107,9 +131,37 @@ static struct plat_io_policy policies[] = {
 				&fip_dev_handle,
 				(uintptr_t) &bl32_file_spec,
 				&open_fipdrv},
-	[BL33_IMAGE_ID] = {
+#ifdef REMOVE_UBOOT
+	[FW_CONFIG_ID] = {
 				&fip_dev_handle,
+				(uintptr_t) &fw_config_file_spec,
+				&open_fipdrv},
+	[HW_CONFIG_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &hw_config_file_spec,
+				&open_fipdrv},
+	[SOC_FW_CONFIG_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &soc_fw_config_file_spec,
+				&open_fipdrv},
+	[RMM_IMAGE_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &rmm_fw_file_spec,
+				&open_fipdrv},
+	[BL331_IMAGE_ID] = {
+#else
+	[BL33_IMAGE_ID] = {
+#endif /* REMOVE_UBOOT */
+				&fip_dev_handle,
+#ifdef REMOVE_UBOOT
+				(uintptr_t) &bl331_file_spec,
+				&open_fipdrv},
+	[BL332_IMAGE_ID] = {
+				&fip_dev_handle,
+				(uintptr_t) &bl332_file_spec,
+#else
 				(uintptr_t) &bl33_file_spec,
+#endif /* REMOVE_UBOOT */
 				&open_fipdrv},
 #if TRUSTED_BOARD_BOOT
 	[SOC_FW_KEY_CERT_ID] = {
