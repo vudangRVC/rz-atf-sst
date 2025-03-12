@@ -104,19 +104,21 @@ void write_register(uintptr_t addr, uint32_t value)
 
 void cm33_boot_normal_mode()
 {
+	NOTICE("BL2: cm33_boot_normal_mode - 00\n");
         // Supply clock to CM33_CLKIN
         write_register(CPG_CLKON_CM33 , 0x00010001);
-
+	NOTICE("BL2: cm33_boot_normal_mode - 01\n");
         // Poll CPG_CLKMON_CM33 to confirm that CM33_CLKIN clock is supplied
         while (mmio_read_32(CPG_CLKMON_CM33) != 0x1)
                 mdelay(10);
-
+	NOTICE("BL2: cm33_boot_normal_mode - 02\n");
         // Stop the reset signals (released from the reset state)
         write_register(CPG_RST_CM33 , 0x00070007);
-
+	NOTICE("BL2: cm33_boot_normal_mode - 03\n");
         // Poll CPG_RSTMON_CM33 to confirm that all the reset signals are not applied
         while(mmio_read_32(CPG_RSTMON_CM33) != 0)
                 mdelay(10);
+		NOTICE("BL2: cm33_boot_normal_mode - 04\n");
 }
 
 void cm33_boot_debug_mode()
@@ -150,26 +152,34 @@ void cm33_boot_debug_mode()
 
 void cm33_start(unsigned char debug, uint32_t s_addr, uint32_t ns_addr)
 {
+	NOTICE("BL2: kick_cm33 - 01\n");
         // Check if the SSCG PLL3 is ON or not
         if ((CPG_SIPLL3_MON & 0x1) == 0x1) {
+				NOTICE("BL2: kick_cm33 - 02\n");
                 write_register(SYS_CM33_CFG0 , 0x00103CE5);
                 write_register(SYS_CM33_CFG1 , 0x00103CE5);
         } else {
+				NOTICE("BL2: kick_cm33 - 03\n");
                 write_register(SYS_CM33_CFG0 , 0x00003D08);
                 write_register(SYS_CM33_CFG1 , 0x00003D08);
         }
-
+		NOTICE("BL2: kick_cm33 - 04\n");
         // Set the secure vector address of Cortex-M33
         write_register(SYS_CM33_CFG2 , s_addr);
-
+		NOTICE("BL2: kick_cm33 - 05\n");
         // Set the non secure vector address of Cortex-M33
         write_register(SYS_CM33_CFG3 , ns_addr);
 
+		NOTICE("BL2: kick_cm33 - 06\n");
         // Start the CM33 propram in normal/debug mode
-        debug ? cm33_boot_debug_mode() : cm33_boot_normal_mode();
+        // debug ? cm33_boot_debug_mode() : cm33_boot_normal_mode();
+		cm33_boot_normal_mode(); // OK to kick cm33
+		// cm33_boot_debug_mode(); //failed to kick cm33
+		NOTICE("BL2: kick_cm33 - 07\n");
 }
 
 void kick_cm33() {
+	NOTICE("BL2: kick_cm33 - 00\n");
     cm33_start(1, 0x1001FF80, 0x00010000);
 }
 
@@ -214,7 +224,7 @@ void bl2_main(void)
 	NOTICE("BL2: db - 08\n");
 	
 	/* Kick CM33 */
-	//kick_cm33();
+	kick_cm33();
 
 	/* Teardown the Measured Boot backend */
 	NOTICE("BL2: db - 09\n");

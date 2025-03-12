@@ -24,6 +24,7 @@
  ******************************************************************************/
 struct entry_point_info *bl2_load_images(void)
 {
+	NOTICE("BL2: bl2_load_images - 00\n");
 	bl_params_t *bl2_to_next_bl_params;
 	bl_load_info_t *bl2_load_info;
 	const bl_load_info_node_t *bl2_node_info;
@@ -49,9 +50,9 @@ struct entry_point_info *bl2_load_images(void)
 		if ((bl2_node_info->image_info->h.attr &
 		    IMAGE_ATTRIB_PLAT_SETUP) != 0U) {
 			if (plat_setup_done != 0) {
-				WARN("BL2: Platform setup already done!!\n");
+				NOTICE("BL2: Platform setup already done!!\n");
 			} else {
-				INFO("BL2: Doing platform setup\n");
+				NOTICE("BL2: Doing platform setup\n");
 				bl2_platform_setup();
 				plat_setup_done = 1;
 			}
@@ -65,22 +66,22 @@ struct entry_point_info *bl2_load_images(void)
 
 		if ((bl2_node_info->image_info->h.attr &
 		    IMAGE_ATTRIB_SKIP_LOADING) == 0U) {
-			INFO("BL2: Loading image id %u\n", bl2_node_info->image_id);
+			NOTICE("BL2: Loading image id %u\n", bl2_node_info->image_id);
 			err = load_auth_image(bl2_node_info->image_id,
 				bl2_node_info->image_info);
 			if (err != 0) {
-				ERROR("BL2: Failed to load image id %u (%i)\n",
+				NOTICE("BL2: Failed to load image id %u (%i)\n",
 				      bl2_node_info->image_id, err);
 				plat_error_handler(err);
 			}
 		} else {
-			INFO("BL2: Skip loading image id %u\n", bl2_node_info->image_id);
+			NOTICE("BL2: Skip loading image id %u\n", bl2_node_info->image_id);
 		}
 
 		/* Allow platform to handle image information. */
 		err = bl2_plat_handle_post_image_load(bl2_node_info->image_id);
 		if (err != 0) {
-			ERROR("BL2: Failure in post image load handling (%i)\n", err);
+			NOTICE("BL2: Failure in post image load handling (%i)\n", err);
 			plat_error_handler(err);
 		}
 
