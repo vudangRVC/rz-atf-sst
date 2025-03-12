@@ -224,7 +224,7 @@ void bl2_main(void)
 	NOTICE("BL2: db - 08\n");
 	
 	/* Kick CM33 */
-	kick_cm33();
+	// kick_cm33();
 
 	/* Teardown the Measured Boot backend */
 	NOTICE("BL2: db - 09\n");
