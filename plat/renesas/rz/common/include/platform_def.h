@@ -69,24 +69,24 @@
 
 /*******************************************************************************
  * 2. FW_CONFIG specific defines.
- * cm33/rzv2l_cm33_rpmsg_demo_secure_code.bin
+ * board_info.txt
  *******************************************************************************/
-#define FW_CONFIG_BASE                          (0x42EFF440)
-#define FW_CONFIG_LIMIT                         (FW_CONFIG_BASE + 10000)
+#define FW_CONFIG_BASE                          (BL31_BASE + 0x100000)
+#define FW_CONFIG_LIMIT                         (BL31_BASE + 0x200000)
 
 /*******************************************************************************
  * 3. HW_CONFIG specific defines.
- * board_info.txt
+ * uboot/arch/arm/dts/smarc-rzg2lc.dtb
  *******************************************************************************/
-#define HW_CONFIG_BASE                          (0x00010000)
-#define HW_CONFIG_LIMIT                         (HW_CONFIG_BASE + 5000)
+#define HW_CONFIG_BASE                          (BL31_BASE + 0x200000)
+#define HW_CONFIG_LIMIT                         (BL31_BASE + 0x300000)
 
 /*******************************************************************************
  * 4. SOC_FW_CONFIG specific defines.
- * cm33/rzv2l_cm33_rpmsg_demo_secure_vector.bin
+ * uboot/arch/arm/dts/smarc-rzv2l.dtb
  *******************************************************************************/
-#define SOC_FW_CONFIG_BASE                      (0x0001FF80)
-#define SOC_FW_CONFIG_LIMIT                     (SOC_FW_CONFIG_BASE + 10000)
+#define SOC_FW_CONFIG_BASE                      (BL31_BASE + 0x300000)
+#define SOC_FW_CONFIG_LIMIT                     (BL31_BASE + 0x400000)
 
 /*******************************************************************************
  * 5. Realm Monitor Management Firmware specific defines.
@@ -99,8 +99,8 @@
  * 6. BL331
  * uboot/arch/arm/dts/smarc-rzg2l.dtb
  *******************************************************************************/
-#define BL331_BASE                              (0x48000000)
-#define BL331_LIMIT                             (BL331_BASE + 0x80000)
+#define BL331_BASE                              (BL31_BASE + 0x500000)
+#define BL331_LIMIT                             (BL31_BASE + 0x600000)
 #define BL331_IMAGE_ID                          NT_FW_CONFIG_ID
 
 /*******************************************************************************
