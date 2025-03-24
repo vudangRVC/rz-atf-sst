@@ -194,7 +194,6 @@ void bl2_main(void)
 
 	NOTICE("BL2: %s\n", version_string);
 	NOTICE("BL2: %s\n", build_message);
-	NOTICE("BL2: db - 00\n");
 
 	/* Perform remaining generic architectural setup in S-EL1 */
 	bl2_arch_setup();
@@ -202,35 +201,25 @@ void bl2_main(void)
 #if PSA_FWU_SUPPORT
 	fwu_init();
 #endif /* PSA_FWU_SUPPORT */
-	NOTICE("BL2: db - 03\n");
 	crypto_mod_init();
 
-	NOTICE("BL2: db - 04\n");
 	/* Initialize authentication module */
 	auth_mod_init();
 
-	NOTICE("BL2: db - 05\n");
 	/* Initialize the Measured Boot backend */
 	bl2_plat_mboot_init();
 
-	NOTICE("BL2: db - 06\n");
 	/* Initialize boot source */
 	bl2_plat_preload_setup();
 
-	NOTICE("BL2: db - 07\n");
 	/* Load the subsequent bootloader images. */
 	next_bl_ep_info = bl2_load_images();
 
-	NOTICE("BL2: db - 08\n");
-	
 	/* Kick CM33 */
 	// kick_cm33();
 
 	/* Teardown the Measured Boot backend */
-	NOTICE("BL2: db - 09\n");
 	bl2_plat_mboot_finish();
-
-	NOTICE("BL2: db - 10\n");
 
 #if !BL2_RUNS_AT_EL3
 #ifndef __aarch64__

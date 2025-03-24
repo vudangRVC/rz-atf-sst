@@ -52,7 +52,7 @@ struct entry_point_info *bl2_load_images(void)
 			if (plat_setup_done != 0) {
 				NOTICE("BL2: Platform setup already done!!\n");
 			} else {
-				NOTICE("BL2: Doing platform setup\n");
+				INFO("BL2: Doing platform setup\n");
 				bl2_platform_setup();
 				plat_setup_done = 1;
 			}
@@ -66,7 +66,7 @@ struct entry_point_info *bl2_load_images(void)
 
 		if ((bl2_node_info->image_info->h.attr &
 		    IMAGE_ATTRIB_SKIP_LOADING) == 0U) {
-			NOTICE("BL2: Loading image id %u\n", bl2_node_info->image_id);
+			INFO("BL2: Loading image id %u\n", bl2_node_info->image_id);
 			err = load_auth_image(bl2_node_info->image_id,
 				bl2_node_info->image_info);
 			if (err != 0) {

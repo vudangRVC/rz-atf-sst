@@ -53,7 +53,8 @@
 #endif
 
 /*******************************************************************************
- * BL31 specific defines.
+ * 1. BL31 specific defines.
+ * trusted-firmware-a/build/g2l/release/bl31.bin
  ******************************************************************************/
 #define BL31_BASE				(0x44000000)
 #define BL31_LIMIT				(0x44040000)
@@ -67,38 +68,44 @@
 #endif
 
 /*******************************************************************************
- * FW_CONFIG specific defines.
+ * 2. FW_CONFIG specific defines.
+ * cm33/rzv2l_cm33_rpmsg_demo_secure_code.bin
  *******************************************************************************/
 #define FW_CONFIG_BASE                          (0x42EFF440)
 #define FW_CONFIG_LIMIT                         (FW_CONFIG_BASE + 10000)
 
 /*******************************************************************************
- * HW_CONFIG specific defines.
+ * 3. HW_CONFIG specific defines.
+ * board_info.txt
  *******************************************************************************/
 #define HW_CONFIG_BASE                          (0x00010000)
 #define HW_CONFIG_LIMIT                         (HW_CONFIG_BASE + 5000)
 
 /*******************************************************************************
- * SOC_FW_CONFIG specific defines.
+ * 4. SOC_FW_CONFIG specific defines.
+ * cm33/rzv2l_cm33_rpmsg_demo_secure_vector.bin
  *******************************************************************************/
 #define SOC_FW_CONFIG_BASE                      (0x0001FF80)
 #define SOC_FW_CONFIG_LIMIT                     (SOC_FW_CONFIG_BASE + 10000)
 
 /*******************************************************************************
- * Realm Monitor Management Firmware specific defines.
+ * 5. Realm Monitor Management Firmware specific defines.
+ * uboot/arch/arm/dts/rzpi.dtb
  *******************************************************************************/
 #define RMM_FW_BASE                             (0x40010000)
 #define RMM_FW_LIMIT                            (RMM_FW_BASE + 100000)
 
 /*******************************************************************************
- * BL331
+ * 6. BL331
+ * uboot/arch/arm/dts/smarc-rzg2l.dtb
  *******************************************************************************/
 #define BL331_BASE                              (0x48000000)
 #define BL331_LIMIT                             (BL331_BASE + 0x80000)
 #define BL331_IMAGE_ID                          NT_FW_CONFIG_ID
 
 /*******************************************************************************
- * BL332
+ * 7. BL332
+ * uboot/u-boot-nodtb.bin
  *******************************************************************************/
 #define BL332_BASE                              (0x48080000)
 #define BL332_LIMIT                             (BL332_BASE + 0x08000000)
