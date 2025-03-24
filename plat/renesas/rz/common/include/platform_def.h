@@ -92,8 +92,8 @@
  * 5. Realm Monitor Management Firmware specific defines.
  * uboot/arch/arm/dts/rzpi.dtb
  *******************************************************************************/
-#define RMM_FW_BASE                             (0x40010000)
-#define RMM_FW_LIMIT                            (RMM_FW_BASE + 100000)
+#define RMM_FW_BASE                             (BL31_BASE + 0x400000)
+#define RMM_FW_LIMIT                            (BL31_BASE + 0x500000)
 
 /*******************************************************************************
  * 6. BL331
