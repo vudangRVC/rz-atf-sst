@@ -25,6 +25,7 @@
 #include <rzg2l_def.h>
 #include <rz_private.h>
 #include <drivers/delay_timer.h>
+#include "platform_def.h"
 
 static const mmap_region_t rzg2l_mmap[] = {
 #if TRUSTED_BOARD_BOOT
