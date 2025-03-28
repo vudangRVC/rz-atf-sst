@@ -132,8 +132,8 @@ static int load_image(unsigned int image_id, image_info_t *image_data)
 		goto exit;
 	}
 
-	INFO("Image id=%u loaded: 0x%lx - 0x%lx\n", image_id, image_base,
-	     (uintptr_t)(image_base + image_size));
+	NOTICE("Image id=%u loaded: 0x%lx - 0x%lx, size = %ld\n", image_id, image_base,
+	     (uintptr_t)(image_base + image_size), image_size);
 
 exit:
 	(void)io_close(image_handle);
