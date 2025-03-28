@@ -69,7 +69,27 @@ static const io_uuid_spec_t bl32_file_spec = {
 	.uuid = UUID_SECURE_PAYLOAD_BL32,
 };
 
-static const io_uuid_spec_t bl33_file_spec = {
+static const io_uuid_spec_t fw_config_file_spec = {
+	.uuid = UUID_FW_CONFIG,
+};
+
+static const io_uuid_spec_t hw_config_file_spec = {
+	.uuid = UUID_HW_CONFIG,
+};
+
+static const io_uuid_spec_t soc_fw_config_file_spec = {
+	.uuid = UUID_SOC_FW_CONFIG,
+};
+
+static const io_uuid_spec_t rmm_fw_file_spec = {
+	.uuid = UUID_REALM_MONITOR_MGMT_FIRMWARE,
+};
+
+static const io_uuid_spec_t bl331_file_spec = {
+	.uuid = UUID_NT_FW_CONFIG,
+};
+
+static const io_uuid_spec_t bl332_file_spec = {
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 };
 
@@ -151,48 +171,66 @@ static const struct plat_io_policy spirom_ddr_config_policy = {
 #endif /* PLAT_SYSTEM_SUSPEND */
 
 static struct plat_io_policy policies[MAX_NUMBER_IDS] = {
-	/* FIP_IMAGE_ID structure is added to this array on a bootmode basis */
-
-	[BL31_IMAGE_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &bl31_file_spec,
-				&open_fipdrv},
-	[BL32_IMAGE_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &bl32_file_spec,
-				&open_fipdrv},
-	[BL33_IMAGE_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &bl33_file_spec,
-				&open_fipdrv},
-#if TRUSTED_BOARD_BOOT
-	[SOC_FW_KEY_CERT_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &soc_fw_key_cert_file_spec,
-				&open_fipdrv},
-	[SOC_FW_CONTENT_CERT_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &soc_fw_content_cert_file_spec,
-				&open_fipdrv},
-	[TRUSTED_OS_FW_KEY_CERT_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &tos_fw_key_cert_file_spec,
-				&open_fipdrv},
-	[TRUSTED_OS_FW_CONTENT_CERT_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &tos_fw_content_cert_file_spec,
-				&open_fipdrv},
-	[NON_TRUSTED_FW_KEY_CERT_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &nt_fw_key_cert_file_spec,
-				&open_fipdrv},
-	[NON_TRUSTED_FW_CONTENT_CERT_ID] = {
-				&fip_dev_handle,
-				(uintptr_t) &nt_fw_content_cert_file_spec,
-				&open_fipdrv},
-#endif /* TRUSTED_BOARD_BOOT */
-	{0, 0, 0}
-};
+		[BL31_IMAGE_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &bl31_file_spec,
+					&open_fipdrv},
+		[BL32_IMAGE_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &bl32_file_spec,
+					&open_fipdrv},
+		[FW_CONFIG_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &fw_config_file_spec,
+					&open_fipdrv},
+		[HW_CONFIG_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &hw_config_file_spec,
+					&open_fipdrv},
+		[SOC_FW_CONFIG_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &soc_fw_config_file_spec,
+					&open_fipdrv},
+		[RMM_IMAGE_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &rmm_fw_file_spec,
+					&open_fipdrv},
+		[BL331_IMAGE_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &bl331_file_spec,
+					&open_fipdrv},
+		[BL332_IMAGE_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &bl332_file_spec,
+					&open_fipdrv},
+	#if TRUSTED_BOARD_BOOT
+		[SOC_FW_KEY_CERT_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &soc_fw_key_cert_file_spec,
+					&open_fipdrv},
+		[SOC_FW_CONTENT_CERT_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &soc_fw_content_cert_file_spec,
+					&open_fipdrv},
+		[TRUSTED_OS_FW_KEY_CERT_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &tos_fw_key_cert_file_spec,
+					&open_fipdrv},
+		[TRUSTED_OS_FW_CONTENT_CERT_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &tos_fw_content_cert_file_spec,
+					&open_fipdrv},
+		[NON_TRUSTED_FW_KEY_CERT_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &nt_fw_key_cert_file_spec,
+					&open_fipdrv},
+		[NON_TRUSTED_FW_CONTENT_CERT_ID] = {
+					&fip_dev_handle,
+					(uintptr_t) &nt_fw_content_cert_file_spec,
+					&open_fipdrv},
+	#endif
+		{ 0, 0, 0}
+	};
 
 static int32_t open_fipdrv(const uintptr_t spec)
 {
@@ -289,6 +327,7 @@ void rz_io_setup(void)
 	boot_mode_t boot_mode;
 
 	boot_mode = sys_get_boot_mode();
+	NOTICE("Boot mode: %d\n", boot_mode);
 
 	boot_io_drv_id = FIP_IMAGE_ID;
 
@@ -327,6 +366,7 @@ void rz_io_setup(void)
 		io_dev_open(emmc, 0, &emmcdrv_dev_handle);
 #endif /* BOOT_MODE_eMMC_NOT_SUPPORTED */
 	} else if (boot_mode == SYS_BOOT_MODE_ESD) {
+		NOTICE("Boot from SD card\n");
 		register_io_dev_sddrv(&sd);
 		io_dev_open(sd, 0, &sddrv_dev_handle);
 	} else {
