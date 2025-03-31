@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2022, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,7 +22,7 @@
 #include <ddr.h>
 #include <sys_regs.h>
 #include <plat_tzc_def.h>
-#include <rzg2l_def.h>
+#include <rz_soc_def.h>
 #include <rz_private.h>
 #include <drivers/delay_timer.h>
 
@@ -80,7 +80,6 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 	return 0;
 }
 
-
 void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 								u_register_t arg3, u_register_t arg4)
 {
@@ -103,9 +102,8 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 
 	/* USB 2.0 Phy workaround for RZ/G2L,LC	*/
 	if (((mmio_read_32(SYS_LSI_DEVID) & 0x0FFFFFFF) == 0x841C447) &&
-	    ((mmio_read_32(0x11861124) & 0xf00) == 0x700) &&
-	    ((mmio_read_32(0x11861128) & 0xf00) == 0x700))
-	{
+		((mmio_read_32(0x11861124) & 0xf00) == 0x700) &&
+		((mmio_read_32(0x11861128) & 0xf00) == 0x700)) {
 		mmio_write_32(CPG_CLKON_USB, 0x000F000F);
 		while ((mmio_read_32(CPG_CLKMON_USB) & 0x0000000F) != 0x0000000F)
 			;
@@ -121,7 +119,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	}
 
 	/* initialize console driver */
-	ret = console_rzg2l_register(
+	ret = console_rz_register(
 							RZG2L_SCIF0_BASE,
 							RZG2L_UART_INCK_HZ,
 							RZG2L_UART_BARDRATE,
@@ -154,7 +152,7 @@ void bl2_platform_setup(void)
 	/* Setup TZC-400, Access Control */
 	plat_security_setup();
 
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_FPGA
 	/* initialize DDR */
 	ddr_setup();
 #endif /* DEBUG_FPGA */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2022, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,7 +14,7 @@
 #include <scifa.h>
 #include <plat_tzc_def.h>
 #include <rz_private.h>
-#include <rzg2l_def.h>
+#include <rz_soc_def.h>
 
 static const mmap_region_t rzg2l_mmap[] = {
 	MAP_REGION_FLAT(RZG2L_SRAM_BASE, RZG2L_SRAM_SIZE,
@@ -37,7 +37,7 @@ void bl31_early_platform_setup2(u_register_t arg0,
 	int ret;
 
 	/* initialize console driver */
-	ret = console_rzg2l_register(
+	ret = console_rz_register(
 							RZG2L_SCIF0_BASE,
 							RZG2L_UART_INCK_HZ,
 							RZG2L_UART_BARDRATE,
@@ -73,11 +73,11 @@ void bl31_platform_setup(void)
 	/* Setup TZC-400 */
 	plat_security_setup();
 
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_FPGA
 	/* initialize GIC-600 */
 	plat_gic_driver_init();
 	plat_gic_init();
-#endif
+#endif /* DEBUG_FPGA */
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
@@ -86,7 +86,7 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 
 	next_image_info = (type == NON_SECURE)
 			? &from_bl2.bl33_ep_info : &from_bl2.bl32_ep_info;
-	
+
 	if (next_image_info->pc)
 		return next_image_info;
 	else

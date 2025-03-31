@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include <platform_def.h>
-#include "../../../include/drivers/auth/auth_common.h"
+#include <drivers/auth_common.h>
 #include <drivers/auth/auth_mod.h>
 #if USE_TBBR_DEFS
 #include <tools_share/tbbr_oid.h>
