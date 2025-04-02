@@ -118,7 +118,7 @@ void cm33_boot_normal_mode()
         // Poll CPG_RSTMON_CM33 to confirm that all the reset signals are not applied
         while(mmio_read_32(CPG_RSTMON_CM33) != 0)
                 mdelay(10);
-		NOTICE("BL2: cm33_boot_normal_mode - 04\n");
+	NOTICE("BL2: cm33_boot_normal_mode - 04\n");
 }
 
 void cm33_boot_debug_mode()
