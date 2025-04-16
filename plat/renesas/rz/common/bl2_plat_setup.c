@@ -70,7 +70,10 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		break;
 	case BL33_IMAGE_ID:
 		/* Write board ID to x2 register to pass through u-boot */
-		bl_mem_params->ep_info.args.arg2 = BOARD_ID_RZPI;
+		bl_mem_params->ep_info.args.arg0 = RZ_BL332_ARG0;
+		bl_mem_params->ep_info.args.arg1 = 0x01;
+		bl_mem_params->ep_info.args.arg2 = BOARD_ID_RZV2L;
+		bl_mem_params->ep_info.args.arg3 = 0x03;
 		memcpy(&params->bl33_ep_info, &bl_mem_params->ep_info,
 			sizeof(entry_point_info_t));
 		break;
