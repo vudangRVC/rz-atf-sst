@@ -24,7 +24,6 @@
  ******************************************************************************/
 struct entry_point_info *bl2_load_images(void)
 {
-	NOTICE("BL2: bl2_load_images - 00\n");
 	bl_params_t *bl2_to_next_bl_params;
 	bl_load_info_t *bl2_load_info;
 	const bl_load_info_node_t *bl2_node_info;

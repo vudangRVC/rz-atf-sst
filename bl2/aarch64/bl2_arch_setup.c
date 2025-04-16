@@ -15,7 +15,6 @@
  ******************************************************************************/
 void bl2_arch_setup(void)
 {
-	NOTICE("BL2: db - 02\n");
 	/* Give access to FP/SIMD registers */
 	write_cpacr(CPACR_EL1_FPEN(CPACR_EL1_FP_TRAP_NONE));
 }
