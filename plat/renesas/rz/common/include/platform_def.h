@@ -42,6 +42,16 @@
 #define MAX_IO_BLOCK_DEVICES	U(1)
 
 /*******************************************************************************
+ * RZ board id defines.
+ ******************************************************************************/
+#define BOARD_ID_RZV2H   				22
+#define BOARD_ID_RZV2L 					33
+#define BOARD_ID_RZPI  					44
+#define BOARD_ID_RZG2L 					55
+#define BOARD_ID_RZG2LC 				66
+#define BOARD_ID_RZG2UL 				77
+
+/*******************************************************************************
  * BL2 specific defines.
  ******************************************************************************/
 #if !TRUSTED_BOARD_BOOT
