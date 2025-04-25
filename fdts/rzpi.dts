@@ -105,13 +105,43 @@
 			compatible = "renesas,r9a07g044-sdram";
 			reg = <0 0x40000000 0 0x10000>;
 
-			ddrmc_r000 = <0x00000001>;
-			ddrmc_r001 = <0x01000000>;
-			ddrmc_r007 = <0x00000000>;
-			ddrmc_r020 = <0x00000100>;
-			ddrmc_r023 = <0x02000000>;
-			ddrmc_r027 = <0x6F00>;
-			ddrmc_r029 = <0x4000>;
+			// DDRMC
+			ddrmc_r030 = <0x0000050A>;
+			ddrmc_r031 = <0x00000001>;
+			ddrmc_r032 = <0x18001202>;
+			ddrmc_r033 = <0x19000C14>;
+			ddrmc_r034 = <0x1F151000>;
+			ddrmc_r035 = <0x0E00001B>;
+			ddrmc_r036 = <0x091A131D>;
+			ddrmc_r037 = <0x001C000D>;
+			ddrmc_r038 = <0x00000000>;
+
+			// DDRPHY
+			ddrphy_setup_step1 = <0x00000000>;
+			ddrphy_setup_step2 = <0x01140819>;
+			ddrphy_setup_step3 = <0x00000001>;
+			ddrphy_setup_step4 = <0x16170504>;
+			ddrphy_setup_step5 = <0x00000002>;
+			ddrphy_setup_step6 = <0x070D0309>;
+			ddrphy_setup_step7 = <0x00000003>;
+			ddrphy_setup_step8 = <0x0F0A020C>;
+			ddrphy_setup_step9 = <0x00000004>;
+			ddrphy_setup_step10 = <0x13121110>;
+			ddrphy_setup_step11 = <0x00000005>;
+			ddrphy_setup_step12 = <0x1500060B>;
+			ddrphy_setup_step13 = <0x00000006>;
+			ddrphy_setup_step14 = <0x0E1C1A18>;
+			ddrphy_setup_step15 = <0x00000007>;
+			ddrphy_setup_step16 = <0x001E1D1B>;
+
+			// DDR_DENALI
+			ddr_denali_ctl_30 = <0x00000118>;
+			ddr_denali_ctl_34 = <0x01200255>;
+			ddr_denali_ctl_35 = <0x00000120>;
+			ddr_denali_ctl_122 = <0x01010100>;
+			ddr_denali_ctl_123 = <0x00010101>;
+			ddr_denali_ctl_124 = <0x0FFF0000>;
+			ddr_denali_ctl_125 = <0x0001FF00>;
 		};
 
 		dmac: dma-controller@11820000 {

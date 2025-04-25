@@ -150,27 +150,92 @@ int fconf_populate_ddr_config(uintptr_t config)
 	int soc_node = fdt_path_offset(fdt, "/soc");
 	int ddr_node = fdt_subnode_offset(fdt, soc_node, "memory@40000000");
 
-	const char *ddr_props[] = {
-		"ddrmc_r000",
-		"ddrmc_r001",
-		"ddrmc_r007",
-		"ddrmc_r020",
-		"ddrmc_r023",
-		"ddrmc_r027",
-		"ddrmc_r029",
+	const char *ddr_mc_props[] = {
+		"ddrmc_r030",
+		"ddrmc_r031",
+		"ddrmc_r032",
+		"ddrmc_r033",
+		"ddrmc_r034",
+		"ddrmc_r035",
+		"ddrmc_r036",
+		"ddrmc_r037",
+		"ddrmc_r038",
 	};
 
-	uint32_t *targets[] = {
-		&ddr_config.mc_r000,
-		&ddr_config.mc_r001,
-		&ddr_config.mc_r007,
-		&ddr_config.mc_r020,
-		&ddr_config.mc_r023,
-		&ddr_config.mc_r027,
-		&ddr_config.mc_r029,
+	const char *ddrphy_props[] = {
+		"ddrphy_setup_step1",
+		"ddrphy_setup_step2",
+		"ddrphy_setup_step3",
+		"ddrphy_setup_step4",
+		"ddrphy_setup_step5",
+		"ddrphy_setup_step6",
+		"ddrphy_setup_step7",
+		"ddrphy_setup_step8",
+		"ddrphy_setup_step9",
+		"ddrphy_setup_step10",
+		"ddrphy_setup_step11",
+		"ddrphy_setup_step12",
+		"ddrphy_setup_step13",
+		"ddrphy_setup_step14",
+		"ddrphy_setup_step15",
+		"ddrphy_setup_step16",
 	};
 
-	fconf_read_u32_props(fdt, ddr_node, ddr_props, (uint32_t **)targets, ARRAY_SIZE(ddr_props));
+	const char *ddr_denali_props[] = {
+		"ddr_denali_ctl_30",
+		"ddr_denali_ctl_34",
+		"ddr_denali_ctl_35",
+		"ddr_denali_ctl_122",
+		"ddr_denali_ctl_123",
+		"ddr_denali_ctl_124",
+		"ddr_denali_ctl_125",
+	};
+
+
+	uint32_t *ddrmc_targets[] = {
+		&ddr_config.ddrmc[0],
+		&ddr_config.ddrmc[1],
+		&ddr_config.ddrmc[2],
+		&ddr_config.ddrmc[3],
+		&ddr_config.ddrmc[4],
+		&ddr_config.ddrmc[5],
+		&ddr_config.ddrmc[6],
+		&ddr_config.ddrmc[7],
+		&ddr_config.ddrmc[8],
+	};
+
+	uint32_t *ddrphy_targets[] = {
+		&ddr_config.ddrphy[0],
+		&ddr_config.ddrphy[1],
+		&ddr_config.ddrphy[2],
+		&ddr_config.ddrphy[3],
+		&ddr_config.ddrphy[4],
+		&ddr_config.ddrphy[5],
+		&ddr_config.ddrphy[6],
+		&ddr_config.ddrphy[7],
+		&ddr_config.ddrphy[8],
+		&ddr_config.ddrphy[9],
+		&ddr_config.ddrphy[10],
+		&ddr_config.ddrphy[11],
+		&ddr_config.ddrphy[12],
+		&ddr_config.ddrphy[13],
+		&ddr_config.ddrphy[14],
+		&ddr_config.ddrphy[15],
+	};
+
+	uint32_t *ddrdenali_targets[] = { 
+		&ddr_config.ddrdenali_30,
+		&ddr_config.ddrdenali_34,
+		&ddr_config.ddrdenali_35,
+		&ddr_config.ddrdenali_122,
+		&ddr_config.ddrdenali_123,
+		&ddr_config.ddrdenali_124,
+		&ddr_config.ddrdenali_125,
+	};
+
+	fconf_read_u32_props(fdt, ddr_node, ddr_mc_props, (uint32_t **) ddrmc_targets, ARRAY_SIZE(ddr_mc_props));
+	fconf_read_u32_props(fdt, ddr_node, ddrphy_props, (uint32_t **) ddrphy_targets, ARRAY_SIZE(ddrphy_props));
+	fconf_read_u32_props(fdt, ddr_node, ddr_denali_props, (uint32_t **) ddrdenali_targets, ARRAY_SIZE(ddr_denali_props));
 
 	return 0;
 }

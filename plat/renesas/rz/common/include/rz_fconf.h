@@ -35,13 +35,16 @@ struct pfc_config_t {
 };
 
 struct ddr_config_t {
-    uint32_t mc_r000;
-    uint32_t mc_r001;
-    uint32_t mc_r007;
-    uint32_t mc_r020;
-    uint32_t mc_r023;
-    uint32_t mc_r027;
-    uint32_t mc_r029;
+    uint32_t ddrmc[9];
+    uint32_t ddrphy[16];
+
+    uint32_t ddrdenali_30;
+    uint32_t ddrdenali_34;
+    uint32_t ddrdenali_35;
+    uint32_t ddrdenali_122;
+    uint32_t ddrdenali_123;
+    uint32_t ddrdenali_124;
+    uint32_t ddrdenali_125;
 };
 
 struct spi_config_t {

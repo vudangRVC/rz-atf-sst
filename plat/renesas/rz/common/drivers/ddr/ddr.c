@@ -106,21 +106,15 @@ void ddr_setup(void)
 
 	// Step16
 	ddr_ctrl_reten_en_n(0);
-	INFO("g_ddr_fconf_cfg->mc_r007: %d\n", g_ddr_fconf_cfg->mc_r007);
-	rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, g_ddr_fconf_cfg->mc_r007);
-	INFO("g_ddr_fconf_cfg->mc_r001: %d\n", g_ddr_fconf_cfg->mc_r001);
-	rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, g_ddr_fconf_cfg->mc_r001);
-	INFO("g_ddr_fconf_cfg->mc_r000: %d\n", g_ddr_fconf_cfg->mc_r000);
-	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, g_ddr_fconf_cfg->mc_r000);
+	rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, 0x00000000);
+	rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, 0x01000000);
+	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
 	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
 		;
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00080000);
-	INFO("g_ddr_fconf_cfg->mc_r029: %d\n", g_ddr_fconf_cfg->mc_r029);
-	rmw_mc_reg(DDRMC_R029, 0xFF0000FF, g_ddr_fconf_cfg->mc_r029);
-	INFO("g_ddr_fconf_cfg->mc_r027: %d\n", g_ddr_fconf_cfg->mc_r027);
-	rmw_mc_reg(DDRMC_R027, 0xE00000FF, g_ddr_fconf_cfg->mc_r027);
-	INFO("g_ddr_fconf_cfg->mc_r020: %d\n", g_ddr_fconf_cfg->mc_r020);
-	rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, g_ddr_fconf_cfg->mc_r020);
+	rmw_mc_reg(DDRMC_R029, 0xFF0000FF, 64 << 8);
+	rmw_mc_reg(DDRMC_R027, 0xE00000FF, 111 << 8);
+	rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, 0x00000100);
 	udelay(1);
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00000000);
 
@@ -133,23 +127,23 @@ void ddr_setup(void)
 
 	// Step20
 	for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl); i++) {
-		write_mc_reg(swizzle_mc_tbl[i][0], swizzle_mc_tbl[i][1]);
+		INFO("swizzle_mc_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
+		write_mc_reg(swizzle_mc_tbl[i][0], g_ddr_fconf_cfg->ddrmc[i]);
 	}
 	for (i = 0; i < ARRAY_SIZE(swizzle_phy_tbl); i++) {
-		write_phy_reg(swizzle_phy_tbl[i][0], swizzle_phy_tbl[i][1]);
+		INFO("swizzle_phy_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrphy[i]);
+		write_phy_reg(swizzle_phy_tbl[i][0], g_ddr_fconf_cfg->ddrphy[i]);
 	}
 
 	// Step21
-	INFO("g_ddr_fconf_cfg->mc_r000: %d\n", g_ddr_fconf_cfg->mc_r000);
-	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, g_ddr_fconf_cfg->mc_r000);
+	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
 
 	// Step22
 	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
 		;
 
 	// Step23
-	INFO("g_ddr_fconf_cfg->mc_r023: %d\n", g_ddr_fconf_cfg->mc_r023);
-	rmw_mc_reg(DDRMC_R023, 0xFDFFFFFF, g_ddr_fconf_cfg->mc_r023);
+	rmw_mc_reg(DDRMC_R023, 0xFDFFFFFF, 0x02000000);
 
 	// Step24
 	exec_trainingWRLVL(sl_lanes);
@@ -605,12 +599,35 @@ static void disable_phy_clk(void)
 static void program_mc1(uint8_t *lp_auto_entry_en)
 {
 	int i;
+	int offset;
 
 	// Step1
 	for (i = 0; i < ARRAY_SIZE(mc_init_tbl); i++) {
-		if (mc_init_tbl[i][0] == DDRMC_R006) {
+		offset = mc_init_tbl[i][0];
+		if (offset == DDRMC_R006) {
 			*lp_auto_entry_en = mc_init_tbl[i][1] & 0xF;
 			write_mc_reg(DDRMC_R006, mc_init_tbl[i][1] & 0xFFFFFFF0);
+		} else if (offset == DENALI_CTL_30) {
+			INFO("DENALI_CTL_30: %x\n", g_ddr_fconf_cfg->ddrdenali_30);
+			write_mc_reg(DENALI_CTL_30, g_ddr_fconf_cfg->ddrdenali_30);
+		} else if (offset == DENALI_CTL_34) {
+			INFO("DENALI_CTL_34: %x\n", g_ddr_fconf_cfg->ddrdenali_34);
+			write_mc_reg(DENALI_CTL_34, g_ddr_fconf_cfg->ddrdenali_34);
+		} else if (offset == DENALI_CTL_35) {
+			INFO("DENALI_CTL_35: %x\n", g_ddr_fconf_cfg->ddrdenali_35);
+			write_mc_reg(DENALI_CTL_35, g_ddr_fconf_cfg->ddrdenali_35);
+		} else if (offset == DENALI_CTL_122) {
+			INFO("DENALI_CTL_122: %x\n", g_ddr_fconf_cfg->ddrdenali_122);
+			write_mc_reg(DENALI_CTL_122, g_ddr_fconf_cfg->ddrdenali_122);
+		} else if (offset == DENALI_CTL_123) {
+			INFO("DENALI_CTL_123: %x\n", g_ddr_fconf_cfg->ddrdenali_123);
+			write_mc_reg(DENALI_CTL_123, g_ddr_fconf_cfg->ddrdenali_123);
+		} else if (offset == DENALI_CTL_124) {
+			INFO("DENALI_CTL_124: %x\n", g_ddr_fconf_cfg->ddrdenali_124);
+			write_mc_reg(DENALI_CTL_124, g_ddr_fconf_cfg->ddrdenali_124);
+		} else if (offset == DENALI_CTL_125) {
+			INFO("DENALI_CTL_125: %x\n", g_ddr_fconf_cfg->ddrdenali_125);
+			write_mc_reg(DENALI_CTL_125, g_ddr_fconf_cfg->ddrdenali_125);
 		} else {
 			write_mc_reg(mc_init_tbl[i][0], mc_init_tbl[i][1]);
 		}
