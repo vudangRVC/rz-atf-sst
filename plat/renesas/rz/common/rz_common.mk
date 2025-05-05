@@ -148,3 +148,13 @@ endif
 
 include lib/fconf/fconf.mk
 PLAT_BL_COMMON_SOURCES	+=	${FCONF_SOURCES}
+
+ifeq ($(BOARD),smarc_pmic_2)
+    CFLAGS += -DBOARD_ID=BOARD_ID_RZG2L
+else ifeq ($(BOARD),smarc_rzv2l)
+    CFLAGS += -DBOARD_ID=BOARD_ID_RZV2L
+else ifeq ($(BOARD),sbc_1)
+    CFLAGS += -DBOARD_ID=BOARD_ID_RZPI
+else
+    $(error Unsupported BOARD value: $(BOARD))
+endif
