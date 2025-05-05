@@ -31,6 +31,7 @@ BOARD_NAME := $(shell echo $(BOARD) | awk -F'_' '{print $$1}')
 BL2_IMAGE  := ${BUILD_PLAT}/bl2.bin
 BL2_DTB    := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb
 BL2_OUTPUT := ${BUILD_PLAT}/bl2_with_dtb-${BOARD_NAME}.bin
+BL2_FINAL  := ${BUILD_PLAT}/bl2.bin
 
 ifeq (${TRUSTED_BOARD_BOOT}, 0)
 BL2_BASE := 0x12000
@@ -70,4 +71,4 @@ bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB}
 	echo "INFO: Total merged size  : $$MERGED_SIZE bytes"; \
 	echo "INFO: BL2 limit size     : 0x$$(printf '%X' $$BL2_BINARY_LIMIT_SIZE)"; \
 	echo "INFO: DTB base address   : 0x$$(printf '%X' $$DTB_BASE)"
-	xxd ${BL2_OUTPUT} > bl2_with_dtb.hex
+	mv -f ${BL2_OUTPUT} ${BL2_FINAL}
