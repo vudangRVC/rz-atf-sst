@@ -15,3 +15,6 @@ $(eval $(call add_define,DDR_PLL4))
 
 #Same power control as used on evk_alpha board so use those files
 BL_COMMON_SOURCES	+=	plat/renesas/rz/board/v2h_evk_alpha/pwrc_board.c
+
+# Default Device tree
+DTB_FILE_NAME		?=	rzv2h-evk-ver1

@@ -64,3 +64,36 @@ ifneq (${DEBUG}, 0)
 TF_CFLAGS += -O0 -fstack-usage
 ASFLAGS += -O0 -fstack-usage
 endif
+
+include lib/libfdt/libfdt.mk
+
+FDT_SOURCES		:=	$(addprefix ${BUILD_PLAT}/fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME).dtb))
+
+# Create DTB file for BL2
+${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dts: fdts/${DTB_FILE_NAME}.dts| ${BUILD_PLAT} fdt_dirs
+	cp $< $@
+
+${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb: fdts/${DTB_FILE_NAME}.dts | ${BUILD_PLAT} fdt_dirs
+
+# Define paths for the BL2 binary and DTB
+BOARD_NAME := $(shell echo $(BOARD) | awk -F'_' '{print $$1}')
+
+# Define the input file and target for the merged binary
+BL2_IMAGE  := ${BUILD_PLAT}/bl2.bin
+BL2_DTB    := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb
+BL2_OUTPUT := ${BUILD_PLAT}/bl2_with_dtb-${BOARD_NAME}.bin
+
+ifeq (${TRUSTED_BOARD_BOOT}, 0)
+BL2_BASE := 0x12000
+else
+BL2_BASE := 0x13000
+endif
+
+SRAM_LIMIT := $(shell printf "%d" 0x1D000)
+BL2_BIN_LIMIT_DEC := $(shell printf "%d" $(BL2_BIN_LIMIT))
+
+# Rule for creating the merged BL2 with DTB file
+bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB} 
+	@echo "Embedding DTB into BL2 with dynamic padding..."
+	@BL2_SIZE=$$(wc -c < ${BL2_IMAGE} | awk '{print $$1}'); \
+	PADDING=$$(($(BL2_BIN_LIMIT_DEC) - $$BL2_SIZE)); 
