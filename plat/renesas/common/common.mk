@@ -101,6 +101,9 @@ BL2_SOURCES	+=	${RCAR_GIC_SOURCES}				\
 			plat/renesas/common/bl2_plat_mem_params_desc.c	\
 			plat/renesas/common/plat_image_load.c		\
 			plat/renesas/common/bl2_cpg_init.c		\
+			plat/renesas/common/rz_dt.c		\
+			plat/renesas/common/rz_fconf.c		\
+			plat/renesas/common/rz_fconf_debug.c		\
 			drivers/renesas/common/console/rcar_printf.c	\
 			drivers/renesas/common/scif/scif.S		\
 			drivers/renesas/common/common.c			\
@@ -142,3 +145,6 @@ BL31_SOURCES	+=	${RCAR_GIC_SOURCES}				\
 include lib/xlat_tables_v2/xlat_tables.mk
 include drivers/auth/mbedtls/mbedtls_crypto.mk
 PLAT_BL_COMMON_SOURCES	+=	${XLAT_TABLES_LIB_SRCS}
+
+include lib/fconf/fconf.mk
+PLAT_BL_COMMON_SOURCES	+=	${FCONF_SOURCES}
