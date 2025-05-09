@@ -25,6 +25,11 @@
 #include <rz_private.h>
 #include <sys.h>
 #include <pwrc.h>
+#include <lib/fconf/fconf.h>
+#include <rz_dt.h>
+#include <rz_fconf.h>
+#include <lib/fconf/fconf.h>
+#include <rz_soc_def.h>
 
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
 static console_t rzv2h_bl2_console;
@@ -94,6 +99,14 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 								u_register_t arg3, u_register_t arg4)
 {
 	int ret;
+
+	/* Validate DTB is valid */
+	if (dt_validation(DTB_LOAD_ADDR_HEX) < 0) {
+		panic();
+	}
+
+	/* Populate HW_CONFIG device tree with the mapped address */
+	fconf_populate_v2h("HW_CONFIG", DTB_LOAD_ADDR_HEX);
 
 	/* early setup Clock and Reset */
 	cpg_early_setup();
