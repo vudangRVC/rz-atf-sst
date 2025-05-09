@@ -9,7 +9,7 @@ PLAT_INCLUDES	:=	-Iplat/renesas/rz/soc/v2h/include
 FIP_ALIGN		:=	16
 
 include plat/renesas/rz/common/v2h_common.mk
-include plat/renesas/rz/board/${PLAT}_${BOARD}/rz_board.mk
+include plat/renesas/rz/board/${BOARD}/rz_board.mk
 
 DDR_SOURCES	+=				plat/renesas/rz/soc/v2h/drivers/ddr/ddr.c	\
 							plat/renesas/rz/soc/v2h/drivers/ddr/ddr_misc.c	\
@@ -75,25 +75,38 @@ ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dts: fdts/${DTB_FILE_NAME}.dts| ${BUILD_PLAT
 
 ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb: fdts/${DTB_FILE_NAME}.dts | ${BUILD_PLAT} fdt_dirs
 
-# Define paths for the BL2 binary and DTB
-BOARD_NAME := $(shell echo $(BOARD) | awk -F'_' '{print $$1}')
+# Define addr in SRAM for BL2 and DTB
+SRAM_START := 0x8000000
+SRAM_END := 0x8588000
+BOOT_PARAM_ADDR_HEX := 0x8101E00
+BL2_LOAD_ADDR_HEX := 0x8103000
+DTB_LOAD_ADDR_HEX := 0x8163000
 
-# Define the input file and target for the merged binary
+# Define file name
 BL2_IMAGE  := ${BUILD_PLAT}/bl2.bin
 BL2_DTB    := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb
-BL2_OUTPUT := ${BUILD_PLAT}/bl2_with_dtb-${BOARD_NAME}.bin
-
-ifeq (${TRUSTED_BOARD_BOOT}, 0)
-BL2_BASE := 0x12000
-else
-BL2_BASE := 0x13000
-endif
-
-SRAM_LIMIT := $(shell printf "%d" 0x1D000)
-BL2_BIN_LIMIT_DEC := $(shell printf "%d" $(BL2_BIN_LIMIT))
+BL2_OUTPUT := ${BUILD_PLAT}/bl2_with_dtb.bin
 
 # Rule for creating the merged BL2 with DTB file
-bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB} 
-	@echo "Embedding DTB into BL2 with dynamic padding..."
-	@BL2_SIZE=$$(wc -c < ${BL2_IMAGE} | awk '{print $$1}'); \
-	PADDING=$$(($(BL2_BIN_LIMIT_DEC) - $$BL2_SIZE)); 
+bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB}
+	@echo "Merging BL2 and DTB with alignment and padding..."
+	@BL2_SIZE=$$(stat -c %s ${BL2_IMAGE}); \
+	DTB_SIZE=$$(stat -c %s ${BL2_DTB}); \
+	BL2_LOAD_ADDR=$$(printf "%d" ${BL2_LOAD_ADDR_HEX}); \
+	DTB_LOAD_ADDR=$$(printf "%d" ${DTB_LOAD_ADDR_HEX}); \
+	PADDING_SIZE=$$(( $$DTB_LOAD_ADDR - $$BL2_LOAD_ADDR - $$BL2_SIZE )); \
+	if [ $$PADDING_SIZE -lt 0 ]; then \
+		echo "Error: BL2 overlaps DTB region!"; \
+		echo "BL2_SIZE: $$BL2_SIZE, Padding would be: $$PADDING_SIZE"; \
+		exit 1; \
+	fi; \
+	echo "  BL2 size       : $$BL2_SIZE bytes"; \
+	echo "  DTB size       : $$DTB_SIZE bytes"; \
+	echo "  Padding needed : $$PADDING_SIZE bytes"; \
+	cat ${BL2_IMAGE} > bl2_padded.bin; \
+	dd if=/dev/zero bs=1 count=$$PADDING_SIZE >> bl2_padded.bin; \
+	cat bl2_padded.bin ${BL2_DTB} > ${BL2_OUTPUT}; \
+	rm -f bl2_padded.bin; \
+	MERGED_SIZE=$$(stat -c %s ${BL2_OUTPUT}); \
+	echo "  Final merged image size: $$MERGED_SIZE bytes"; \
+	echo "  Output written to: ${BL2_OUTPUT}"
