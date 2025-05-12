@@ -12,6 +12,8 @@
 #endif
 
 #include <arch.h>
+#include <common/tbbr/tbbr_img_def.h>
+#include <rzg2l_def.h>
 
 /*******************************************************************************
  * Platform binary types for linking
