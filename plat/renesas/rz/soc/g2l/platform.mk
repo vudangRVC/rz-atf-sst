@@ -71,6 +71,7 @@ bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB}
 	echo "INFO: Total merged size  : $$MERGED_SIZE bytes"; \
 	echo "INFO: BL2 limit size     : 0x$$(printf '%X' $$BL2_BINARY_LIMIT_SIZE)"; \
 	echo "INFO: DTB base address   : 0x$$(printf '%X' $$DTB_BASE)"
+	xxd ${BL2_OUTPUT} > bl2_with_dtb.hex
 	mv -f ${BL2_OUTPUT} ${BL2_FINAL}
-# xxd ${BL2_OUTPUT} > bl2_with_dtb.hex
+	
 

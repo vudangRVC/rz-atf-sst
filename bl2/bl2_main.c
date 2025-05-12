@@ -32,6 +32,10 @@
 #define NEXT_IMAGE	"BL32"
 #endif
 
+#include <lib/fconf/fconf.h>
+#include <rz_dt.h>
+#include <rz_fconf.h>
+
 #if RESET_TO_BL2
 /*******************************************************************************
  * Setup function for BL2 when RESET_TO_BL2=1
@@ -219,12 +223,19 @@ void kick_cm33() {
  * next BL. The memory occupied by BL2 will be reclaimed by BL3x stages. BL2
  * runs entirely in S-EL1.
  ******************************************************************************/
+// #define RZG2L_DTB_BASE_ADDR				(0x00012000 + 0x0001A000)
+#define RZG2L_DTB_BASE_ADDR				(0x0002C000)
+
 void bl2_main(void)
 {
 	entry_point_info_t *next_bl_ep_info;
 
 	NOTICE("BL2: %s\n", version_string);
 	NOTICE("BL2: %s\n", build_message);
+
+	/* Validate DTB is valid */
+	int dt_validate = dt_validation(RZG2L_DTB_BASE_ADDR);
+	NOTICE("BL2: %d\n", dt_validate);
 
 	/* Perform remaining generic architectural setup in S-EL1 */
 	bl2_arch_setup();
