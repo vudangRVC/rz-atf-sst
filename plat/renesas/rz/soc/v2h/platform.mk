@@ -79,11 +79,8 @@ ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dts: fdts/${DTB_FILE_NAME}.dts| ${BUILD_PLAT
 ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb: fdts/${DTB_FILE_NAME}.dts | ${BUILD_PLAT} fdt_dirs
 
 # Define addr in SRAM for BL2 and DTB
-SRAM_START := 0x8000000
-SRAM_END := 0x8588000
-BOOT_PARAM_ADDR_HEX := 0x8101E00
-BL2_LOAD_ADDR_HEX := 0x8103000
-DTB_LOAD_ADDR_HEX := 0x8163000
+BL2_LOAD_ADDR_HEX := $(shell grep 'BL2_BASE' plat/renesas/rz/soc/v2h/include/platform_def.h | sed -E 's/.*\((0x[0-9A-Fa-f]+)\).*/\1/')
+DTB_LOAD_ADDR_HEX := $(shell grep 'V2H_DTB_LOAD_ADDR' plat/renesas/rz/soc/v2h/include/platform_def.h | sed -E 's/.*\((0x[0-9A-Fa-f]+)\).*/\1/')
 
 # Define file name
 BL2_IMAGE  := ${BUILD_PLAT}/bl2.bin
@@ -105,7 +102,9 @@ bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB}
 		exit 1; \
 	fi; \
 	echo "  BL2 size       : $$BL2_SIZE bytes"; \
+	echo "  BL2_LOAD_ADDR       : $$BL2_LOAD_ADDR "; \
 	echo "  DTB size       : $$DTB_SIZE bytes"; \
+	echo "  DTB_LOAD_ADDR       : $$DTB_LOAD_ADDR "; \
 	echo "  Padding needed : $$PADDING_SIZE bytes"; \
 	cat ${BL2_IMAGE} > bl2_padded.bin; \
 	dd if=/dev/zero bs=1 count=$$PADDING_SIZE >> bl2_padded.bin; \
