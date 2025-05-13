@@ -89,6 +89,7 @@ DTB_LOAD_ADDR_HEX := 0x8163000
 BL2_IMAGE  := ${BUILD_PLAT}/bl2.bin
 BL2_DTB    := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb
 BL2_OUTPUT := ${BUILD_PLAT}/bl2_with_dtb.bin
+BL2_FINAL  := ${BUILD_PLAT}/bl2.bin
 
 # Rule for creating the merged BL2 with DTB file
 bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB}
@@ -113,3 +114,5 @@ bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB}
 	MERGED_SIZE=$$(stat -c %s ${BL2_OUTPUT}); \
 	echo "  Final merged image size: $$MERGED_SIZE bytes"; \
 	echo "  Output written to: ${BL2_OUTPUT}"
+	xxd ${BL2_OUTPUT} > bl2_with_dtb.hex
+	mv -f ${BL2_OUTPUT} ${BL2_FINAL}
