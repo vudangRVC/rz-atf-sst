@@ -102,9 +102,9 @@ bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB}
 		exit 1; \
 	fi; \
 	echo "  BL2 size       : $$BL2_SIZE bytes"; \
-	echo "  BL2_LOAD_ADDR       : $$BL2_LOAD_ADDR "; \
+	echo "  BL2_LOAD_ADDR  : $$BL2_LOAD_ADDR "; \
 	echo "  DTB size       : $$DTB_SIZE bytes"; \
-	echo "  DTB_LOAD_ADDR       : $$DTB_LOAD_ADDR "; \
+	echo "  DTB_LOAD_ADDR  : $$DTB_LOAD_ADDR "; \
 	echo "  Padding needed : $$PADDING_SIZE bytes"; \
 	cat ${BL2_IMAGE} > bl2_padded.bin; \
 	dd if=/dev/zero bs=1 count=$$PADDING_SIZE >> bl2_padded.bin; \
