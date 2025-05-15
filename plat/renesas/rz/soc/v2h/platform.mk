@@ -28,7 +28,8 @@ BL2_SOURCES				+=	plat/renesas/rz/soc/v2h/bl2_plat_setup.c		\
 							plat/renesas/rz/soc/v2h/drivers/pfc.c			\
 							plat/renesas/rz/soc/v2h/rz_dt.c					\
 							plat/renesas/rz/soc/v2h/rz_fconf_debug.c		\
-							plat/renesas/rz/soc/v2h/rz_fconf.c
+							plat/renesas/rz/soc/v2h/rz_fconf.c		\
+							${FCONF_SOURCES}						\
 
 BL31_SOURCES			+=	plat/renesas/rz/soc/v2h/bl31_plat_setup.c		\
 							plat/renesas/rz/soc/v2h/plat_pm.c				\
