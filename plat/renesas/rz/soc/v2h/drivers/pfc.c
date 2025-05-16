@@ -16,7 +16,7 @@
 
 
 /* SDHI 0 */
-static PFC_REGS pfc_sd_reg_tbl[PFC_TBL_LEN] = {
+static PFC_REGS pfc_sd0_reg_tbl[PFC_TBL_LEN] = {
 	/* SD0_CLK (P9.0), SD0_CMD (P9.1), SD0_RSTN (P9.2) */
 	{
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
@@ -27,11 +27,11 @@ static PFC_REGS pfc_sd_reg_tbl[PFC_TBL_LEN] = {
 		{ PFC_ON,  (uintptr_t)PFC_IEN09,  0x0000000000000100 }		/* IEN */
 	},
 
-	/* SD0_DATA (PA.0 - PA.7 */
+	/* SD0_DATA (PA.0 - PA.7) */
 	{
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH0A, 0x0303030303030303 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH0A, 0x0202020202020202 },		/* IOLH */
 		{ PFC_ON,  (uintptr_t)PFC_PUPD0A, 0x0000000000000000 },		/* PUPD */
 		{ PFC_ON,  (uintptr_t)PFC_SR0A,   0x0000000000000000 },		/* SR */
 		{ PFC_ON,  (uintptr_t)PFC_IEN0A,  0x0101010101010101 }		/* IEN */
@@ -98,23 +98,6 @@ static PFC_REGS pfc_i2c_bus8_reg_tbl[PFC_TBL_LEN] = {
 };
 #endif /* PLAT_SYSTEM_SUSPEND */
 
-static PFC_IO_DRIVE pfc_io_drive[SYS_BOOT_MODE_MAX] = {
-	{SYS_LSI_OTPPOC_EN_SD_DS_MASK,		SYS_LSI_OTPPOC_SD_E_MASK,		SYS_LSI_OTPPOC_SD_E_OFFSET},
-	{SYS_LSI_OTPPOC_EN_EMMC18_DS_MASK,	SYS_LSI_OTPPOC_EMMC18_E_MASK,	SYS_LSI_OTPPOC_EMMC18_E_OFFSET},
-	{SYS_LSI_OTPPOC_EN_EMMC33_DS_MASK,	SYS_LSI_OTPPOC_EMMC33_E_MASK,	SYS_LSI_OTPPOC_EMMC33_E_OFFSET},
-	{SYS_LSI_OTPPOC_EN_SPI18_DS_MASK,	SYS_LSI_OTPPOC_SPI18_E_MASK,	SYS_LSI_OTPPOC_SPI18_E_OFFSET},
-	{SYS_LSI_OTPPOC_EN_SPI33_DS_MASK,	SYS_LSI_OTPPOC_SPI33_E_MASK,	SYS_LSI_OTPPOC_SPI33_E_OFFSET},
-	{SYS_LSI_OTPPOC_EN_SCIF_DS_MASK,	SYS_LSI_OTPPOC_SCIF_E_MASK,		SYS_LSI_OTPPOC_SCIF_E_OFFSET},
-};
-
-static const PFC_REGS *pfc_boot_mode_tbls[SYS_BOOT_MODE_MAX] = {
-	pfc_sd_reg_tbl,
-	pfc_sd_reg_tbl,
-	pfc_sd_reg_tbl,
-	pfc_qspi_reg_tbl,
-	pfc_qspi_reg_tbl,
-	pfc_scif_reg_tbl
-};
 
 static void pfc_sd_setup(void)
 {
@@ -122,16 +105,16 @@ static void pfc_sd_setup(void)
 
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
 		/* PUPD */
-		if (pfc_sd_reg_tbl[cnt].pupd.flg == PFC_ON) {
-			mmio_write_64(pfc_sd_reg_tbl[cnt].pupd.reg, pfc_sd_reg_tbl[cnt].pupd.val);
+		if (pfc_sd0_reg_tbl[cnt].pupd.flg == PFC_ON) {
+			mmio_write_64(pfc_sd0_reg_tbl[cnt].pupd.reg, pfc_sd0_reg_tbl[cnt].pupd.val);
 		}
 		/* SR */
-		if (pfc_sd_reg_tbl[cnt].sr.flg == PFC_ON) {
-			mmio_write_64(pfc_sd_reg_tbl[cnt].sr.reg, pfc_sd_reg_tbl[cnt].sr.val);
+		if (pfc_sd0_reg_tbl[cnt].sr.flg == PFC_ON) {
+			mmio_write_64(pfc_sd0_reg_tbl[cnt].sr.reg, pfc_sd0_reg_tbl[cnt].sr.val);
 		}
 		/* IEN */
-		if (pfc_sd_reg_tbl[cnt].ien.flg == PFC_ON) {
-			mmio_write_64(pfc_sd_reg_tbl[cnt].ien.reg, pfc_sd_reg_tbl[cnt].ien.val);
+		if (pfc_sd0_reg_tbl[cnt].ien.flg == PFC_ON) {
+			mmio_write_64(pfc_sd0_reg_tbl[cnt].ien.reg, pfc_sd0_reg_tbl[cnt].ien.val);
 		}
 	}
 }
@@ -170,27 +153,12 @@ static void pfc_scif_setup(void)
 
 static void pfc_drive_setup(void)
 {
-	static const uint64_t pfc_iolh_drive_tbl[4] = {0x0000000000000000, 0x0101010101010101, 0x0202020202020202, 0x0303030303030303};
-	/* Get the boot mode */
-	boot_mode_t boot_mode = sys_get_boot_mode();
+	int cnt;
 
-	if (boot_mode < SYS_BOOT_MODE_MAX) {
-		const PFC_REGS *p_pins_tbl = pfc_boot_mode_tbls[boot_mode];
-		uint32_t sys_lsi_otppoc = mmio_read_32(SYS_LSI_OTPPOC);
-		uint64_t pfc_iolh_drive = 0;
-		int cnt;
-
-		if (0 != (sys_lsi_otppoc & pfc_io_drive[boot_mode].enable_mask)) {
-			uint32_t index = ((sys_lsi_otppoc & pfc_io_drive[boot_mode].drive_mask) >> pfc_io_drive[boot_mode].drive_offset);
-
-			pfc_iolh_drive = pfc_iolh_drive_tbl[index];
-
-			for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
-				if (p_pins_tbl[cnt].iolh.flg == PFC_ON) {
-					/* Write IOLH value from pfc_sd_reg_tbl[] masked with value in pin table */
-					mmio_write_64(p_pins_tbl[cnt].iolh.reg, (pfc_iolh_drive & p_pins_tbl[cnt].iolh.val));
-				}
-			}
+	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
+		/* IOLH for SD0 */
+		if (pfc_sd0_reg_tbl[cnt].iolh.flg == PFC_ON) {
+			mmio_write_64(pfc_sd0_reg_tbl[cnt].iolh.reg, pfc_sd0_reg_tbl[cnt].iolh.val);
 		}
 	}
 }

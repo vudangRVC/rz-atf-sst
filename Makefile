@@ -408,6 +408,7 @@ TF_CFLAGS		+=	-fsanitize=undefined -fno-sanitize-recover	\
 endif
 
 GCC_V_OUTPUT		:=	$(shell $(CC) -v 2>&1)
+TF_LDFLAGS			+=	-z noexecstack
 
 # LD = armlink
 ifneq ($(findstring armlink,$(notdir $(LD))),)
@@ -435,6 +436,7 @@ TF_LDFLAGS		+=	$(subst --,-Xlinker --,$(TF_LDFLAGS_$(ARCH)))
 
 # LD = gcc-ld (ld) or llvm-ld (ld.lld) or other
 else
+TF_LDFLAGS		+=	$(shell $(LD) --no-warn-rwx-segments -v >/dev/null 2>&1 && echo --no-warn-rwx-segments)
 TF_LDFLAGS		+=	--fatal-warnings -O1
 TF_LDFLAGS		+=	--gc-sections
 # ld.lld doesn't recognize the errata flags,
