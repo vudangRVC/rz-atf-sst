@@ -111,8 +111,20 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	/* early setup Clock and Reset */
 	cpg_early_setup();
 
+	/* DTB addr */
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+	
+	/* Validate DTB is valid */
+	int dt_validate = dt_validation_v2h(fdt);
+	if (dt_validate < 0) {
+		panic();
+	}
+
+	/* Read syc_inck_hz from DTB */
+	uint32_t syc_inck_hz = fconf_populate_sysc_config_v2h(fdt);
+
 	/* initialize SYC */
-	syc_init(RZV2H_SYC_INCK_HZ);
+	syc_init(syc_inck_hz);
 
 	/* initialize Timer */
 	generic_delay_timer_init();
@@ -176,69 +188,8 @@ void bl2_el3_plat_arch_setup(void)
 	enable_mmu_el3(0);
 }
 
-int dt_validation_v2h(uintptr_t dt_addr)
-{
-	NOTICE("BL2: dt_validation_v2h - 01\n");
-	int ret = 0;
-
-	ret = fdt_check_header((void *)dt_addr);
-	NOTICE("BL2: dt_validation_v2h - 02: dt_addr = %lx\n", dt_addr);
-
-	if (ret != 0) {
-		ERROR("DTB validation failed: %s (%d)\n", fdt_strerror(ret), ret);
-		ERROR("DTB location: 0x%lx, magic: 0x%x\n", 
-			dt_addr, 
-			  fdt_magic((const void *)dt_addr));
-	}
-
-	return ret;
-}
-
-#define NUM_BYTES 					UL(16)
-void read_n_bytes_from_ram(uint32_t num_bytes) {
-    volatile uint8_t *ptr = (volatile uint8_t *)V2H_DTB_LOAD_ADDR;
-    uint8_t buffer[NUM_BYTES];
-
-    if (num_bytes > sizeof(buffer)) {
-        NOTICE("Error: Maximum 256 bytes supported.\n");
-        return;
-    }
-
-    NOTICE("BL2: read_n_bytes_from_ram: V2H_DTB_LOAD_ADDR_2 = %lx\n", V2H_DTB_LOAD_ADDR);
-
-    for (uint32_t i = 0; i < num_bytes; ++i) {
-        buffer[i] = ptr[i];
-    }
-
-    NOTICE("Read %d bytes:\n", num_bytes);
-
-    for (uint32_t i = 0; i < num_bytes; i += 8) {
-        for (uint32_t j = 0; j < 8 && (i + j + 1) < num_bytes; j += 2) {
-            uint16_t val = buffer[i + j] | (buffer[i + j + 1] << 8);
-            NOTICE(" %04x \n", val);
-        }
-    }
-}
-
 void bl2_platform_setup(void)
 {
-	// /* Validate DTB is valid */
-	int dt_validate = dt_validation_v2h(V2H_DTB_LOAD_ADDR);
-	NOTICE("BL2: dt_validate = %d\n", dt_validate);
-
-	/* Validate DTB is valid */
-	if (dt_validate < 0) {
-		panic();
-	}
-
-	// /* Populate HW_CONFIG device tree with the mapped address */
-	// fconf_populate("HW_CONFIG", V2H_DTB_LOAD_ADDR);
-
-	read_n_bytes_from_ram(NUM_BYTES);
-
-	/* Populate HW_CONFIG device tree with the mapped address */
-	// fconf_populate_v2h("HW_CONFIG", V2H_DTB_LOAD_ADDR);
-
 	/* Setup TZC-400, Access Control */
 	plat_security_setup();
 

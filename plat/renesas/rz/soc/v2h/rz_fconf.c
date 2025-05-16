@@ -332,3 +332,42 @@ FCONF_REGISTER_POPULATOR(HW_CONFIG, sysc_config, fconf_populate_sysc_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, pfc_config, fconf_populate_pfc_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, ddr_config, fconf_populate_ddr_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, spi_config, fconf_populate_spi_config);
+
+
+/**********************************************************************
+ * SYSC FCONF v2h
+ **********************************************************************/
+int dt_validation_v2h(const void *fdt)
+{
+	int ret = 0;
+	ret = fdt_check_header((void *)fdt);
+	if (ret != 0) {
+		ERROR("DTB validation failed: %s (%d)\n", fdt_strerror(ret), ret);
+		ERROR("DTB location: 0x%p, magic: 0x%x\n", 
+			fdt, 
+			fdt_magic(fdt));
+	}
+
+	return ret;
+}
+
+/**********************************************************************
+ * SYSC FCONF v2h
+ **********************************************************************/
+uint32_t fconf_populate_sysc_config_v2h(const void *fdt)
+{
+	int soc_node = fdt_path_offset(fdt, "/soc");
+	NOTICE("soc_node = %d\n", soc_node);
+
+	int sysc_node = fdt_subnode_offset(fdt, soc_node, "system-controller@10430000");
+	NOTICE("sysc_node = %d\n", sysc_node);
+
+	const char *sysc_props[] = { "syc_inck_hz" };
+	uint32_t *targets[] = { &sysc_config.syc_inck_hz };
+
+	fconf_read_u32_props(fdt, sysc_node, sysc_props, (uint32_t **)targets, ARRAY_SIZE(sysc_props));
+
+	NOTICE("syc_inck_hz = %d\n", sysc_config.syc_inck_hz);
+
+	return sysc_config.syc_inck_hz;
+}

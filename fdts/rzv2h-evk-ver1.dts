@@ -6,128 +6,76 @@
  */
 
 /dts-v1/;
-#include <dt-bindings/gpio/gpio.h>
-#include "r9a09g057.dtsi"
-#include <dt-bindings/pinctrl/rzv2h-pinctrl.h>
-#include "r9a09g057-u-boot.dtsi"
 
 / {
-	model = "Renesas EVK Version 1 based on r9a09g057h4";
 	compatible = "renesas,r9a09g057h4-dev", "renesas,r9a09g057h4", "renesas,r9a09g057";
+	model = "Renesas EVK Version 1 based on r9a09g057h4";
+	#address-cells = <2>;
+	#size-cells = <2>;
 
-	aliases {
-		serial0 = &scif0;
-		mmc0 = &sdhi0;
-		mmc1 = &sdhi1;
-		i2c3 = &i2c3;
-		i2c6 = &i2c6;
-		i2c7 = &i2c7;
-		spi0 = &xspi;
-		ethernet0 = &eth0;
-		ethernet1 = &eth1;
+	/* clock can be either from exclk or crystal oscillator (XIN/XOUT) */
+	extal_clk: extal-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
 	};
 
-	chosen {
-		stdout-path = "serial0:115200n8";
+	/* et0_txc_tx_clk clock input */
+	et0_txc_tx_clk: et0_txc_tx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
 	};
 
-	memory@48000000 {
-		device_type = "memory";
-		/* first 128MB is reserved for secure area. */
-		reg = <0x0 0x48000000 0x1 0xF8000000>;
+	/* et0_rxc_rx_clk clock input */
+	et0_rxc_rx_clk: et0_rxc_rx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
 	};
 
-	memory@240000000 {
-		device_type = "memory";
-		reg = <0x2 0x40000000 0x2 0x00000000>;
+	/* et1_txc_tx_clk clock input */
+	et1_txc_tx_clk: et1_txc_tx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
 	};
 
-	reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
+	/* et1_rxc_rx_clk clock input */
+	et1_rxc_rx_clk: et1_rxc_rx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
 
-		global_cma: linux,cma@58000000 {
-			compatible = "shared-dma-pool";
-			linux,cma-default;
-			reusable;
-			reg = <0x0 0x58000000 0x0 0x10000000>;
+	v2h: soc {
+		compatible = "simple-bus";
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+
+		sysc: system-controller@10430000 {
+			compatible = "renesas,r9a09g057-sysc";
+			reg = <0 0x10430000 0 0x10000>;
+			syc_inck_hz = <24000000>;
+		};
+
+		cpg: clock-controller@10420000 {
+			compatible = "renesas,r9a09g057-cpg";
+			reg = <0 0x10420000 0 0x10000>;
+			clocks = <&extal_clk>,
+				 <&et0_txc_tx_clk>, <&et0_rxc_rx_clk>,
+				 <&et1_txc_tx_clk>, <&et1_rxc_rx_clk>;
+			clock-names = "extal",
+				      "et0_txc_tx_clk", "et0_rxc_rx_clk",
+				      "et1_txc_tx_clk", "et1_rxc_rx_clk";
+			#clock-cells = <2>;
+			#reset-cells = <1>;
+			#power-domain-cells = <0>;
 		};
 	};
-
-	reg_1p8v: regulator0 {
-		compatible = "regulator-fixed";
-
-		regulator-name = "fixed-1.8V";
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1800000>;
-		regulator-boot-on;
-		regulator-always-on;
-	};
-
-	reg_3p3v: regulator1 {
-		compatible = "regulator-fixed";
-
-		regulator-name = "fixed-3.3V";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-boot-on;
-		regulator-always-on;
-	};
-
 };
-
-&pinctrl {
-	/* Support pinctrl for SD function of SDHI0 */
-	sdhi0_pins: sd0 {
-		pinmux = <RZV2H_PINMUX(10, 5, 15)>; /* SD0_CD */
-	};
-
-	sdhi1_pins: sd1 {
-		pinmux = <RZV2H_PINMUX(9, 4, 14)>; /* SD1_CD */
-	};
-};
-
-&extal_clk {
-	clock-frequency = <24000000>;
-};
-
-&scif0 {
-	status = "okay";
-};
-
-&sdhi0 {
-	bus-width = <4>;
-	status = "okay";
-};
-
-&sdhi1 {
-	bus-width = <4>;
-	status = "okay";
-};
-
-&i2c3 {
-	status = "okay";
-};
-
-&i2c6 {
-	status = "okay";
-};
-
-&i2c7 {
-	status = "okay";
-};
-
-&ehci0 {
-	status = "okay";
-};
-
-&ehci1 {
-	status = "okay";
-};
-
-&hsusb {
-	dr_mode = "otg";
-	status = "okay";
-};
-
