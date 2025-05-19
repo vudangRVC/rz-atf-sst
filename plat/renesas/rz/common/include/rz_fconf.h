@@ -79,11 +79,11 @@ const struct sysc_config_t *sysc_config_getter(void);
 const struct ddr_config_t *ddr_config_getter(void);
 const struct spi_config_t *spi_config_getter(void);
 
+int32_t fconf_read_u32_1_prop(const void *fdt, int node_offset,	const char *prop_names);
 void fconf_populate_v2h(const char *config_type, uintptr_t config);
 
 /*FCONF v2h*/
 int dt_validation_v2h(const void *fdt);
 uint32_t fconf_populate_sysc_config_v2h(const void *fdt);
 uint32_t fconf_populate_timer_config_v2h(const void *fdt);
-
 #endif

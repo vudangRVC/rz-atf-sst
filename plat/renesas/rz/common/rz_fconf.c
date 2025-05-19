@@ -14,6 +14,22 @@ struct timer_config_t timer_config;
 /**********************************************************************
  * Common helper function
  **********************************************************************/ 
+int32_t fconf_read_u32_1_prop(const void *fdt, int node_offset,	const char *prop_names)
+{
+	uint32_t target = 0;
+	int32_t len = 0;
+	const fdt32_t *val = fdt_getprop(fdt, node_offset, prop_names, &len);
+	if (!val || len < 4) {
+		WARN("Missing or invalid property: %s\n", prop_names);
+		return -1;
+	}
+	target = fdt32_to_cpu(*val);
+	return target;
+}
+
+/**********************************************************************
+ * Common helper function
+ **********************************************************************/ 
 void fconf_read_u32_props(const void *fdt, int node_offset,
 						const char **prop_names,
 						uint32_t **target_ptrs,

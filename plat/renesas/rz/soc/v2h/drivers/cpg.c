@@ -9,7 +9,15 @@
 #include <lib/mmio.h>
 #include <drivers/delay_timer.h>
 #include <rz_soc_def.h>
-
+#include <platform_def.h>
+#include "libfdt_env.h"
+#include <fdt.h>
+#include <libfdt.h>
+#include <common/debug.h>
+#include <lib/fconf/fconf.h>
+#include <lib/libfdt/libfdt.h>
+#include <rz_fconf.h>
+#include <assert.h>
 
 #define	CPG_OFF							(0)
 #define	CPG_ON							(1)
@@ -1766,8 +1774,26 @@ static void cpg_div_sel_setup(CPG_REG_SETTING *tbl, uint32_t size)
 	}
 }
 
-static void cpg_div_sel_static_setup(void)
+static void cpg_div_sel_static_setup(void *fdt)
 {
+	// Get parent node offset
+	int parent_node = fdt_path_offset(fdt, "/soc");
+
+	// Get sub node offset
+	int sub_node = fdt_subnode_offset(fdt, parent_node, "clock-controller@10420000");
+
+	// Get the properties: csdiv0 of the clock-controller
+	const char *csdiv0_prop_names = "csdiv0-offset";
+	int32_t csdiv0_offset = fconf_read_u32_1_prop(fdt, sub_node, csdiv0_prop_names);
+
+	// Get the properties: csdiv1 of the clock-controller
+	const char *csdiv1_prop_names = "csdiv1-offset";
+	int32_t csdiv1_offset = fconf_read_u32_1_prop(fdt, sub_node, csdiv1_prop_names);
+
+	// Set data
+	cpg_static_select_tbl[0].addr = (uintptr_t)(RZV2H_CPG_BASE + csdiv0_offset);
+	cpg_static_select_tbl[1].addr = (uintptr_t)(RZV2H_CPG_BASE + csdiv1_offset);
+
 	cpg_div_sel_setup(cpg_static_select_tbl, ARRAY_SIZE(cpg_static_select_tbl));
 }
 
@@ -2097,7 +2123,8 @@ void cpg_early_setup(void)
 
 void cpg_setup(void)
 {
-	cpg_div_sel_static_setup();
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+	cpg_div_sel_static_setup(fdt);
 	cpg_pll_setup();
 	cpg_clk_on_setup();
 	cpg_reset_setup();
