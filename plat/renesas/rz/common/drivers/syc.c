@@ -6,6 +6,7 @@
 
 #include <lib/mmio.h>
 #include <rz_soc_def.h>
+#include <rz_fconf.h>
 
 #define SYC_BASE	RZ_SOC_SYC_BASE
 
@@ -37,5 +38,6 @@ void syc_init(unsigned int freq)
 
 unsigned int syc_get_freq(void)
 {
-	return syc_reg_read(CNTFID0);
+	uint32_t timer_offset = timer_config.timer_offset;
+	return syc_reg_read(timer_offset);
 }

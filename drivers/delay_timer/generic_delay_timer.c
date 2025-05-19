@@ -15,6 +15,7 @@
 #include <drivers/generic_delay_timer.h>
 #include <lib/utils_def.h>
 #include <plat/common/platform.h>
+#include <rz_fconf.h>
 
 static timer_ops_t ops;
 
@@ -46,7 +47,7 @@ void generic_delay_timer_init(void)
 	assert(is_armv7_gentimer_present());
 
 	/* Value in ticks */
-	unsigned int mult = MHZ_TICKS_PER_SEC;
+	uint32_t mult = timer_config.timer_mul;
 
 	/* Value in ticks per second (Hz) */
 	unsigned int div  = plat_get_syscnt_freq2();

@@ -64,6 +64,13 @@
 			syc_inck_hz = <24000000>;
 		};
 
+		timer: system-timer@14010000 {
+			compatible = "renesas,r9a09g057-timer";
+			reg = <0 0x14010000 0 0x10000>;
+			syc_timer_mul = <1000000>;
+			syc_timer_offset = <0x020>;
+		};
+
 		cpg: clock-controller@10420000 {
 			compatible = "renesas,r9a09g057-cpg";
 			reg = <0 0x10420000 0 0x10000>;

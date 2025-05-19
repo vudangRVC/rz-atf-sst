@@ -113,7 +113,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 
 	/* DTB addr */
 	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
-	
+
 	/* Validate DTB is valid */
 	int dt_validate = dt_validation_v2h(fdt);
 	if (dt_validate < 0) {
@@ -127,6 +127,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	syc_init(syc_inck_hz);
 
 	/* initialize Timer */
+	fconf_populate_timer_config_v2h(fdt);
 	generic_delay_timer_init();
 
 	/* setup PFC */
