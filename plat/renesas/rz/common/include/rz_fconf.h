@@ -22,6 +22,11 @@ struct sysc_config_t {
     uint32_t syc_inck_hz;
 };
 
+struct timer_config_t {
+    uint32_t timer_mul;
+    uint32_t timer_offset;
+};
+
 struct pfc_config_t {
     uint32_t qspi0_iolh0a;
     uint32_t qspi0_pupd0a;
@@ -66,6 +71,7 @@ extern struct sysc_config_t sysc_config;
 extern struct pfc_config_t pfc_config;
 extern struct ddr_config_t ddr_config;
 extern struct spi_config_t spi_config;
+extern struct timer_config_t timer_config;
 
 const struct cpg_config_t *cpg_config_getter(void);
 const struct pfc_config_t *pfc_config_getter(void);
@@ -78,5 +84,6 @@ void fconf_populate_v2h(const char *config_type, uintptr_t config);
 /*FCONF v2h*/
 int dt_validation_v2h(const void *fdt);
 uint32_t fconf_populate_sysc_config_v2h(const void *fdt);
+uint32_t fconf_populate_timer_config_v2h(const void *fdt);
 
 #endif

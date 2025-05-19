@@ -9,6 +9,7 @@ struct sysc_config_t sysc_config;
 struct pfc_config_t pfc_config;
 struct ddr_config_t ddr_config;
 struct spi_config_t spi_config;
+struct timer_config_t timer_config;
 
 /**********************************************************************
  * Common helper function
@@ -370,4 +371,29 @@ uint32_t fconf_populate_sysc_config_v2h(const void *fdt)
 	NOTICE("syc_inck_hz = %d\n", sysc_config.syc_inck_hz);
 
 	return sysc_config.syc_inck_hz;
+}
+
+/**********************************************************************
+ * TIMER FCONF v2h
+ **********************************************************************/
+uint32_t fconf_populate_timer_config_v2h(const void *fdt)
+{
+	int soc_node = fdt_path_offset(fdt, "/soc");
+	NOTICE("soc_node = %d\n", soc_node);
+
+	int timer_node = fdt_subnode_offset(fdt, soc_node, "system-timer@14010000");
+	NOTICE("timer_node = %d\n", timer_node);
+
+	const char *mul_props[] = { "syc_timer_mul" };
+	uint32_t *mul_value[] = { &timer_config.timer_mul };
+	fconf_read_u32_props(fdt, timer_node, mul_props, (uint32_t **)mul_value, ARRAY_SIZE(mul_props));
+
+	const char *offset_props[] = { "syc_timer_offset" };
+	uint32_t *offset_value[] = { &timer_config.timer_offset };
+	fconf_read_u32_props(fdt, timer_node, offset_props, (uint32_t **)offset_value, ARRAY_SIZE(offset_props));
+	
+	NOTICE("syc_timer_mul = %d\n", timer_config.timer_mul);
+	NOTICE("syc_timer_offset = %x\n", timer_config.timer_offset);
+
+	return 0;
 }
