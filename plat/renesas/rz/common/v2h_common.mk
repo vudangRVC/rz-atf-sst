@@ -101,6 +101,8 @@ BL2_SOURCES				+=	common/desc_image_load.c							\
 							drivers/io/io_fip.c									\
 							plat/renesas/rz/common/plat_image_load.c			\
 							plat/renesas/rz/common/bl2_plat_mem_params_desc.c	\
+							plat/renesas/rz/common/rz_dt.c						\
+							plat/renesas/rz/common/rz_fconf.c					\
 							${XSPI_SOURCES}										\
 							${EMMC_SOURCES}										\
 							${SD_SOURCES}
@@ -114,6 +116,8 @@ BL31_SOURCES			:=	plat/common/plat_gicv3.c							\
 							plat/renesas/rz/common/plat_topology.c				\
 							plat/renesas/rz/common/plat_gic.c					\
 							plat/renesas/rz/common/rz_sip_svc.c					\
+							plat/renesas/rz/common/rz_dt.c						\
+							plat/renesas/rz/common/rz_fconf.c					\
 							${GICV3_SOURCES}
 
 ifneq (${TRUSTED_BOARD_BOOT},0)
