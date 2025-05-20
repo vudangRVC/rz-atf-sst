@@ -28,7 +28,6 @@
 #include <lib/fconf/fconf.h>
 #include <rz_dt.h>
 #include <rz_fconf.h>
-#include <rz_soc_def.h>
 #include <libfdt.h>
 
 #include <common/debug.h>

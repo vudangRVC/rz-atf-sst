@@ -1736,9 +1736,90 @@ static void cpg_ctrl_clkrst(CPG_SETUP_DATA const *array, uint32_t num)
 	}
 }
 
-/* It is assumed that the PLL has stopped by the time this function is executed. */
-static void cpg_pll_setup(void)
+uint8_t cpg_pll_get_sub_sub_node(void *fdt, const char *sub_sub_note, CPG_PLL_SETTINGS *p_pll_sub_sub){
+	// Get parent node offset
+	int parent_node = fdt_path_offset(fdt, "/soc");
+
+	// Get sub node offset
+	int sub_node = fdt_subnode_offset(fdt, parent_node, "cpg_pll@10420000");
+
+	// Get sub-sub node offset
+	int sub_sub_node = fdt_subnode_offset(fdt, sub_node, sub_sub_note);
+
+	CPG_PLL_SETTINGS p_pll;
+	int32_t offset_addr;
+	int32_t offset_value;
+
+	// Get sub-sub node stby
+	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "stby-addr");
+	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "stby-val");
+	p_pll.stby.addr = (uintptr_t)(CPG_BASE + offset_addr);
+	p_pll.stby.val = offset_value;
+
+	// Get sub-sub node clk1
+	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk1-addr");
+	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk1-val");
+	p_pll.clk1.addr = (uintptr_t)(CPG_BASE + offset_addr);
+	p_pll.clk1.val = offset_value;
+
+	// Get sub-sub node clk2
+	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk2-addr");
+	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk2-val");
+	p_pll.clk2.addr = (uintptr_t)(CPG_BASE + offset_addr);
+	p_pll.clk2.val = offset_value;
+
+	// Get sub-sub node mon
+	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "mon-addr");
+	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "mon-val");
+	p_pll.mon.addr = (uintptr_t)(CPG_BASE + offset_addr);
+	p_pll.mon.val = offset_value;
+
+	*p_pll_sub_sub = p_pll;
+	return 0;
+}
+
+void cpg_pll_re_setup(void *fdt, const char *sub_sub_note, int num)
 {
+	// Init CPG_PLL_SETTINGS values
+	CPG_PLL_SETTINGS p_pll_sub_sub;
+	p_pll_sub_sub.stby.addr = (uintptr_t)NULL;
+	p_pll_sub_sub.stby.val = 0;
+	p_pll_sub_sub.clk1.addr = (uintptr_t)NULL;
+	p_pll_sub_sub.clk1.val = 0;
+	p_pll_sub_sub.clk2.addr = (uintptr_t)NULL;
+	p_pll_sub_sub.clk2.val = 0;
+	p_pll_sub_sub.mon.addr = (uintptr_t)NULL;
+	p_pll_sub_sub.mon.val = 0;
+
+	// Get values from dtb
+	cpg_pll_get_sub_sub_node(fdt, sub_sub_note, &p_pll_sub_sub);
+
+	// Set values to cpg_pll_tbl
+	cpg_pll_tbl[num].stby.addr = p_pll_sub_sub.stby.addr;
+	cpg_pll_tbl[num].stby.val = p_pll_sub_sub.stby.val;
+	cpg_pll_tbl[num].clk1.addr = p_pll_sub_sub.clk1.addr;
+	cpg_pll_tbl[num].clk1.val = p_pll_sub_sub.clk1.val;
+	cpg_pll_tbl[num].clk2.addr = p_pll_sub_sub.clk2.addr;
+	cpg_pll_tbl[num].clk2.val = p_pll_sub_sub.clk2.val;
+	cpg_pll_tbl[num].mon.addr = p_pll_sub_sub.mon.addr;
+	cpg_pll_tbl[num].mon.val = p_pll_sub_sub.mon.val;
+}
+
+/* It is assumed that the PLL has stopped by the time this function is executed. */
+static void cpg_pll_setup(void *fdt)
+{
+	/* PLL re-init values from dtb node to cpg_pll_tbl */
+	cpg_pll_re_setup(fdt, "cm33", 0);
+	cpg_pll_re_setup(fdt, "cln", 1);
+	cpg_pll_re_setup(fdt, "dty", 2);
+	cpg_pll_re_setup(fdt, "ca55", 3);
+	cpg_pll_re_setup(fdt, "vdo", 4);
+	cpg_pll_re_setup(fdt, "eth", 5);
+	cpg_pll_re_setup(fdt, "dsi", 6);
+	cpg_pll_re_setup(fdt, "gpu", 7);
+	cpg_pll_re_setup(fdt, "drp", 8);
+
+	/* PLL setup from CPG_PLL_SETTINGS */
 	int i;
 	int pll_num = ARRAY_SIZE(cpg_pll_tbl);
 	CPG_PLL_SETTINGS const *p_pll = &cpg_pll_tbl[0];
@@ -2125,7 +2206,7 @@ void cpg_setup(void)
 {
 	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
 	cpg_div_sel_static_setup(fdt);
-	cpg_pll_setup();
+	cpg_pll_setup(fdt);
 	cpg_clk_on_setup();
 	cpg_reset_setup();
 	cpg_mstop_setup();
