@@ -77,6 +77,9 @@
 #define	CPG_CSDIV0					(CPG_BASE + 0x500)	/* Static Gear control(Sparse type) */
 #define	CPG_CSDIV1					(CPG_BASE + 0x504)	/* Static Gear control(Sparse type) */
 
+#define	CPG_CSDIV0_OFFSET					(0x500)	/* Static Gear control(Sparse type) */
+#define	CPG_CSDIV1_OFFSET					(0x504)	/* Static Gear control(Sparse type) */
+
 #define	CPG_CLKON_0					(CPG_BASE + 0x600)	/* CGC control */
 #define	CPG_CLKON_1					(CPG_BASE + 0x604)	/* CGC control */
 #define	CPG_CLKON_2					(CPG_BASE + 0x608)	/* CGC control */

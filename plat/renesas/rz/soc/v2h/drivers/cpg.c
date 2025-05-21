@@ -18,6 +18,7 @@
 #include <lib/libfdt/libfdt.h>
 #include <rz_fconf.h>
 #include <assert.h>
+#include <rz_dt.h>
 
 #define	CPG_OFF							(0)
 #define	CPG_ON							(1)
@@ -1857,24 +1858,20 @@ static void cpg_div_sel_setup(CPG_REG_SETTING *tbl, uint32_t size)
 
 static void cpg_div_sel_static_setup(void *fdt)
 {
-	// Get parent node offset
-	int parent_node = fdt_path_offset(fdt, "/soc");
+	const char *node = "/soc";
+	const char *sub_node = "clock-controller@10420000";
+	const char *prop_name = "reg";
+	uint32_t v2h_cpg_base = 0;
 
-	// Get sub node offset
-	int sub_node = fdt_subnode_offset(fdt, parent_node, "clock-controller@10420000");
+	// Get clock-controller base address
+	read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_cpg_base);
+	NOTICE("BL2: 0x%08x\n", v2h_cpg_base);
 
-	// Get the properties: csdiv0 of the clock-controller
-	const char *csdiv0_prop_names = "csdiv0-offset";
-	int32_t csdiv0_offset = fconf_read_u32_1_prop(fdt, sub_node, csdiv0_prop_names);
+	// Set data to cpg_static_select_tbl
+	cpg_static_select_tbl[0].addr = (uintptr_t)(v2h_cpg_base + CPG_CSDIV0_OFFSET);
+	cpg_static_select_tbl[1].addr = (uintptr_t)(v2h_cpg_base + CPG_CSDIV1_OFFSET);
 
-	// Get the properties: csdiv1 of the clock-controller
-	const char *csdiv1_prop_names = "csdiv1-offset";
-	int32_t csdiv1_offset = fconf_read_u32_1_prop(fdt, sub_node, csdiv1_prop_names);
-
-	// Set data
-	cpg_static_select_tbl[0].addr = (uintptr_t)(RZV2H_CPG_BASE + csdiv0_offset);
-	cpg_static_select_tbl[1].addr = (uintptr_t)(RZV2H_CPG_BASE + csdiv1_offset);
-
+	// Write data to CPG_CSDIV0 and CPG_CSDIV1 registers
 	cpg_div_sel_setup(cpg_static_select_tbl, ARRAY_SIZE(cpg_static_select_tbl));
 }
 

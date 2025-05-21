@@ -84,8 +84,6 @@
 			#reset-cells = <1>;
 			#power-domain-cells = <0>;
 
-			csdiv0-offset = <0x500>;
-			csdiv1-offset = <0x504>;
 		};
 
 		cpg_pll: cpg_pll@10420000 {
