@@ -1737,6 +1737,23 @@ static void cpg_ctrl_clkrst(CPG_SETUP_DATA const *array, uint32_t num)
 	}
 }
 
+uint8_t cpg_get_base_addr(void *fdt, uint32_t *base_addr)
+{
+	const char *node = "/soc";
+	const char *sub_node = "clock-controller@10420000";
+	const char *prop_name = "reg";
+
+	// Get clock-controller base address
+	uint32_t cpg_base_addr = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &cpg_base_addr) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return 1;
+	}
+	NOTICE("BL2: 0x%08x\n", cpg_base_addr);
+	*base_addr = cpg_base_addr;
+	return 0;
+}
+
 uint8_t cpg_pll_get_sub_sub_node(void *fdt, const char *sub_sub_note, CPG_PLL_SETTINGS *p_pll_sub_sub){
 	// Get parent node offset
 	int parent_node = fdt_path_offset(fdt, "/soc");
@@ -1750,36 +1767,43 @@ uint8_t cpg_pll_get_sub_sub_node(void *fdt, const char *sub_sub_note, CPG_PLL_SE
 	CPG_PLL_SETTINGS p_pll;
 	int32_t offset_addr;
 	int32_t offset_value;
+	uint32_t cpg_base_addr = 0;
+
+	// Get CPG base address
+	if(cpg_get_base_addr(fdt, &cpg_base_addr) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return 1;
+	}
 
 	// Get sub-sub node stby
 	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "stby-addr");
 	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "stby-val");
-	p_pll.stby.addr = (uintptr_t)(CPG_BASE + offset_addr);
+	p_pll.stby.addr = (uintptr_t)(cpg_base_addr + offset_addr);
 	p_pll.stby.val = offset_value;
 
 	// Get sub-sub node clk1
 	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk1-addr");
 	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk1-val");
-	p_pll.clk1.addr = (uintptr_t)(CPG_BASE + offset_addr);
+	p_pll.clk1.addr = (uintptr_t)(cpg_base_addr + offset_addr);
 	p_pll.clk1.val = offset_value;
 
 	// Get sub-sub node clk2
 	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk2-addr");
 	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk2-val");
-	p_pll.clk2.addr = (uintptr_t)(CPG_BASE + offset_addr);
+	p_pll.clk2.addr = (uintptr_t)(cpg_base_addr + offset_addr);
 	p_pll.clk2.val = offset_value;
 
 	// Get sub-sub node mon
 	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "mon-addr");
 	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "mon-val");
-	p_pll.mon.addr = (uintptr_t)(CPG_BASE + offset_addr);
+	p_pll.mon.addr = (uintptr_t)(cpg_base_addr + offset_addr);
 	p_pll.mon.val = offset_value;
 
 	*p_pll_sub_sub = p_pll;
 	return 0;
 }
 
-void cpg_pll_re_setup(void *fdt, const char *sub_sub_note, int num)
+uint8_t cpg_pll_re_setup(void *fdt, const char *sub_sub_note, int num)
 {
 	// Init CPG_PLL_SETTINGS values
 	CPG_PLL_SETTINGS p_pll_sub_sub;
@@ -1793,7 +1817,10 @@ void cpg_pll_re_setup(void *fdt, const char *sub_sub_note, int num)
 	p_pll_sub_sub.mon.val = 0;
 
 	// Get values from dtb
-	cpg_pll_get_sub_sub_node(fdt, sub_sub_note, &p_pll_sub_sub);
+	if(cpg_pll_get_sub_sub_node(fdt, sub_sub_note, &p_pll_sub_sub) != 0) {
+		ERROR("BL2: Failed to get CPG PLL sub-sub node\n");
+		return 1;
+	}
 
 	// Set values to cpg_pll_tbl
 	cpg_pll_tbl[num].stby.addr = p_pll_sub_sub.stby.addr;
@@ -1804,6 +1831,7 @@ void cpg_pll_re_setup(void *fdt, const char *sub_sub_note, int num)
 	cpg_pll_tbl[num].clk2.val = p_pll_sub_sub.clk2.val;
 	cpg_pll_tbl[num].mon.addr = p_pll_sub_sub.mon.addr;
 	cpg_pll_tbl[num].mon.val = p_pll_sub_sub.mon.val;
+	return 0;
 }
 
 /* It is assumed that the PLL has stopped by the time this function is executed. */
