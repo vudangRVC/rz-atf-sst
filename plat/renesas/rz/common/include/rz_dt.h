@@ -23,4 +23,9 @@ uint8_t read_prop_from_grand_chil_node(void *fdt,
 	const char *grand_chil_node,
 	const char *prop_name,
 	uint32_t *value);
+
+uint8_t read_all_grand_chil_node(void *fdt,
+	const char *node,
+	const char *sub_node,
+	const char *chil_node);
 #endif /* RZ_DT_H */

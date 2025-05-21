@@ -98,3 +98,46 @@ uint8_t read_prop_from_grand_chil_node(void *fdt,
 	return 0;
 }
 
+// Node -> Sub Node                -> Child Node    -> Grand Child Node -> Property -> 5 Values
+// /soc -> cpg-clk-config@10420000 -> clocks-config -> cr8_part1        -> config   -> 0x0600 0x0000e000 0x0800 0x0000e000 0
+uint8_t read_all_grand_chil_node(void *fdt,
+	const char *node,
+	const char *sub_node,
+	const char *chil_node)
+{
+	// Get node offset: /soc
+	int node_offset = fdt_path_offset(fdt, node);
+	NOTICE("node_offset = %d\n", node_offset);
+
+	// Get sub node offset: cpg-clk-config@10420000
+	int sub_node_offset = fdt_subnode_offset(fdt, node_offset, sub_node);
+	NOTICE("sub_node_offset = %d\n", sub_node_offset);
+
+	// Get chil node offset: clocks-config
+	int chil_node_offset = fdt_subnode_offset(fdt, sub_node_offset, chil_node);
+	NOTICE("chil_node_offset = %d\n", chil_node_offset);
+
+	// Get all grand chil node in chil node
+	int node1;
+	int len, i;
+    fdt_for_each_subnode(node1, fdt, chil_node_offset) {
+        const char *name = fdt_get_name(fdt, node1, NULL);
+        printf("Node: %s\n", name);
+
+        const fdt32_t *prop = fdt_getprop(fdt, node1, "config", &len);
+        if (prop && len >= 0) {
+            int count = len / sizeof(fdt32_t);
+            for (i = 0; i < count; i++) {
+                uint32_t val = fdt32_to_cpu(prop[i]);
+                printf("  config[%d] = 0x%08x\n", i, val);
+            }
+        } else {
+            printf("  No config property found\n");
+        }
+    }
+
+    return 0;
+}
+
+
+
