@@ -72,7 +72,7 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLCM33_MON,
+				.addr = (uintptr_t)CPG_PLLCM33_MON_OFFSET,
 				.val  = 0,
 				},
 	},
@@ -95,7 +95,7 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLCLN_MON,
+				.addr = (uintptr_t)CPG_PLLCLN_MON_OFFSET,
 				.val  = 0,
 				},
 	},
@@ -118,7 +118,7 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLDTY_MON,
+				.addr = (uintptr_t)CPG_PLLDTY_MON_OFFSET,
 				.val  = 0,
 				},
 	},
@@ -140,7 +140,7 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLCA55_MON,
+				.addr = (uintptr_t)CPG_PLLCA55_MON_OFFSET,
 				.val  = 0,
 				},
 	},
@@ -163,14 +163,14 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLVDO_MON,
+				.addr = (uintptr_t)CPG_PLLVDO_MON_OFFSET,
 				.val  = 0,
 				},
 	},
 
 	{	/* ETH */
 		.stby = {
-				.addr = (uintptr_t)CPG_PLLETH_STBY,
+				.addr = (uintptr_t)CPG_PLLETH_STBY_OFFSET,
 				.val  = 0x00010001,
 				},
 
@@ -186,30 +186,30 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLETH_MON,
+				.addr = (uintptr_t)CPG_PLLETH_MON_OFFSET,
 				.val  = 0,
 				},
 	},
 
 	{	/* DSI */
 		.stby = {
-				.addr = (uintptr_t)CPG_PLLDSI_STBY,
+				.addr = (uintptr_t)CPG_PLLDSI_STBY_OFFSET,
 				.val  = 0x00010001,
 				},
 
 		.clk1 = {
-				.addr = (uintptr_t)CPG_PLLDSI_CLK1,
+				.addr = (uintptr_t)CPG_PLLDSI_CLK1_OFFSET,
 				.val  = 0x00003182,
 				},
 
 
 		.clk2 = {
-				.addr = (uintptr_t)CPG_PLLDSI_CLK2,
+				.addr = (uintptr_t)CPG_PLLDSI_CLK2_OFFSET,
 				.val  = 0x000C1803,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLDSI_MON,
+				.addr = (uintptr_t)CPG_PLLDSI_MON_OFFSET,
 				.val  = 0,
 				},
 	},
@@ -218,23 +218,23 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 
 	{	/* GPU */
 		.stby = {
-				.addr = (uintptr_t)CPG_PLLGPU_STBY,
+				.addr = (uintptr_t)CPG_PLLGPU_STBY_OFFSET,
 				.val  = 0x00050001,
 				},
 
 		.clk1 = {
-				.addr = (uintptr_t)CPG_PLLGPU_CLK1,
+				.addr = (uintptr_t)CPG_PLLGPU_CLK1_OFFSET,
 				.val  = 0x00003482,
 				},
 
 
 		.clk2 = {
-				.addr = (uintptr_t)CPG_PLLGPU_CLK2,
+				.addr = (uintptr_t)CPG_PLLGPU_CLK2_OFFSET,
 				.val  = 0x000C1A01,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLGPU_MON,
+				.addr = (uintptr_t)CPG_PLLGPU_MON_OFFSET,
 				.val  = 0,
 				},
 	},
@@ -257,7 +257,7 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_PLLDRP_MON,
+				.addr = (uintptr_t)CPG_PLLDRP_MON_OFFSET,
 				.val  = 0,
 				},
 	},
@@ -1756,102 +1756,37 @@ uint8_t cpg_get_base_addr(void *fdt, uint32_t *base_addr)
 	return 0;
 }
 
-uint8_t cpg_pll_get_sub_sub_node(void *fdt, const char *sub_sub_note, CPG_PLL_SETTINGS *p_pll_sub_sub){
-	// Get parent node offset
-	int parent_node = fdt_path_offset(fdt, "/soc");
-
-	// Get sub node offset
-	int sub_node = fdt_subnode_offset(fdt, parent_node, "cpg_pll@10420000");
-
-	// Get sub-sub node offset
-	int sub_sub_node = fdt_subnode_offset(fdt, sub_node, sub_sub_note);
-
-	CPG_PLL_SETTINGS p_pll;
-	int32_t offset_addr;
-	int32_t offset_value;
-	uint32_t cpg_base_addr = 0;
-
-	// Get CPG base address
-	if(cpg_get_base_addr(fdt, &cpg_base_addr) != 0) {
-		ERROR("BL2: Failed to get CPG base address\n");
-		return 1;
-	}
-
-	// Get sub-sub node stby
-	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "stby-addr");
-	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "stby-val");
-	p_pll.stby.addr = (uintptr_t)(cpg_base_addr + offset_addr);
-	p_pll.stby.val = offset_value;
-
-	// Get sub-sub node clk1
-	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk1-addr");
-	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk1-val");
-	p_pll.clk1.addr = (uintptr_t)(cpg_base_addr + offset_addr);
-	p_pll.clk1.val = offset_value;
-
-	// Get sub-sub node clk2
-	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk2-addr");
-	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "clk2-val");
-	p_pll.clk2.addr = (uintptr_t)(cpg_base_addr + offset_addr);
-	p_pll.clk2.val = offset_value;
-
-	// Get sub-sub node mon
-	offset_addr = fconf_read_u32_1_prop(fdt, sub_sub_node, "mon-addr");
-	offset_value = fconf_read_u32_1_prop(fdt, sub_sub_node, "mon-val");
-	p_pll.mon.addr = (uintptr_t)(cpg_base_addr + offset_addr);
-	p_pll.mon.val = offset_value;
-
-	*p_pll_sub_sub = p_pll;
-	return 0;
-}
-
-uint8_t cpg_pll_re_setup(void *fdt, const char *sub_sub_note, int num)
-{
-	// Init CPG_PLL_SETTINGS values
-	CPG_PLL_SETTINGS p_pll_sub_sub;
-	p_pll_sub_sub.stby.addr = (uintptr_t)NULL;
-	p_pll_sub_sub.stby.val = 0;
-	p_pll_sub_sub.clk1.addr = (uintptr_t)NULL;
-	p_pll_sub_sub.clk1.val = 0;
-	p_pll_sub_sub.clk2.addr = (uintptr_t)NULL;
-	p_pll_sub_sub.clk2.val = 0;
-	p_pll_sub_sub.mon.addr = (uintptr_t)NULL;
-	p_pll_sub_sub.mon.val = 0;
-
-	// Get values from dtb
-	if(cpg_pll_get_sub_sub_node(fdt, sub_sub_note, &p_pll_sub_sub) != 0) {
-		ERROR("BL2: Failed to get CPG PLL sub-sub node\n");
-		return 1;
-	}
-
-	// Set values to cpg_pll_tbl
-	cpg_pll_tbl[num].stby.addr = p_pll_sub_sub.stby.addr;
-	cpg_pll_tbl[num].stby.val = p_pll_sub_sub.stby.val;
-	cpg_pll_tbl[num].clk1.addr = p_pll_sub_sub.clk1.addr;
-	cpg_pll_tbl[num].clk1.val = p_pll_sub_sub.clk1.val;
-	cpg_pll_tbl[num].clk2.addr = p_pll_sub_sub.clk2.addr;
-	cpg_pll_tbl[num].clk2.val = p_pll_sub_sub.clk2.val;
-	cpg_pll_tbl[num].mon.addr = p_pll_sub_sub.mon.addr;
-	cpg_pll_tbl[num].mon.val = p_pll_sub_sub.mon.val;
-	return 0;
-}
-
 /* It is assumed that the PLL has stopped by the time this function is executed. */
 static void cpg_pll_setup(void *fdt)
 {
-	/* PLL re-init values from dtb node to cpg_pll_tbl */
-	cpg_pll_re_setup(fdt, "cm33", 0);
-	cpg_pll_re_setup(fdt, "cln", 1);
-	cpg_pll_re_setup(fdt, "dty", 2);
-	cpg_pll_re_setup(fdt, "ca55", 3);
-	cpg_pll_re_setup(fdt, "vdo", 4);
-	cpg_pll_re_setup(fdt, "eth", 5);
-	cpg_pll_re_setup(fdt, "dsi", 6);
-	cpg_pll_re_setup(fdt, "gpu", 7);
-	cpg_pll_re_setup(fdt, "drp", 8);
+	// Get clock-controller base address
+	const char *node = "/soc";
+	const char *sub_node = "clock-controller@10420000";
+	const char *prop_name = "reg";
+	uint32_t v2h_cpg_base = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
+	// Reinit static cpg_pll struct
+	int i;
+	for (i = 0; i <  ARRAY_SIZE(cpg_pll_tbl); i++) {
+		if(cpg_pll_tbl[i].stby.addr != (uintptr_t)NULL) {
+			cpg_pll_tbl[i].stby.addr += (uintptr_t)(v2h_cpg_base);
+		}
+		if(cpg_pll_tbl[i].clk1.addr != (uintptr_t)NULL) {
+			cpg_pll_tbl[i].clk1.addr += (uintptr_t)(v2h_cpg_base);
+		}
+		if(cpg_pll_tbl[i].clk2.addr != (uintptr_t)NULL) {
+			cpg_pll_tbl[i].clk2.addr += (uintptr_t)(v2h_cpg_base);
+		}
+		if(cpg_pll_tbl[i].mon.addr != (uintptr_t)NULL) {
+			cpg_pll_tbl[i].mon.addr += (uintptr_t)(v2h_cpg_base);
+		}
+	}
 
 	/* PLL setup from CPG_PLL_SETTINGS */
-	int i;
 	int pll_num = ARRAY_SIZE(cpg_pll_tbl);
 	CPG_PLL_SETTINGS const *p_pll = &cpg_pll_tbl[0];
 	uint32_t val;

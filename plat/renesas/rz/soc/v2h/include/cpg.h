@@ -34,6 +34,4 @@ void cpg_ddr1_part2(void);
 void cpg_prepare_suspend(void);
 void cpg_ddr_pwrokin_off(uint8_t base);
 
-uint8_t cpg_pll_get_sub_sub_node(void *fdt, const char *sub_sub_note, CPG_PLL_SETTINGS *p_pll_sub_sub);
-uint8_t cpg_pll_re_setup(void *fdt, const char *sub_sub_note, int num);
 #endif /* __CPG_H__ */
