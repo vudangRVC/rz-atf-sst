@@ -983,12 +983,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* CR8 Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_2,
+				.addr = (uintptr_t)CPG_RST_2_OFFSET,
 				.val  = 0x00000FFF,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_0,
+				.addr = (uintptr_t)CPG_RSTMON_0_OFFSET,
 				.val  = 0xFFF00000,
 				},
 
@@ -997,12 +997,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* CR8 Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_2,
+				.addr = (uintptr_t)CPG_RST_2_OFFSET,
 				.val  = 0x00001000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_1,
+				.addr = (uintptr_t)CPG_RSTMON_1_OFFSET,
 				.val  = 0x00000001,
 				},
 
@@ -1011,12 +1011,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* MHU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_5,
+				.addr = (uintptr_t)CPG_RST_5_OFFSET,
 				.val  = 0x00000100,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_2,
+				.addr = (uintptr_t)CPG_RSTMON_2_OFFSET,
 				.val  = 0x00000200,
 				},
 
@@ -1025,12 +1025,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* DMAC */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_3,
+				.addr = (uintptr_t)CPG_RST_3_OFFSET,
 				.val  = 0x00000008,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_1,
+				.addr = (uintptr_t)CPG_RSTMON_1_OFFSET,
 				.val  = 0x00000010,
 				},
 
@@ -1039,12 +1039,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* OSTM Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_6,
+				.addr = (uintptr_t)CPG_RST_6_OFFSET,
 				.val  = 0x00006000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_2,
+				.addr = (uintptr_t)CPG_RSTMON_2_OFFSET,
 				.val  = 0xC0000000,
 				},
 
@@ -1053,12 +1053,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* OSTM Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_6,
+				.addr = (uintptr_t)CPG_RST_6_OFFSET,
 				.val  = 0x00008000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_3,
+				.addr = (uintptr_t)CPG_RSTMON_3_OFFSET,
 				.val  = 0x00000001,
 				},
 
@@ -1067,12 +1067,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* OSTM Part 3 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_7,
+				.addr = (uintptr_t)CPG_RST_7_OFFSET,
 				.val  = 0x0000001F,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_3,
+				.addr = (uintptr_t)CPG_RSTMON_3_OFFSET,
 				.val  = 0x0000003E,
 				},
 
@@ -1081,12 +1081,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* GPT */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_5,
+				.addr = (uintptr_t)CPG_RST_5_OFFSET,
 				.val  = 0x00001E00,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_2,
+				.addr = (uintptr_t)CPG_RSTMON_2_OFFSET,
 				.val  = 0x00003C00,
 				},
 
@@ -1095,12 +1095,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* POEG Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_5,
+				.addr = (uintptr_t)CPG_RST_5_OFFSET,
 				.val  = 0x0000E000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_2,
+				.addr = (uintptr_t)CPG_RSTMON_2_OFFSET,
 				.val  = 0x0001C000,
 				},
 
@@ -1109,12 +1109,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* POEG Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_6,
+				.addr = (uintptr_t)CPG_RST_6_OFFSET,
 				.val  = 0x0000001F,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_2,
+				.addr = (uintptr_t)CPG_RSTMON_2_OFFSET,
 				.val  = 0x003E0000,
 				},
 
@@ -1123,12 +1123,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* WDT */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_7,
+				.addr = (uintptr_t)CPG_RST_7_OFFSET,
 				.val  = 0x000001C0,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_3,
+				.addr = (uintptr_t)CPG_RSTMON_3_OFFSET,
 				.val  = 0x00000380,
 				},
 
@@ -1137,12 +1137,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SPI Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_7,
+				.addr = (uintptr_t)CPG_RST_7_OFFSET,
 				.val  = 0x0000F800,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_3,
+				.addr = (uintptr_t)CPG_RSTMON_3_OFFSET,
 				.val  = 0x0001F000,
 				},
 
@@ -1151,12 +1151,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SPI Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_8,
+				.addr = (uintptr_t)CPG_RST_8_OFFSET,
 				.val  = 0x00000001,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_3,
+				.addr = (uintptr_t)CPG_RSTMON_3_OFFSET,
 				.val  = 0x00020000,
 				},
 
@@ -1165,12 +1165,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SPI Part 3 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_10,
+				.addr = (uintptr_t)CPG_RST_10_OFFSET,
 				.val  = 0x00000018,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x00300000,
 				},
 
@@ -1179,12 +1179,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SDHI */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_10,
+				.addr = (uintptr_t)CPG_RST_10_OFFSET,
 				.val  = 0x00000380,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x07000000,
 				},
 
@@ -1193,12 +1193,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* GPU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_13,
+				.addr = (uintptr_t)CPG_RST_13_OFFSET,
 				.val  = 0x0000E000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x0001C000,
 				},
 
@@ -1207,12 +1207,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* Image Scaling Unit */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_13,
+				.addr = (uintptr_t)CPG_RST_13_OFFSET,
 				.val  = 0x00000060,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x000000C0,
 				},
 
@@ -1221,12 +1221,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* Camera Data Receive Unit (CRU) Part 1*/
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_12,
+				.addr = (uintptr_t)CPG_RST_12_OFFSET,
 				.val  = 0x00007FE0,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_5,
+				.addr = (uintptr_t)CPG_RSTMON_5_OFFSET,
 				.val  = 0xFFC00000,
 				},
 
@@ -1235,12 +1235,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* Camera Data Receive Unit (CRU) Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_12,
+				.addr = (uintptr_t)CPG_RST_12_OFFSET,
 				.val  = 0x00008000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x00000001,
 				},
 
@@ -1249,12 +1249,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* Camera Data Receive Unit (CRU) Part 3 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_13,
+				.addr = (uintptr_t)CPG_RST_13_OFFSET,
 				.val  = 0x00000001,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x00000002,
 				},
 
@@ -1263,12 +1263,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* DSI */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_13,
+				.addr = (uintptr_t)CPG_RST_13_OFFSET,
 				.val  = 0x00000180,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x00000300,
 				},
 
@@ -1277,12 +1277,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* LCDC */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_13,
+				.addr = (uintptr_t)CPG_RST_13_OFFSET,
 				.val  = 0x00001000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x00002000,
 				},
 
@@ -1291,12 +1291,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* Serial Sound Interface (SSI) */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_14,
+				.addr = (uintptr_t)CPG_RST_14_OFFSET,
 				.val  = 0x00000FFE,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x1FFC0000,
 				},
 
@@ -1305,12 +1305,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* USB2.0 Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_10,
+				.addr = (uintptr_t)CPG_RST_10_OFFSET,
 				.val  = 0x00007000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0xE0000000,
 				},
 
@@ -1319,12 +1319,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* USB2.0 Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_10,
+				.addr = (uintptr_t)CPG_RST_10_OFFSET,
 				.val  = 0x00008000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_5,
+				.addr = (uintptr_t)CPG_RSTMON_5_OFFSET,
 				.val  = 0x00000001,
 				},
 
@@ -1333,12 +1333,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* USB3 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_10,
+				.addr = (uintptr_t)CPG_RST_10_OFFSET,
 				.val  = 0x00000C00,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x18000000,
 				},
 
@@ -1347,12 +1347,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* I2C (IIC) Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_9,
+				.addr = (uintptr_t)CPG_RST_9_OFFSET,
 				.val  = 0x0000FF00,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x0001FE00,
 				},
 
@@ -1361,12 +1361,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* I2C (IIC) Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_10,
+				.addr = (uintptr_t)CPG_RST_10_OFFSET,
 				.val  = 0x00000001,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x00020000,
 				},
 
@@ -1375,12 +1375,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SCIF */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_9,
+				.addr = (uintptr_t)CPG_RST_9_OFFSET,
 				.val  = 0x00000020,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x00000040,
 				},
 
@@ -1389,12 +1389,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SCI Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_8,
+				.addr = (uintptr_t)CPG_RST_8_OFFSET,
 				.val  = 0x00007FFE,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_3,
+				.addr = (uintptr_t)CPG_RSTMON_3_OFFSET,
 				.val  = 0xFFFC0000,
 				},
 
@@ -1403,12 +1403,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SCI Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_8,
+				.addr = (uintptr_t)CPG_RST_8_OFFSET,
 				.val  = 0x00008000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x00000001,
 				},
 
@@ -1417,12 +1417,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SCI Part 3 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_9,
+				.addr = (uintptr_t)CPG_RST_9_OFFSET,
 				.val  = 0x0000001F,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x0000003E,
 				},
 
@@ -1431,12 +1431,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* CAN */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_10,
+				.addr = (uintptr_t)CPG_RST_10_OFFSET,
 				.val  = 0x00000006,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x000C0000,
 				},
 
@@ -1445,12 +1445,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* ADC */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_15,
+				.addr = (uintptr_t)CPG_RST_15_OFFSET,
 				.val  = 0x00000040,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_7,
+				.addr = (uintptr_t)CPG_RSTMON_7_OFFSET,
 				.val  = 0x00000080,
 				},
 
@@ -1459,12 +1459,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* ICU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_3,
+				.addr = (uintptr_t)CPG_RST_3_OFFSET,
 				.val  = 0x00000040,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_1,
+				.addr = (uintptr_t)CPG_RSTMON_1_OFFSET,
 				.val  = 0x00000080,
 				},
 
@@ -1473,12 +1473,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* CRC */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_3,
+				.addr = (uintptr_t)CPG_RST_3_OFFSET,
 				.val  = 0x00000080,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_1,
+				.addr = (uintptr_t)CPG_RSTMON_1_OFFSET,
 				.val  = 0x00000100,
 				},
 
@@ -1487,12 +1487,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* CMTW */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_6,
+				.addr = (uintptr_t)CPG_RST_6_OFFSET,
 				.val  = 0x00001FE0,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_2,
+				.addr = (uintptr_t)CPG_RSTMON_2_OFFSET,
 				.val  = 0x3FC00000,
 				},
 
@@ -1501,12 +1501,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* RTC */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_7,
+				.addr = (uintptr_t)CPG_RST_7_OFFSET,
 				.val  = 0x00000600,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_3,
+				.addr = (uintptr_t)CPG_RSTMON_3_OFFSET,
 				.val  = 0x00000C00,
 				},
 
@@ -1515,12 +1515,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* I3C */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_9,
+				.addr = (uintptr_t)CPG_RST_9_OFFSET,
 				.val  = 0x000000C0,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_4,
+				.addr = (uintptr_t)CPG_RSTMON_4_OFFSET,
 				.val  = 0x00000180,
 				},
 
@@ -1529,12 +1529,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* GBETH */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_11,
+				.addr = (uintptr_t)CPG_RST_11_OFFSET,
 				.val  = 0x00000003,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_5,
+				.addr = (uintptr_t)CPG_RSTMON_5_OFFSET,
 				.val  = 0x00000006,
 				},
 
@@ -1543,12 +1543,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* PCIE */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_11,
+				.addr = (uintptr_t)CPG_RST_11_OFFSET,
 				.val  = 0x00000004,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_5,
+				.addr = (uintptr_t)CPG_RSTMON_5_OFFSET,
 				.val  = 0x00000008,
 				},
 
@@ -1557,12 +1557,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* ISP */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_13,
+				.addr = (uintptr_t)CPG_RST_13_OFFSET,
 				.val  = 0x0000001E,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x0000003C,
 				},
 
@@ -1571,12 +1571,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* VCD*/
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_14,
+				.addr = (uintptr_t)CPG_RST_14_OFFSET,
 				.val  = 0x00000001,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x00020000,
 				},
 
@@ -1585,12 +1585,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SCU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_14,
+				.addr = (uintptr_t)CPG_RST_14_OFFSET,
 				.val  = 0x00001000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x20000000,
 				},
 
@@ -1599,12 +1599,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* DMAC */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_14,
+				.addr = (uintptr_t)CPG_RST_14_OFFSET,
 				.val  = 0x00002000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x40000000,
 				},
 
@@ -1613,12 +1613,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* ADG */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_14,
+				.addr = (uintptr_t)CPG_RST_14_OFFSET,
 				.val  = 0x00004000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_6,
+				.addr = (uintptr_t)CPG_RSTMON_6_OFFSET,
 				.val  = 0x80000000,
 				},
 
@@ -1627,12 +1627,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SDPDIF Part 1*/
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_14,
+				.addr = (uintptr_t)CPG_RST_14_OFFSET,
 				.val  = 0x00008000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_7,
+				.addr = (uintptr_t)CPG_RSTMON_7_OFFSET,
 				.val  = 0x00000001,
 				},
 
@@ -1641,12 +1641,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* SPDIF Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_15,
+				.addr = (uintptr_t)CPG_RST_15_OFFSET,
 				.val  = 0x00000003,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_7,
+				.addr = (uintptr_t)CPG_RSTMON_7_OFFSET,
 				.val  = 0x00000006,
 				},
 
@@ -1655,12 +1655,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* PDM */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_15,
+				.addr = (uintptr_t)CPG_RST_15_OFFSET,
 				.val  = 0x0000003C,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_7,
+				.addr = (uintptr_t)CPG_RSTMON_7_OFFSET,
 				.val  = 0x00000078,
 				},
 
@@ -1669,12 +1669,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* TSU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_15,
+				.addr = (uintptr_t)CPG_RST_15_OFFSET,
 				.val  = 0x00000180,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_7,
+				.addr = (uintptr_t)CPG_RSTMON_7_OFFSET,
 				.val  = 0x00000300,
 				},
 
@@ -1683,12 +1683,12 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
 	{	/* DRP */
 		.reg =  {
-				.addr = (uintptr_t)CPG_RST_15,
+				.addr = (uintptr_t)CPG_RST_15_OFFSET,
 				.val  = 0x00003000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_RSTMON_7,
+				.addr = (uintptr_t)CPG_RSTMON_7_OFFSET,
 				.val  = 0x00006000,
 				},
 
@@ -2120,8 +2120,26 @@ void cpg_clk_on_setup(void *fdt)
 
 }
 
-static void cpg_reset_setup(void)
+static void cpg_reset_setup(void *fdt)
 {
+	const char *node = "/soc";
+	const char *sub_node = "clock-controller@10420000";
+	const char *prop_name = "reg";
+
+	// Get clock-controller base address
+	uint32_t v2h_cpg_base = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
+	// Reinit static struct
+	int i;
+	for (i = 0; i <  ARRAY_SIZE(cpg_reset_tbl); i++) {
+		cpg_reset_tbl[i].reg.addr += (uintptr_t)(v2h_cpg_base);
+		cpg_reset_tbl[i].mon.addr += (uintptr_t)(v2h_cpg_base);
+	}
+
 	cpg_ctrl_clkrst(&cpg_reset_tbl[0], ARRAY_SIZE(cpg_reset_tbl));
 }
 
@@ -2255,7 +2273,7 @@ void cpg_setup(void)
 	cpg_div_sel_static_setup(fdt);
 	cpg_pll_setup(fdt);
 	cpg_clk_on_setup(fdt);
-	cpg_reset_setup();
+	cpg_reset_setup(fdt);
 	cpg_mstop_setup();
 	cpg_div_sel_dynamic_setup();
 	cpg_wdtrst_sel_setup();
