@@ -94,3 +94,42 @@ uint8_t read_prop_from_child_node(void *fdt, const char *node, const char *sub_n
 	}
 	return 0;
 }
+
+uint8_t fdt_read_node_level_4(
+	const void *fdt,
+	const char *node_name_L1,
+	const char *node_name_L2,
+	const char *node_name_L3,
+	const char *node_name_L4,
+	const char *prop_name,
+	uint32_t *value, uint8_t *num)
+{
+	int node_L1 = fdt_path_offset(fdt, node_name_L1);
+	NOTICE("node_L1 = %d\n", node_L1);
+
+	int node_L2 = fdt_subnode_offset(fdt, node_L1, node_name_L2);
+	NOTICE("node_L2 = %d\n", node_L2);
+
+	int node_L3 = fdt_subnode_offset(fdt, node_L2, node_name_L3);
+	NOTICE("node_L3 = %d\n", node_L3);
+
+	int node_L4 = fdt_subnode_offset(fdt, node_L3, node_name_L4);
+	NOTICE("node_L4 = %d\n", node_L4);
+
+	uint32_t targets[5];
+	int len;
+	const fdt32_t *val = fdt_getprop(fdt, node_L4, prop_name, &len);
+	if (!val) {
+		NOTICE("Missing or invalid property: %s\n", prop_name);
+		return 1;
+	}
+	*num = len / sizeof(uint32_t);
+	for (size_t i = 0; i < len/sizeof(uint32_t); ++i) {
+		NOTICE("Parsed:\n");
+		targets[i] = fdt32_to_cpu(val[i]);
+		NOTICE("Parsed %s = 0x%08x\n", prop_name, targets[i]);
+		value[i] = targets[i];
+	}
+	return 0;
+}
+
