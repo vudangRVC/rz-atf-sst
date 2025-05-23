@@ -2109,8 +2109,19 @@ static void cpg_reset_setup(void *fdt)
 	cpg_ctrl_clkrst(&cpg_reset_tbl[0], ARRAY_SIZE(cpg_reset_tbl));
 }
 
-static void cpg_wdtrst_sel_setup(void)
+static void cpg_wdtrst_sel_setup(void *fdt)
 {
+	const char *node = "/soc";
+	const char *sub_node = "interrupt-unit@10400000";
+	const char *prop_name = "reg";
+
+	// Get clock-controller base address
+	uint32_t v2h_icu_base = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_icu_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
 	uint32_t val	= CPG_ERRORRST_SELx_ERRRSTSEL0
 					| CPG_ERRORRST_SELx_ERRRSTSEL1
 					| CPG_ERRORRST_SELx_ERRRSTSEL2
@@ -2118,32 +2129,40 @@ static void cpg_wdtrst_sel_setup(void)
 	uint32_t ca33_w01, ca33_w23, ca55_w01, ca55_w23;
 
 	/* Clear bit 28 interrupt source for both M33 and CA55 */
-	mmio_write_32(RZV2H_ELC_ERINTM33CLR(0), 0x10000000);
-	mmio_write_32(RZV2H_ELC_ERINTA55CLR(0), 0x10000000);
+	mmio_write_32(((uintptr_t)(v2h_icu_base) + 0x0348 + ((0) * 0x004)), 0x10000000);
+	mmio_write_32((uintptr_t)(v2h_icu_base) + 0x0348 + ((0) * 0x004), 0x10000000);
 
-	ca33_w01 = mmio_read_32(RZV2H_ELC_ERINTM33CTL(0));
-	ca33_w23 = mmio_read_32(RZV2H_ELC_ERINTM33CTL(1));
-	ca55_w01 = mmio_read_32(RZV2H_ELC_ERINTA55CTL(0));
-	ca55_w23 = mmio_read_32(RZV2H_ELC_ERINTA55CTL(1));
+	ca33_w01 = mmio_read_32((uintptr_t)(v2h_icu_base) + 0x0304 + ((0) * 0x004));
+	ca33_w23 = mmio_read_32((uintptr_t)(v2h_icu_base) + 0x0304 + ((1) * 0x004));
+	ca55_w01 = mmio_read_32((uintptr_t)(v2h_icu_base) + 0x0338 + ((0) * 0x004));
+	ca55_w23 = mmio_read_32((uintptr_t)(v2h_icu_base) + 0x0338 + ((0) * 0x004));
 
 	/* Checking ICU interrupt WDT CM33 */
 	if ((ca33_w01 == 0x40000000) || (ca33_w01 == 0x80000000) ||
 			(ca33_w23 == 0x00000001) || (ca33_w23 == 0x00000002)) {
 		/* ERINTM33CLR0 bit for clear 28-31 */
-		mmio_write_32(RZV2H_ELC_ERINTM33CLR(0), 0xF0000000);
+		mmio_write_32((uintptr_t)(v2h_icu_base + 0x0314 + ((0) * 0x004)), 0xF0000000);
 	}
 
 	/* Checking ICU interrupt WDT CA55 */
 	if ((ca55_w01 == 0x40000000) || (ca55_w01 == 0x80000000) ||
 			(ca55_w23 == 0x00000001) || (ca55_w23 == 0x00000002)) {
 		/* ERINTA55CLR0 bit for clear 28-31 */
-		mmio_write_32(RZV2H_ELC_ERINTA55CLR(0), 0xF0000000);
+		mmio_write_32((uintptr_t)(v2h_icu_base) + 0x0348 + ((0) * 0x004), 0xF0000000);
 	}
 
 	/* Add in the WEN bits for the selected bits */
 	val = (val & 0xFFFF) | ((val & 0xFFFF) << 16);
 
-	mmio_write_32(CPG_ERRORRST_SEL2, val);
+	// Get clock-controller base address
+	const char *cpg_sub_node = "clock-controller@10420000";
+	uint32_t v2h_cpg_base = 0;
+	if(read_prop_from_subnode(fdt, node, cpg_sub_node, prop_name, 1, &v2h_cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
+	mmio_write_32((uintptr_t)(v2h_cpg_base+CPG_ERRORRST_SEL2_OFFSET), val);
 }
 
 
@@ -2242,5 +2261,5 @@ void cpg_setup(void)
 	cpg_reset_setup(fdt);
 	cpg_mstop_setup(fdt);
 	cpg_div_sel_dynamic_setup(fdt);
-	cpg_wdtrst_sel_setup();
+	cpg_wdtrst_sel_setup(fdt);
 }

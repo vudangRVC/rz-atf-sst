@@ -85,5 +85,10 @@
 			#power-domain-cells = <0>;
 
 		};
+
+		icu: interrupt-unit@10400000 {
+			compatible = "renesas,r9a09g057-icu";
+			reg = <0 0x10400000 0 0x10000>;
+		};
 	};
 };
