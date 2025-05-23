@@ -19,6 +19,7 @@
 #include <rz_fconf.h>
 #include <assert.h>
 #include <rz_dt.h>
+#include <cpg_regs_offset.h>
 
 #define	CPG_OFF							(0)
 #define	CPG_ON							(1)
@@ -262,15 +263,15 @@ static CPG_PLL_SETTINGS cpg_pll_tbl[] = {
 	},
 };
 
-static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
+static CPG_SETUP_DATA cpg_clk_on_tbl_offset[] = {
 	{	/* CR8 Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_0,
+				.addr = (uintptr_t)CPG_CLKON_0_OFFSET,
 				.val  = 0x0000E000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_0,
+				.addr = (uintptr_t)CPG_CLKMON_0_OFFSET,
 				.val  = 0x0000E000,
 				},
 
@@ -279,12 +280,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* CR8 Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_1,
+				.addr = (uintptr_t)CPG_CLKON_1_OFFSET,
 				.val  = 0x00000003,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_0,
+				.addr = (uintptr_t)CPG_CLKMON_0_OFFSET,
 				.val  = 0x00030000,
 				},
 
@@ -293,12 +294,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* MHU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_3,
+				.addr = (uintptr_t)CPG_CLKON_3_OFFSET,
 				.val  = 0x00000001,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_1,
+				.addr = (uintptr_t)CPG_CLKMON_1_OFFSET,
 				.val  = 0x00010000,
 				},
 
@@ -307,12 +308,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* DMAC Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_0,
+				.addr = (uintptr_t)CPG_CLKON_0_OFFSET,
 				.val  = 0x0000001E,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_0,
+				.addr = (uintptr_t)CPG_CLKMON_0_OFFSET,
 				.val  = 0x0000001E,
 				},
 
@@ -321,12 +322,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* DMAC Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_15,
+				.addr = (uintptr_t)CPG_CLKON_15_OFFSET,
 				.val  = 0x00000100,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x01000000,
 				},
 
@@ -335,12 +336,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* OSTM */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_4,
+				.addr = (uintptr_t)CPG_CLKON_4_OFFSET,
 				.val  = 0x000007F8,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_2,
+				.addr = (uintptr_t)CPG_CLKMON_2_OFFSET,
 				.val  = 0x000007F8,
 				},
 
@@ -349,12 +350,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* GPT */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_3,
+				.addr = (uintptr_t)CPG_CLKON_3_OFFSET,
 				.val  = 0x00000006,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_1,
+				.addr = (uintptr_t)CPG_CLKMON_1_OFFSET,
 				.val  = 0x00060000,
 				},
 
@@ -363,12 +364,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* POEG */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_3,
+				.addr = (uintptr_t)CPG_CLKON_3_OFFSET,
 				.val  = 0x000007F8,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_1,
+				.addr = (uintptr_t)CPG_CLKMON_1_OFFSET,
 				.val  = 0x07F80000,
 				},
 
@@ -377,12 +378,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* WDT Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_4,
+				.addr = (uintptr_t)CPG_CLKON_4_OFFSET,
 				.val  = 0x0000E00,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_2,
+				.addr = (uintptr_t)CPG_CLKMON_2_OFFSET,
 				.val  = 0x0000E00,
 				},
 
@@ -391,12 +392,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* WDT Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_5,
+				.addr = (uintptr_t)CPG_CLKON_5_OFFSET,
 				.val  = 0x00000007,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_2,
+				.addr = (uintptr_t)CPG_CLKMON_2_OFFSET,
 				.val  = 0x00070000,
 				},
 
@@ -405,12 +406,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SPI Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_5,
+				.addr = (uintptr_t)CPG_CLKON_5_OFFSET,
 				.val  = 0x00001FF0,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_2,
+				.addr = (uintptr_t)CPG_CLKMON_2_OFFSET,
 				.val  = 0x1FF00000,
 				},
 
@@ -419,12 +420,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SPI Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_9,
+				.addr = (uintptr_t)CPG_CLKON_9_OFFSET,
 				.val  = 0x00008000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_4,
+				.addr = (uintptr_t)CPG_CLKMON_4_OFFSET,
 				.val  = 0x80000000,
 				},
 
@@ -433,12 +434,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SPI Part 3 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_10,
+				.addr = (uintptr_t)CPG_CLKON_10_OFFSET,
 				.val  = 0x00000003,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_5,
+				.addr = (uintptr_t)CPG_CLKMON_5_OFFSET,
 				.val  = 0x00000007,
 				},
 
@@ -447,12 +448,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SDHI */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_10,
+				.addr = (uintptr_t)CPG_CLKON_10_OFFSET,
 				.val  = 0x00007FF8,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_5,
+				.addr = (uintptr_t)CPG_CLKMON_5_OFFSET,
 				.val  = 0x00007FF8,
 				},
 
@@ -461,12 +462,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* GPU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_15,
+				.addr = (uintptr_t)CPG_CLKON_15_OFFSET,
 				.val  = 0x00000007,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x00070000,
 				},
 
@@ -475,12 +476,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* Image Scaling Unit Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_14,
+				.addr = (uintptr_t)CPG_CLKON_14_OFFSET,
 				.val  = 0x000000C0,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x000000C0,
 				},
 
@@ -489,12 +490,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* Camera Data Receive Unit (CRU) Part 1*/
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_13,
+				.addr = (uintptr_t)CPG_CLKON_13_OFFSET,
 				.val  = 0x0000FFFC,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_6,
+				.addr = (uintptr_t)CPG_CLKMON_6_OFFSET,
 				.val  = 0xFFFC0000,
 				},
 
@@ -503,12 +504,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* Camera Data Receive Unit (CRU) Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_14,
+				.addr = (uintptr_t)CPG_CLKON_14_OFFSET,
 				.val  = 0x00000003,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x00000003,
 				},
 
@@ -517,12 +518,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* DSI */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_14,
+				.addr = (uintptr_t)CPG_CLKON_14_OFFSET,
 				.val  = 0x00001F00,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x00001F00,
 				},
 
@@ -531,12 +532,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* LCDC */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_14,
+				.addr = (uintptr_t)CPG_CLKON_14_OFFSET,
 				.val  = 0x0000E000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x0000E000,
 				},
 
@@ -545,12 +546,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* Serial Sound Interface (SSI) Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_15,
+				.addr = (uintptr_t)CPG_CLKON_15_OFFSET,
 				.val  = 0x00000020,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x00200000,
 				},
 
@@ -559,12 +560,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* Serial Sound Interface (SSI) Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_24,
+				.addr = (uintptr_t)CPG_CLKON_24_OFFSET,
 				.val  = 0x000007FF,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				/* No monitor for the above clocks */
 				.val  = 0x00000000,
 				},
@@ -574,12 +575,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* USB2.0 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_11,
+				.addr = (uintptr_t)CPG_CLKON_11_OFFSET,
 				.val  = 0x000000F8,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_5,
+				.addr = (uintptr_t)CPG_CLKMON_5_OFFSET,
 				.val  = 0x00F80000,
 				},
 
@@ -588,12 +589,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* USB3 Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_10,
+				.addr = (uintptr_t)CPG_CLKON_10_OFFSET,
 				.val  = 0x00008000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_5,
+				.addr = (uintptr_t)CPG_CLKMON_5_OFFSET,
 				.val  = 0x00008000,
 				},
 
@@ -602,12 +603,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* USB3 Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_11,
+				.addr = (uintptr_t)CPG_CLKON_11_OFFSET,
 				.val  = 0x00000007,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_5,
+				.addr = (uintptr_t)CPG_CLKMON_5_OFFSET,
 				.val  = 0x00070000,
 				},
 
@@ -616,12 +617,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* I2C (IIC) */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_9,
+				.addr = (uintptr_t)CPG_CLKON_9_OFFSET,
 				.val  = 0x00000FF8,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_4,
+				.addr = (uintptr_t)CPG_CLKMON_4_OFFSET,
 				.val  = 0x0FF80000,
 				},
 
@@ -630,12 +631,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SCIF */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_8,
+				.addr = (uintptr_t)CPG_CLKON_8_OFFSET,
 				.val  = 0x00008000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_4,
+				.addr = (uintptr_t)CPG_CLKMON_4_OFFSET,
 				.val  = 0x00008000,
 				},
 
@@ -644,12 +645,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SCI Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_5,
+				.addr = (uintptr_t)CPG_CLKON_5_OFFSET,
 				.val  = 0x0000E000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_2,
+				.addr = (uintptr_t)CPG_CLKMON_2_OFFSET,
 				.val  = 0xE0000000,
 				},
 
@@ -658,12 +659,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SCI Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_6,
+				.addr = (uintptr_t)CPG_CLKON_6_OFFSET,
 				.val  = 0x0000FFFF,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_3,
+				.addr = (uintptr_t)CPG_CLKMON_3_OFFSET,
 				.val  = 0x0000FFFF,
 				},
 
@@ -672,12 +673,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SCI Part 3 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_7,
+				.addr = (uintptr_t)CPG_CLKON_7_OFFSET,
 				.val  = 0x0000FFFF,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_3,
+				.addr = (uintptr_t)CPG_CLKMON_3_OFFSET,
 				.val  = 0xFFFF0000,
 				},
 
@@ -686,12 +687,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SCI Part 4 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_8,
+				.addr = (uintptr_t)CPG_CLKON_8_OFFSET,
 				.val  = 0x00007FFF,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_4,
+				.addr = (uintptr_t)CPG_CLKMON_4_OFFSET,
 				.val  = 0x00007FFF,
 				},
 
@@ -700,12 +701,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* CAN */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_9,
+				.addr = (uintptr_t)CPG_CLKON_9_OFFSET,
 				.val  = 0x00007000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_4,
+				.addr = (uintptr_t)CPG_CLKMON_4_OFFSET,
 				.val  = 0x70000000,
 				},
 
@@ -714,12 +715,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* ADC Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_16,
+				.addr = (uintptr_t)CPG_CLKON_16_OFFSET,
 				.val  = 0x00000180,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_8,
+				.addr = (uintptr_t)CPG_CLKMON_8_OFFSET,
 				.val  = 0x00000180,
 				},
 
@@ -728,12 +729,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* CRC*/
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_0,
+				.addr = (uintptr_t)CPG_CLKON_0_OFFSET,
 				.val  = 0x00000040,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_0,
+				.addr = (uintptr_t)CPG_CLKMON_0_OFFSET,
 				.val  = 0x00000040,
 				},
 
@@ -742,12 +743,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* CMTW Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_3,
+				.addr = (uintptr_t)CPG_CLKON_3_OFFSET,
 				.val  = 0x0000F800,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_1,
+				.addr = (uintptr_t)CPG_CLKMON_1_OFFSET,
 				.val  = 0xF8000000,
 				},
 
@@ -756,12 +757,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* CMTW Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_4,
+				.addr = (uintptr_t)CPG_CLKON_4_OFFSET,
 				.val  = 0x00000007,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_2,
+				.addr = (uintptr_t)CPG_CLKMON_2_OFFSET,
 				.val  = 0x00000007,
 				},
 
@@ -770,12 +771,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* RTC */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_5,
+				.addr = (uintptr_t)CPG_CLKON_5_OFFSET,
 				.val  = 0x00000008,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_2,
+				.addr = (uintptr_t)CPG_CLKMON_2_OFFSET,
 				.val  = 0x00080000,
 				},
 
@@ -784,12 +785,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* I3C */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_9,
+				.addr = (uintptr_t)CPG_CLKON_9_OFFSET,
 				.val  = 0x00000007,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_4,
+				.addr = (uintptr_t)CPG_CLKMON_4_OFFSET,
 				.val  = 0x00070000,
 				},
 
@@ -798,12 +799,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* GBETH Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_11,
+				.addr = (uintptr_t)CPG_CLKON_11_OFFSET,
 				.val  = 0x0000FF00,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_5,
+				.addr = (uintptr_t)CPG_CLKMON_5_OFFSET,
 #if 0 //TODO: KTG: Kirk had difficulties with this setting on DevBoard
 				.val  = 0xFF000000,
 #else
@@ -816,12 +817,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* GBETH Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_12,
+				.addr = (uintptr_t)CPG_CLKON_12_OFFSET,
 				.val  = 0x0000000F,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_6,
+				.addr = (uintptr_t)CPG_CLKMON_6_OFFSET,
 #if 0 //TODO: KTG: Kirk had difficulties with this setting on DevBoard
 				.val  = 0x0000000F,
 #else
@@ -834,12 +835,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* PCIE Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_12,
+				.addr = (uintptr_t)CPG_CLKON_12_OFFSET,
 				.val  = 0x00000030,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_6,
+				.addr = (uintptr_t)CPG_CLKMON_6_OFFSET,
 				.val  = 0x00000030,
 				},
 
@@ -848,12 +849,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* ISP */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_14,
+				.addr = (uintptr_t)CPG_CLKON_14_OFFSET,
 				.val  = 0x0000003C,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x0000003C,
 				},
 
@@ -862,12 +863,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* VCD */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_15,
+				.addr = (uintptr_t)CPG_CLKON_15_OFFSET,
 				.val  = 0x00000018,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x00180000,
 				},
 
@@ -876,12 +877,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SCU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_15,
+				.addr = (uintptr_t)CPG_CLKON_15_OFFSET,
 				.val  = 0x000000C0,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0x00C00000,
 				},
 
@@ -890,12 +891,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* ADG */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_15,
+				.addr = (uintptr_t)CPG_CLKON_15_OFFSET,
 				.val  = 0x00003E00,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 #if 0 //TODO: KTG: Kirk had difficulties with this setting on DevBoard
 				.val  = 0x3E000000,
 #else
@@ -908,12 +909,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SPDIF Part 1 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_15,
+				.addr = (uintptr_t)CPG_CLKON_15_OFFSET,
 				.val  = 0x0000C000,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_7,
+				.addr = (uintptr_t)CPG_CLKMON_7_OFFSET,
 				.val  = 0xC0000000,
 				},
 
@@ -922,12 +923,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* SPDIF Part 2 */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_16,
+				.addr = (uintptr_t)CPG_CLKON_16_OFFSET,
 				.val  = 0x00000001,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_8,
+				.addr = (uintptr_t)CPG_CLKMON_8_OFFSET,
 				.val  = 0x00000001,
 				},
 
@@ -936,12 +937,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* PDM */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_16,
+				.addr = (uintptr_t)CPG_CLKON_16_OFFSET,
 				.val  = 0x0000007E,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_8,
+				.addr = (uintptr_t)CPG_CLKMON_8_OFFSET,
 				.val  = 0x0000007E,
 				},
 
@@ -950,12 +951,12 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* TSU */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_16,
+				.addr = (uintptr_t)CPG_CLKON_16_OFFSET,
 				.val  = 0x00000600,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_8,
+				.addr = (uintptr_t)CPG_CLKMON_8_OFFSET,
 				.val  = 0x00000600,
 				},
 
@@ -964,18 +965,19 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 
 	{	/* DRP */
 		.reg =  {
-				.addr = (uintptr_t)CPG_CLKON_17,
+				.addr = (uintptr_t)CPG_CLKON_17_OFFSET,
 				.val  = 0x0000007F,
 				},
 
 		.mon =  {
-				.addr = (uintptr_t)CPG_CLKMON_8,
+				.addr = (uintptr_t)CPG_CLKMON_8_OFFSET,
 				.val  = 0x007F0000,
 				},
 
 		.type = CPG_T_CLK
 	}
 };
+
 
 static CPG_SETUP_DATA cpg_reset_tbl[] = {
 
@@ -2093,9 +2095,29 @@ void cpg_prepare_suspend(void)
 	cpg_ctrl_clkrst(&cpg_clk_sr2_tbl[0], ARRAY_SIZE(cpg_clk_sr2_tbl));
 }
 
-static void cpg_clk_on_setup(void)
+void cpg_clk_on_setup(void *fdt)
 {
-	cpg_ctrl_clkrst(&cpg_clk_on_tbl[0], ARRAY_SIZE(cpg_clk_on_tbl));
+	const char *node = "/soc";
+	const char *sub_node = "clock-controller@10420000";
+	const char *prop_name = "reg";
+
+	// Get clock-controller base address
+	uint32_t v2h_cpg_base = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
+	// Reinit static struct
+	int i;
+	for (i = 0; i <  ARRAY_SIZE(cpg_clk_on_tbl_offset); i++) {
+		cpg_clk_on_tbl_offset[i].reg.addr += (uintptr_t)(v2h_cpg_base);
+		cpg_clk_on_tbl_offset[i].mon.addr += (uintptr_t)(v2h_cpg_base);
+	}
+
+	// Write data to registers
+	cpg_ctrl_clkrst(&cpg_clk_on_tbl_offset[0], ARRAY_SIZE(cpg_clk_on_tbl_offset));
+
 }
 
 static void cpg_reset_setup(void)
@@ -2232,7 +2254,7 @@ void cpg_setup(void)
 	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
 	cpg_div_sel_static_setup(fdt);
 	cpg_pll_setup(fdt);
-	cpg_clk_on_setup();
+	cpg_clk_on_setup(fdt);
 	cpg_reset_setup();
 	cpg_mstop_setup();
 	cpg_div_sel_dynamic_setup();
