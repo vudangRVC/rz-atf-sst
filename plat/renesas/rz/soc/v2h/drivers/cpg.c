@@ -1703,11 +1703,11 @@ static CPG_REG_SETTING cpg_static_select_tbl[] = {
 };
 
 static CPG_REG_SETTING cpg_dynamic_select_tbl[] = {
-	{ (uintptr_t)CPG_CDDIV0,				0x00000000 },
-	{ (uintptr_t)CPG_CDDIV1,				0x00000000 },
-	{ (uintptr_t)CPG_CDDIV2,				0x00000000 },
-	{ (uintptr_t)CPG_CDDIV3,				0x10001000 },
-	{ (uintptr_t)CPG_CDDIV4,				0x01110111 },
+	{ (uintptr_t)CPG_CDDIV0_OFFSET,				0x00000000 },
+	{ (uintptr_t)CPG_CDDIV1_OFFSET,				0x00000000 },
+	{ (uintptr_t)CPG_CDDIV2_OFFSET,				0x00000000 },
+	{ (uintptr_t)CPG_CDDIV3_OFFSET,				0x10001000 },
+	{ (uintptr_t)CPG_CDDIV4_OFFSET,				0x01110111 },
 };
 
 static void cpg_ctrl_clkrst(CPG_SETUP_DATA const *array, uint32_t num)
@@ -1841,8 +1841,27 @@ static void cpg_div_sel_static_setup(void *fdt)
 	cpg_div_sel_setup(cpg_static_select_tbl, ARRAY_SIZE(cpg_static_select_tbl));
 }
 
-static void cpg_div_sel_dynamic_setup(void)
+static void cpg_div_sel_dynamic_setup(void *fdt)
 {
+	const char *node = "/soc";
+	const char *sub_node = "clock-controller@10420000";
+	const char *prop_name = "reg";
+
+	// Get clock-controller base address
+	uint32_t v2h_cpg_base = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
+	// Reinit static cpg_div_sel struct
+	int i;
+	for (i = 0; i <  ARRAY_SIZE(cpg_dynamic_select_tbl); i++) {
+		cpg_dynamic_select_tbl[i].addr += (uintptr_t)(v2h_cpg_base);
+		cpg_dynamic_select_tbl[i].addr += (uintptr_t)(v2h_cpg_base);
+	}
+
+	// Set data to cpg_dynamic_select_tbl
 	cpg_div_sel_setup(cpg_dynamic_select_tbl, ARRAY_SIZE(cpg_dynamic_select_tbl));
 }
 
@@ -2222,6 +2241,6 @@ void cpg_setup(void)
 	cpg_clk_on_setup(fdt);
 	cpg_reset_setup(fdt);
 	cpg_mstop_setup(fdt);
-	cpg_div_sel_dynamic_setup();
+	cpg_div_sel_dynamic_setup(fdt);
 	cpg_wdtrst_sel_setup();
 }
