@@ -1698,8 +1698,8 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 };
 
 static CPG_REG_SETTING cpg_static_select_tbl[] = {
-	{ (uintptr_t)CPG_CSDIV0,				0x00000000 },
-	{ (uintptr_t)CPG_CSDIV1,				0x00000000 },
+	{ (uintptr_t)CPG_CSDIV0_OFFSET,				0x00000000 },
+	{ (uintptr_t)CPG_CSDIV1_OFFSET,				0x00000000 },
 };
 
 static CPG_REG_SETTING cpg_dynamic_select_tbl[] = {
@@ -1888,18 +1888,19 @@ static void cpg_div_sel_setup(CPG_REG_SETTING *tbl, uint32_t size)
 
 static void cpg_div_sel_static_setup(void *fdt)
 {
+	// Get clock-controller base address
 	const char *node = "/soc";
 	const char *sub_node = "clock-controller@10420000";
 	const char *prop_name = "reg";
 	uint32_t v2h_cpg_base = 0;
-
-	// Get clock-controller base address
-	read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_cpg_base);
-	NOTICE("BL2: 0x%08x\n", v2h_cpg_base);
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
 
 	// Set data to cpg_static_select_tbl
-	cpg_static_select_tbl[0].addr = (uintptr_t)(v2h_cpg_base + CPG_CSDIV0_OFFSET);
-	cpg_static_select_tbl[1].addr = (uintptr_t)(v2h_cpg_base + CPG_CSDIV1_OFFSET);
+	cpg_static_select_tbl[0].addr += (uintptr_t)(v2h_cpg_base);
+	cpg_static_select_tbl[1].addr += (uintptr_t)(v2h_cpg_base);
 
 	// Write data to CPG_CSDIV0 and CPG_CSDIV1 registers
 	cpg_div_sel_setup(cpg_static_select_tbl, ARRAY_SIZE(cpg_static_select_tbl));
