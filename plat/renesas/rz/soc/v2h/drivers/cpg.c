@@ -1846,10 +1846,21 @@ static void cpg_div_sel_dynamic_setup(void)
 	cpg_div_sel_setup(cpg_dynamic_select_tbl, ARRAY_SIZE(cpg_dynamic_select_tbl));
 }
 
-static void cpg_mstop_setup(void)
+static void cpg_mstop_setup(void *fdt)
 {
+	const char *node = "/soc";
+	const char *sub_node = "clock-controller@10420000";
+	const char *prop_name = "reg";
+
+	// Get clock-controller base address
+	uint32_t v2h_cpg_base = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
 	/* Remove all MSTOPS apart from reserved and those already removed at TF-A entry */
-	REMOVE_MSTOPS_W(CPG_BUS_1_MSTOP,      CPG_BUS_1_MSTOP_WDT1
+	REMOVE_MSTOPS_W(CPG_BUS_1_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_1_MSTOP_WDT1
 										| CPG_BUS_1_MSTOP_RIIC0
 										| CPG_BUS_1_MSTOP_RIIC1
 										| CPG_BUS_1_MSTOP_RIIC2
@@ -1864,7 +1875,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_1_MSTOP_TZC400_PCIE0
 										| CPG_BUS_1_MSTOP_TZC400_PCIE1);
 
-	REMOVE_MSTOPS_W(CPG_BUS_2_MSTOP,      CPG_BUS_2_MSTOP_SCU
+	REMOVE_MSTOPS_W(CPG_BUS_2_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_2_MSTOP_SCU
 										| CPG_BUS_2_MSTOP_SCU_DMAC
 										| CPG_BUS_2_MSTOP_ADG
 										| CPG_BUS_2_MSTOP_SSIU
@@ -1874,7 +1885,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_2_MSTOP_GTM3
 										| CPG_BUS_2_MSTOP_TSU1);
 
-	REMOVE_MSTOPS_W(CPG_BUS_3_MSTOP,      CPG_BUS_3_MSTOP_DMAC1
+	REMOVE_MSTOPS_W(CPG_BUS_3_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_3_MSTOP_DMAC1
 										| CPG_BUS_3_MSTOP_DMAC2
 										| CPG_BUS_3_MSTOP_GE3D
 										| CPG_BUS_3_MSTOP_ADC
@@ -1885,7 +1896,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_3_MSTOP_SCIF
 										| CPG_BUS_3_MSTOP_CMTW0);
 
-	REMOVE_MSTOPS_W(CPG_BUS_4_MSTOP,      CPG_BUS_4_MSTOP_CMTW1
+	REMOVE_MSTOPS_W(CPG_BUS_4_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_4_MSTOP_CMTW1
 										| CPG_BUS_4_MSTOP_CMTW2
 										| CPG_BUS_4_MSTOP_CMTW3
 										| CPG_BUS_4_MSTOP_XSPI
@@ -1893,7 +1904,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_4_MSTOP_SECURE_IP_P1
 										| CPG_BUS_4_MSTOP_MHU);
 
-	REMOVE_MSTOPS_W(CPG_BUS_5_MSTOP,      CPG_BUS_5_MSTOP_TSU0
+	REMOVE_MSTOPS_W(CPG_BUS_5_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_5_MSTOP_TSU0
 										| CPG_BUS_5_MSTOP_XSPI_REG
 										| CPG_BUS_5_MSTOP_PDM0
 										| CPG_BUS_5_MSTOP_PDM1
@@ -1905,7 +1916,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_5_MSTOP_CRC
 										| CPG_BUS_5_MSTOP_CMTW4);
 
-	REMOVE_MSTOPS_W(CPG_BUS_6_MSTOP,      CPG_BUS_6_MSTOP_CMTW5
+	REMOVE_MSTOPS_W(CPG_BUS_6_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_6_MSTOP_CMTW5
 										| CPG_BUS_6_MSTOP_CMTW6
 										| CPG_BUS_6_MSTOP_CMTW7
 										| CPG_BUS_6_MSTOP_POEG0A
@@ -1922,7 +1933,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_6_MSTOP_DDR0_P1
 										| CPG_BUS_6_MSTOP_DDR0_P2);
 
-	REMOVE_MSTOPS_W(CPG_BUS_7_MSTOP,      CPG_BUS_7_MSTOP_DDR_0_P3
+	REMOVE_MSTOPS_W(CPG_BUS_7_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_7_MSTOP_DDR_0_P3
 										| CPG_BUS_7_MSTOP_DDR_0_P4
 										| CPG_BUS_7_MSTOP_DDR_1_P0
 										| CPG_BUS_7_MSTOP_DDR_1_P1
@@ -1939,7 +1950,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_7_MSTOP_USB30_PHY
 										| CPG_BUS_7_MSTOP_USB31_PHY);
 
-	REMOVE_MSTOPS_W(CPG_BUS_8_MSTOP,      CPG_BUS_8_MSTOP_PCIE_PHY
+	REMOVE_MSTOPS_W(CPG_BUS_8_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_8_MSTOP_PCIE_PHY
 										| CPG_BUS_8_MSTOP_SD0
 										| CPG_BUS_8_MSTOP_SD1
 										| CPG_BUS_8_MSTOP_SD2
@@ -1949,7 +1960,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_8_MSTOP_DRP_AP_DRP0
 										| CPG_BUS_8_MSTOP_DRP1);
 
-	REMOVE_MSTOPS_W(CPG_BUS_9_MSTOP,      CPG_BUS_9_MSTOP_CRU0
+	REMOVE_MSTOPS_W(CPG_BUS_9_MSTOP_OFFSET+v2h_cpg_base,      CPG_BUS_9_MSTOP_CRU0
 										| CPG_BUS_9_MSTOP_CRU1
 										| CPG_BUS_9_MSTOP_CRU2
 										| CPG_BUS_9_MSTOP_CRU3
@@ -1961,7 +1972,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_9_MSTOP_DSI_LINK
 										| CPG_BUS_9_MSTOP_DSI_PHY);
 
-	REMOVE_MSTOPS_W(CPG_BUS_10_MSTOP,     CPG_BUS_10_MSTOP_ISU
+	REMOVE_MSTOPS_W(CPG_BUS_10_MSTOP_OFFSET+v2h_cpg_base,     CPG_BUS_10_MSTOP_ISU
 										| CPG_BUS_10_MSTOP_LCDC_DU
 										| CPG_BUS_10_MSTOP_LCDC_FCPVD
 										| CPG_BUS_10_MSTOP_LCDC_VSPD
@@ -1975,7 +1986,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_10_MSTOP_CANFD
 										| CPG_BUS_10_MSTOP_I3C0);
 
-	REMOVE_MSTOPS_W(CPG_BUS_11_MSTOP,     CPG_BUS_11_MSTOP_RSPI0
+	REMOVE_MSTOPS_W(CPG_BUS_11_MSTOP_OFFSET+v2h_cpg_base,     CPG_BUS_11_MSTOP_RSPI0
 										| CPG_BUS_11_MSTOP_RSPI1
 										| CPG_BUS_11_MSTOP_RSPI2
 										| CPG_BUS_11_MSTOP_RSCI0
@@ -1992,7 +2003,7 @@ static void cpg_mstop_setup(void)
 										| CPG_BUS_11_MSTOP_GTM5
 										| CPG_BUS_11_MSTOP_GTM6);
 
-	REMOVE_MSTOPS_W(CPG_BUS_12_MSTOP,     CPG_BUS_12_MSTOP_GTM7
+	REMOVE_MSTOPS_W(CPG_BUS_12_MSTOP_OFFSET+v2h_cpg_base,     CPG_BUS_12_MSTOP_GTM7
 										| CPG_BUS_12_MSTOP_MCPU_TO_ACPU);
 }
 
@@ -2210,7 +2221,7 @@ void cpg_setup(void)
 	cpg_pll_setup(fdt);
 	cpg_clk_on_setup(fdt);
 	cpg_reset_setup(fdt);
-	cpg_mstop_setup();
+	cpg_mstop_setup(fdt);
 	cpg_div_sel_dynamic_setup();
 	cpg_wdtrst_sel_setup();
 }
