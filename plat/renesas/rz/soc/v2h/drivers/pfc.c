@@ -9,6 +9,7 @@
 #include <pfc_regs.h>
 #include <pfc_regs_offset.h>
 #include <sys_regs.h>
+#include <sys_regs_offset.h>
 #include <sys.h>
 #include <lib/mmio.h>
 
@@ -208,7 +209,7 @@ static void pfc_scif_setup(void*fdt, uintptr_t pfc_base)
 	}
 }
 
-static void pfc_drive_setup(void)
+static void pfc_drive_setup(void*fdt, uintptr_t pfc_base, uintptr_t sysc_base)
 {
 	static const uint64_t pfc_iolh_drive_tbl[4] = {0x0000000000000000, 0x0101010101010101, 0x0202020202020202, 0x0303030303030303};
 	/* Get the boot mode */
@@ -216,7 +217,7 @@ static void pfc_drive_setup(void)
 
 	if (boot_mode < SYS_BOOT_MODE_MAX) {
 		const PFC_REGS *p_pins_tbl = pfc_boot_mode_tbls[boot_mode];
-		uint32_t sys_lsi_otppoc = mmio_read_32(SYS_LSI_OTPPOC);
+		uint32_t sys_lsi_otppoc = mmio_read_32(SYS_LSI_OTPPOC_OFFSET + sysc_base);
 		uint64_t pfc_iolh_drive = 0;
 		int cnt;
 
@@ -271,9 +272,17 @@ void pfc_setup(void)
 		return;
 	}
 
+	// Get sysc base address
+	uint32_t v2h_sysc_base = 0;
+	const char *sub_node_sysc = "system-controller@10430000";
+	if(read_prop_from_subnode(fdt, node, sub_node_sysc, prop_name, 1, &v2h_sysc_base) != 0) {
+		ERROR("BL2: Failed to get PFC base address\n");
+		return;
+	}
+
 	pfc_sd_setup(fdt, v2h_pfc_base);
 	pfc_qspi_setup(fdt, v2h_pfc_base);
 	pfc_scif_setup(fdt, v2h_pfc_base);
-	pfc_drive_setup();
+	pfc_drive_setup(fdt, v2h_pfc_base, v2h_sysc_base);
 	pfc_riic_pmic_setup();
 }
