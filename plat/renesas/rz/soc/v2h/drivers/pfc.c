@@ -70,9 +70,9 @@ static PFC_REGS pfc_scif_reg_tbl[PFC_TBL_LEN] = {
 	{
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH06, 0x0000000000000003 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD06, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR06,   0x0000000000000000 },		/* SR */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH06_OFFSET, 0x0000000000000003 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD06_OFFSET, 0x0000000000000000 },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR06_OFFSET,   0x0000000000000000 },		/* SR */
 		{ PFC_ON,  (uintptr_t)NULL,       0x0000000000000000 }		/* IEN */
 	},
 
@@ -171,9 +171,30 @@ static void pfc_qspi_setup(void*fdt, uintptr_t pfc_base)
 	}
 }
 
-static void pfc_scif_setup(void)
+static void pfc_scif_setup(void*fdt, uintptr_t pfc_base)
 {
+	// Reinit static pfc_scif_reg_tbl struct
 	int cnt;
+	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
+		if(pfc_scif_reg_tbl[cnt].pmc.reg != (uintptr_t)NULL) {
+			pfc_scif_reg_tbl[cnt].pmc.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_scif_reg_tbl[cnt].pfc.reg != (uintptr_t)NULL) {
+			pfc_scif_reg_tbl[cnt].pfc.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_scif_reg_tbl[cnt].iolh.reg != (uintptr_t)NULL) {
+			pfc_scif_reg_tbl[cnt].iolh.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_scif_reg_tbl[cnt].pupd.reg != (uintptr_t)NULL) {
+			pfc_scif_reg_tbl[cnt].pupd.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_scif_reg_tbl[cnt].sr.reg != (uintptr_t)NULL) {
+			pfc_scif_reg_tbl[cnt].sr.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_scif_reg_tbl[cnt].ien.reg != (uintptr_t)NULL) {
+			pfc_scif_reg_tbl[cnt].ien.reg += (uintptr_t)(pfc_base);
+		}
+	}
 
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
 		/* PUPD */
@@ -252,7 +273,7 @@ void pfc_setup(void)
 
 	pfc_sd_setup(fdt, v2h_pfc_base);
 	pfc_qspi_setup(fdt, v2h_pfc_base);
-	pfc_scif_setup();
+	pfc_scif_setup(fdt, v2h_pfc_base);
 	pfc_drive_setup();
 	pfc_riic_pmic_setup();
 }
