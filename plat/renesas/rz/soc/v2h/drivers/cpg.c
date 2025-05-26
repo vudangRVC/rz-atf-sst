@@ -1858,7 +1858,6 @@ static void cpg_div_sel_dynamic_setup(void *fdt)
 	int i;
 	for (i = 0; i <  ARRAY_SIZE(cpg_dynamic_select_tbl); i++) {
 		cpg_dynamic_select_tbl[i].addr += (uintptr_t)(v2h_cpg_base);
-		cpg_dynamic_select_tbl[i].addr += (uintptr_t)(v2h_cpg_base);
 	}
 
 	// Set data to cpg_dynamic_select_tbl
