@@ -126,10 +126,24 @@ static void pfc_sd_setup(void*fdt, uintptr_t pfc_base)
 	// Reinit static pfc_sd_reg_tbl struct
 	int cnt;
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
-		pfc_sd_reg_tbl[cnt].pupd.reg += (uintptr_t)(pfc_base);
-		pfc_sd_reg_tbl[cnt].sr.reg += (uintptr_t)(pfc_base);
-		pfc_sd_reg_tbl[cnt].ien.reg += (uintptr_t)(pfc_base);
-		pfc_sd_reg_tbl[cnt].iolh.reg += (uintptr_t)(pfc_base);
+		if(pfc_sd_reg_tbl[cnt].pmc.reg != (uintptr_t)NULL) {
+			pfc_sd_reg_tbl[cnt].pmc.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_sd_reg_tbl[cnt].pfc.reg != (uintptr_t)NULL) {
+			pfc_sd_reg_tbl[cnt].pfc.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_sd_reg_tbl[cnt].iolh.reg != (uintptr_t)NULL) {
+			pfc_sd_reg_tbl[cnt].iolh.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_sd_reg_tbl[cnt].pupd.reg != (uintptr_t)NULL) {
+			pfc_sd_reg_tbl[cnt].pupd.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_sd_reg_tbl[cnt].sr.reg != (uintptr_t)NULL) {
+			pfc_sd_reg_tbl[cnt].sr.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_sd_reg_tbl[cnt].ien.reg != (uintptr_t)NULL) {
+			pfc_sd_reg_tbl[cnt].ien.reg += (uintptr_t)(pfc_base);
+		}
 	}
 
 	// Set data pfc_sd_reg_tbl to registers
@@ -151,15 +165,30 @@ static void pfc_sd_setup(void*fdt, uintptr_t pfc_base)
 
 static void pfc_qspi_setup(void*fdt, uintptr_t pfc_base)
 {
-	// Reinit static pfc_sd_reg_tbl struct
+	// Reinit static pfc_qspi_reg_tbl struct
 	int cnt;
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
-		pfc_qspi_reg_tbl[cnt].iolh.reg += (uintptr_t)(pfc_base);
-		pfc_qspi_reg_tbl[cnt].pupd.reg += (uintptr_t)(pfc_base);
-		pfc_qspi_reg_tbl[cnt].sr.reg += (uintptr_t)(pfc_base);
+		if(pfc_qspi_reg_tbl[cnt].pmc.reg != (uintptr_t)NULL) {
+			pfc_qspi_reg_tbl[cnt].pmc.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_qspi_reg_tbl[cnt].pfc.reg != (uintptr_t)NULL) {
+			pfc_qspi_reg_tbl[cnt].pfc.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_qspi_reg_tbl[cnt].iolh.reg != (uintptr_t)NULL) {
+			pfc_qspi_reg_tbl[cnt].iolh.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_qspi_reg_tbl[cnt].pupd.reg != (uintptr_t)NULL) {
+			pfc_qspi_reg_tbl[cnt].pupd.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_qspi_reg_tbl[cnt].sr.reg != (uintptr_t)NULL) {
+			pfc_qspi_reg_tbl[cnt].sr.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_qspi_reg_tbl[cnt].ien.reg != (uintptr_t)NULL) {
+			pfc_qspi_reg_tbl[cnt].ien.reg += (uintptr_t)(pfc_base);
+		}
 	}
 
-	// Set data pfc_sd_reg_tbl to registers
+	// Set data pfc_qspi_reg_tbl to registers
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
 		/* PUPD */
 		if (pfc_qspi_reg_tbl[cnt].pupd.flg == PFC_ON) {
