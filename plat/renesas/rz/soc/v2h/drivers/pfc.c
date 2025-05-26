@@ -7,10 +7,14 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <pfc_regs.h>
+#include <pfc_regs_offset.h>
 #include <sys_regs.h>
 #include <sys.h>
 #include <lib/mmio.h>
 
+#include <platform_def.h>
+#include <rz_dt.h>
+#include <common/debug.h>
 
 #define PFC_TBL_LEN						(2)
 
@@ -21,20 +25,20 @@ static PFC_REGS pfc_sd_reg_tbl[PFC_TBL_LEN] = {
 	{
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH09, 0x0000000000030303 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD09, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR09,   0x0000000000000000 },		/* SR */
-		{ PFC_ON,  (uintptr_t)PFC_IEN09,  0x0000000000000100 }		/* IEN */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH09_OFFSET, 0x0000000000030303 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD09_OFFSET, 0x0000000000000000 },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR09_OFFSET,   0x0000000000000000 },		/* SR */
+		{ PFC_ON,  (uintptr_t)PFC_IEN09_OFFSET,  0x0000000000000100 }		/* IEN */
 	},
 
 	/* SD0_DATA (PA.0 - PA.7 */
 	{
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH0A, 0x0303030303030303 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD0A, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR0A,   0x0000000000000000 },		/* SR */
-		{ PFC_ON,  (uintptr_t)PFC_IEN0A,  0x0101010101010101 }		/* IEN */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH0A_OFFSET, 0x0303030303030303 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD0A_OFFSET, 0x0000000000000000 },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR0A_OFFSET,   0x0000000000000000 },		/* SR */
+		{ PFC_ON,  (uintptr_t)PFC_IEN0A_OFFSET,  0x0101010101010101 }		/* IEN */
 	},
 };
 
@@ -116,10 +120,18 @@ static const PFC_REGS *pfc_boot_mode_tbls[SYS_BOOT_MODE_MAX] = {
 	pfc_scif_reg_tbl
 };
 
-static void pfc_sd_setup(void)
+static void pfc_sd_setup(void*fdt, uintptr_t pfc_base)
 {
+	// Reinit static pfc_sd_reg_tbl struct
 	int cnt;
+	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
+		pfc_sd_reg_tbl[cnt].pupd.reg += (uintptr_t)(pfc_base);
+		pfc_sd_reg_tbl[cnt].sr.reg += (uintptr_t)(pfc_base);
+		pfc_sd_reg_tbl[cnt].ien.reg += (uintptr_t)(pfc_base);
+		pfc_sd_reg_tbl[cnt].iolh.reg += (uintptr_t)(pfc_base);
+	}
 
+	// Set data pfc_sd_reg_tbl to registers
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
 		/* PUPD */
 		if (pfc_sd_reg_tbl[cnt].pupd.flg == PFC_ON) {
@@ -219,7 +231,19 @@ static void pfc_riic_pmic_setup(void)
 
 void pfc_setup(void)
 {
-	pfc_sd_setup();
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+
+	// Get pin-controller base address
+	const char *node = "/soc";
+	const char *sub_node = "pinctrl@10410000";
+	const char *prop_name = "reg";
+	uint32_t v2h_pfc_base = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &v2h_pfc_base) != 0) {
+		ERROR("BL2: Failed to get PFC base address\n");
+		return;
+	}
+
+	pfc_sd_setup(fdt, v2h_pfc_base);
 	pfc_qspi_setup();
 	pfc_scif_setup();
 	pfc_drive_setup();

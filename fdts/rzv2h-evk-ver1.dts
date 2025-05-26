@@ -90,5 +90,12 @@
 			compatible = "renesas,r9a09g057-icu";
 			reg = <0 0x10400000 0 0x10000>;
 		};
+
+		pfc: pinctrl@10410000 {
+			compatible = "renesas,r9a09g057-pfc";
+			reg = <0 0x10410000 0 0x10000>;
+		};
+
+
 	};
 };
