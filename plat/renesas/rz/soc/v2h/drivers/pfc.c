@@ -47,9 +47,9 @@ static PFC_REGS pfc_qspi_reg_tbl[PFC_TBL_LEN] = {
 	{
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH07, 0x0000000000030003 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD07, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR07,   0x0000000000000000 },		/* SR */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH07_OFFSET, 0x0000000000030003 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD07_OFFSET, 0x0000000000000000 },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR07_OFFSET,   0x0000000000000000 },		/* SR */
 		{ PFC_OFF, (uintptr_t)NULL,       0 }						/* IEN */
 	},
 
@@ -57,9 +57,9 @@ static PFC_REGS pfc_qspi_reg_tbl[PFC_TBL_LEN] = {
 	{
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
 		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH08, 0x0000000003030303 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD08, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR08,   0x0000000000000000 },		/* SR */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH08_OFFSET, 0x0000000003030303 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD08_OFFSET, 0x0000000000000000 },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR08_OFFSET,   0x0000000000000000 },		/* SR */
 		{ PFC_OFF, (uintptr_t)NULL,       0 }						/* IEN */
 	},
 };
@@ -148,10 +148,17 @@ static void pfc_sd_setup(void*fdt, uintptr_t pfc_base)
 	}
 }
 
-static void pfc_qspi_setup(void)
+static void pfc_qspi_setup(void*fdt, uintptr_t pfc_base)
 {
+	// Reinit static pfc_sd_reg_tbl struct
 	int cnt;
+	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
+		pfc_qspi_reg_tbl[cnt].iolh.reg += (uintptr_t)(pfc_base);
+		pfc_qspi_reg_tbl[cnt].pupd.reg += (uintptr_t)(pfc_base);
+		pfc_qspi_reg_tbl[cnt].sr.reg += (uintptr_t)(pfc_base);
+	}
 
+	// Set data pfc_sd_reg_tbl to registers
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
 		/* PUPD */
 		if (pfc_qspi_reg_tbl[cnt].pupd.flg == PFC_ON) {
@@ -244,7 +251,7 @@ void pfc_setup(void)
 	}
 
 	pfc_sd_setup(fdt, v2h_pfc_base);
-	pfc_qspi_setup();
+	pfc_qspi_setup(fdt, v2h_pfc_base);
 	pfc_scif_setup();
 	pfc_drive_setup();
 	pfc_riic_pmic_setup();
