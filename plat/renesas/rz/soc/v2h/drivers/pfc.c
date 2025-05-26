@@ -197,6 +197,7 @@ static void pfc_scif_setup(void*fdt, uintptr_t pfc_base)
 		}
 	}
 
+	// Set data pfc_scif_reg_tbl to registers
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
 		/* PUPD */
 		if (pfc_scif_reg_tbl[cnt].pupd.flg == PFC_ON) {
@@ -236,13 +237,34 @@ static void pfc_drive_setup(void*fdt, uintptr_t pfc_base, uintptr_t sysc_base)
 	}
 }
 
-static void pfc_riic_pmic_setup(void)
+static void pfc_riic_pmic_setup(void *fdt, uintptr_t pfc_base)
 {
 #if PLAT_SYSTEM_SUSPEND
+	// Reinit static pfc_i2c_bus8_reg_tbl struct
 	int cnt;
+	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
+		if(pfc_i2c_bus8_reg_tbl[cnt].pmc.reg != (uintptr_t)NULL) {
+			pfc_i2c_bus8_reg_tbl[cnt].pmc.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_i2c_bus8_reg_tbl[cnt].pfc.reg != (uintptr_t)NULL) {
+			pfc_i2c_bus8_reg_tbl[cnt].pfc.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_i2c_bus8_reg_tbl[cnt].iolh.reg != (uintptr_t)NULL) {
+			pfc_i2c_bus8_reg_tbl[cnt].iolh.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_i2c_bus8_reg_tbl[cnt].pupd.reg != (uintptr_t)NULL) {
+			pfc_i2c_bus8_reg_tbl[cnt].pupd.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_i2c_bus8_reg_tbl[cnt].sr.reg != (uintptr_t)NULL) {
+			pfc_i2c_bus8_reg_tbl[cnt].sr.reg += (uintptr_t)(pfc_base);
+		}
+		if(pfc_i2c_bus8_reg_tbl[cnt].ien.reg != (uintptr_t)NULL) {
+			pfc_i2c_bus8_reg_tbl[cnt].ien.reg += (uintptr_t)(pfc_base);
+		}
+	}
 
-	mmio_write_32(PFC_PWPR, mmio_read_32(PFC_PWPR) | PWPR_REGWE_A);
-
+	// Set data pfc_i2c_bus8_reg_tbl to registers
+	mmio_write_32(PFC_PWPR_OFFSET + pfc_base, mmio_read_32(PFC_PWPR_OFFSET + pfc_base) | PWPR_REGWE_A);
 	for (cnt = 0; cnt < PFC_TBL_LEN; cnt++) {
 		/* PFC */
 		if (pfc_i2c_bus8_reg_tbl[cnt].pfc.flg == PFC_ON) {
@@ -253,8 +275,7 @@ static void pfc_riic_pmic_setup(void)
 			mmio_write_8(pfc_i2c_bus8_reg_tbl[cnt].pmc.reg, pfc_i2c_bus8_reg_tbl[cnt].pmc.val);
 		}
 	}
-
-	mmio_write_32(PFC_PWPR, mmio_read_32(PFC_PWPR) & ~PWPR_REGWE_A);
+	mmio_write_32(PFC_PWPR_OFFSET + pfc_base, mmio_read_32(PFC_PWPR_OFFSET + pfc_base) & ~PWPR_REGWE_A);
 #endif /* PLAT_SYSTEM_SUSPEND */
 }
 
@@ -284,5 +305,5 @@ void pfc_setup(void)
 	pfc_qspi_setup(fdt, v2h_pfc_base);
 	pfc_scif_setup(fdt, v2h_pfc_base);
 	pfc_drive_setup(fdt, v2h_pfc_base, v2h_sysc_base);
-	pfc_riic_pmic_setup();
+	pfc_riic_pmic_setup(fdt, v2h_pfc_base);
 }
