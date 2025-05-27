@@ -15,6 +15,8 @@
 int console_rz_register(uintptr_t baseaddr, uint32_t clock,
 		uint32_t baud, console_t *console);
 
+void console_setup(void *fdt);
+
 #endif /* __ASSEMBLER__ */
 
 #endif	/* __SCIFA_H__ */

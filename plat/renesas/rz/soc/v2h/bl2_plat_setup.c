@@ -39,7 +39,6 @@
 
 
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
-static console_t rzv2h_bl2_console;
 
 static uint32_t bl2_plat_get_boot_mode(void)
 {
@@ -105,8 +104,6 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 								u_register_t arg3, u_register_t arg4)
 {
-	int ret;
-
 	/* early setup Clock and Reset */
 	cpg_early_setup();
 
@@ -135,17 +132,8 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	/* setup Clock and Reset */
 	cpg_setup();
 
-	/* initialize console driver */
-	ret = console_rz_register(
-							RZV2H_SCIF_BASE,
-							RZV2H_UART_INCK_HZ,
-							RZV2H_UART_BARDRATE,
-							&rzv2h_bl2_console);
-	if (!ret)
-		panic();
-
-	console_set_scope(&rzv2h_bl2_console,
-			CONSOLE_FLAG_BOOT | CONSOLE_FLAG_CRASH);
+	/* setup SCIF console */
+	console_setup(fdt);
 
 	pwrc_setup();
 }

@@ -95,5 +95,12 @@
 			compatible = "renesas,r9a09g057-pfc";
 			reg = <0 0x10410000 0 0x10000>;
 		};
+
+		scif0: serial@11c01400 {
+			compatible = "renesas,scif-r9a09g057","renesas,scif";
+			reg = <0 0x11c01400 0 0x400>;
+			uart_inck_hz = <100000000>;
+			uart_bardrate = <115200>;
+		};
 	};
 };

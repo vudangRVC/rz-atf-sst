@@ -18,6 +18,7 @@ DDR_SOURCES	+=				plat/renesas/rz/soc/v2h/drivers/ddr/ddr.c	\
 PLAT_BL_COMMON_SOURCES	+=	plat/renesas/rz/soc/v2h/plat_security.c		\
 							plat/renesas/rz/soc/v2h/drivers/riic.c		\
 							plat/renesas/rz/soc/v2h/drivers/cpg.c		\
+							plat/renesas/rz/soc/v2h/drivers/scif.c		\
 							plat/renesas/rz/soc/v2h/drivers/pwrc/pwrc.c	\
 							plat/renesas/rz/soc/v2h/drivers/pwrc/pwrc_stack.S	\
 							${DDR_SOURCES}
