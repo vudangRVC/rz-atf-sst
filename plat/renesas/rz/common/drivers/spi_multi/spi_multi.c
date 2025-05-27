@@ -11,6 +11,10 @@
 #include <spi_multi_regs.h>
 #include <spi_multi.h>
 #include <spi_multi_reg_values.h>
+#include <common/debug.h>
+#include <rz_fconf.h>
+
+const struct spi_config_t *g_spi_fconf_cfg;
 
 void spi_multi_timing_set(void)
 {
@@ -113,6 +117,9 @@ int spi_multi_setup( void )
 {
 	uint32_t val;
 
+	/* Initialize global SPI config from DTB.  */
+	g_spi_fconf_cfg = spi_config_getter();
+
 	/* Wait until the transfer is complete */
 	do {
 		val = mmio_read_32(SPIM_CMNSR);
@@ -121,36 +128,47 @@ int spi_multi_setup( void )
 	/* Device-specific settings */
 	spi_multi_setup_device();
 	/* SDR mode serial flash settings */
-	mmio_write_32(SPIM_PHYCNT, SPIM_PHYCNT_SET_VALUE);
+	INFO("g_spi_fconf_cfg->phycnt: %d\n", g_spi_fconf_cfg->phycnt);
+	mmio_write_32(SPIM_PHYCNT, g_spi_fconf_cfg->phycnt);
 
 	/* Read timing setting */
-	mmio_write_32(SPIM_PHYOFFSET1, SPIM_PHYOFFSET1_SET_VALUE);
-	mmio_write_32(SPIM_PHYOFFSET2, SPIM_PHYOFFSET2_SET_VALUE);
+	INFO("g_spi_fconf_cfg->phyoffset1: %d\n", g_spi_fconf_cfg->phyoffset1);
+	mmio_write_32(SPIM_PHYOFFSET1, g_spi_fconf_cfg->phyoffset1);
+	INFO("g_spi_fconf_cfg->phyoffset2: %d\n", g_spi_fconf_cfg->phyoffset2);
+	mmio_write_32(SPIM_PHYOFFSET2, g_spi_fconf_cfg->phyoffset2);
 
 	/* Set the QSPIn_SSL setting value */
-	mmio_write_32(SPIM_CMNCR, SPIM_CMNCR_EXTREAD_SET_VALUE);
+	INFO("g_spi_fconf_cfg->cmncr: %d\n", g_spi_fconf_cfg->cmncr);
+	mmio_write_32(SPIM_CMNCR, g_spi_fconf_cfg->cmncr);
 	/* Set SSL delay setting value */
-	mmio_write_32(SPIM_SSLDR, SPIM_SSLDR_SET_VALUE);
+	INFO("g_spi_fconf_cfg->ssldr: %d\n", g_spi_fconf_cfg->ssldr);
+	mmio_write_32(SPIM_SSLDR, g_spi_fconf_cfg->ssldr);
 
 	/* Clear the RBE bit */
-	mmio_write_32(SPIM_DRCR, SPIM_DRCR_SET_VALUE);
+	INFO("g_spi_fconf_cfg->drcr: %d\n", g_spi_fconf_cfg->drcr);
+	mmio_write_32(SPIM_DRCR, g_spi_fconf_cfg->drcr);
 	mmio_read_32(SPIM_DRCR);
 
 	/* Set the data read command */
-	mmio_write_32(SPIM_DRCMR, SPIM_DRCMR_SET_VALUE);
+	INFO("g_spi_fconf_cfg->drcmr: %d\n", g_spi_fconf_cfg->drcmr);
+	mmio_write_32(SPIM_DRCMR, g_spi_fconf_cfg->drcmr);
 
 	/* Extended external address setting */
-	mmio_write_32(SPIM_DREAR, SPIM_DREAR_SET_VALUE);
+	INFO("g_spi_fconf_cfg->drear: %d\n", g_spi_fconf_cfg->drear);
+	mmio_write_32(SPIM_DREAR, g_spi_fconf_cfg->drear);
 
 	/* Set the bit width of command and address output to 1 bit and	*/
 	/* the address size to 4 byte									*/
-	mmio_write_32(SPIM_DRENR, SPIM_DRENR_SET_VALUE);
+	INFO("g_spi_fconf_cfg->drenr: %d\n", g_spi_fconf_cfg->drenr);
+	mmio_write_32(SPIM_DRENR, g_spi_fconf_cfg->drenr);
 
 	/* Dummy cycle setting */
-	mmio_write_32(SPIM_DRDMCR, SPIM_DRDMCR_SET_VALUE);
+	INFO("g_spi_fconf_cfg->drdmcr: %d\n", g_spi_fconf_cfg->drdmcr);
+	mmio_write_32(SPIM_DRDMCR, g_spi_fconf_cfg->drdmcr);
 
 	/* Change to SPI flash mode */
-	mmio_write_32(SPIM_DRDRENR, SPIM_DRDRENR_SET_VALUE);
+	INFO("g_spi_fconf_cfg->drdrenr: %d\n", g_spi_fconf_cfg->drdrenr);
+	mmio_write_32(SPIM_DRDRENR, g_spi_fconf_cfg->drdrenr);
 
 	/* Timing adjustment register setting */
 	spi_multi_timing_set();
