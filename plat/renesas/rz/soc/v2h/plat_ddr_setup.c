@@ -97,7 +97,7 @@ exit:
 	return io_result;
 }
 
-void plat_ddr_setup(void)
+void plat_ddr_setup(void *fdt)
 {
 	if (!sys_is_resume_reboot()) {
 		ddr_setup();
@@ -117,8 +117,8 @@ void plat_ddr_setup(void)
 	}
 }
 #else
-void plat_ddr_setup(void)
+void plat_ddr_setup(void *fdt)
 {
-	ddr_setup();
+	ddr_setup(fdt);
 }
 #endif /* PLAT_SYSTEM_SUSPEND */

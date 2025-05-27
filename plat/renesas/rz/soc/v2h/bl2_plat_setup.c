@@ -135,6 +135,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	/* setup SCIF console */
 	console_setup(fdt);
 
+	/* setup pwrc */
 	pwrc_setup();
 }
 
@@ -178,11 +179,14 @@ void bl2_el3_plat_arch_setup(void)
 
 void bl2_platform_setup(void)
 {
+	/* DTB addr */
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+
 	/* Setup TZC-400, Access Control */
 	plat_security_setup();
 
 	rz_io_setup();
 
 	/* initialize DDR */
-	plat_ddr_setup();
+	plat_ddr_setup(fdt);
 }

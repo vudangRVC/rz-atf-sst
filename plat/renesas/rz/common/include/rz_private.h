@@ -29,7 +29,7 @@ void plat_tzc400_setup(uintptr_t tzc_base);
 void rz_io_setup(void);
 
 /* plat_ddr_setup.c  */
-void plat_ddr_setup(void);
+void plat_ddr_setup(void *fdt);
 
 /* bl31_plat_setup.c */
 void plat_copy_code_to_system_ram(void);

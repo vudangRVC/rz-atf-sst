@@ -102,5 +102,15 @@
 			uart_inck_hz = <100000000>;
 			uart_bardrate = <115200>;
 		};
+
+		ddr0: memory-0@40000000 {
+			compatible = "renesas,r9a09g057-sdram-0";
+			reg = <0 0x40000000 0 0x10000>;
+		};
+
+		ddr1: memory-1@240000000 {
+			compatible = "renesas,r9a09g057-sdram-1";
+			reg = <0x00000002 0x40000000 0x00000000 0x10000>;
+		};
 	};
 };

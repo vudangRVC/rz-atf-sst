@@ -10,7 +10,7 @@
 #define RET_CSR_SIZE		(0x400)
 extern uint32_t ddr_csr_table[RET_CSR_SIZE];
 
-void ddr_setup(void);
+void ddr_setup(void *fdt);
 void ddr_retention_entry(void);
 void ddr_retention_exit(uint8_t base);
 

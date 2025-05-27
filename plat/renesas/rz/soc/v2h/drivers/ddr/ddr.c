@@ -12,10 +12,9 @@
 #include "cpg.h"
 #include "ddr_private.h"
 #include <ddr.h>
-
+#include <rz_dt.h>
 
 #define MCAR_CTL				0x800
-
 
 extern const uint32_t retention_phyreglist_1d[];
 extern const uint32_t retention_phyreglist_2d[];
@@ -23,7 +22,6 @@ extern const uint32_t retention_mcreglist[];
 extern const uint32_t retention_phyreglist_1d_size;
 extern const uint32_t retention_phyreglist_2d_size;
 extern const uint32_t retention_mcreglist_size;
-
 
 static void ddr_init(uint64_t ddraddr);
 static void phyinit_c(void);
@@ -34,14 +32,26 @@ static void phyinit_i(void);
 static void phyinit_j(void);
 static void save_retcsr(void);
 
-
-void ddr_setup(void)
+void ddr_setup(void *fdt)
 {
 	INFO("DDR: Setup (Rev. %s)\n", DDR_VERSION);
-	ddr_init(RZV2H_DDR0_BASE);
-	ddr_init(RZV2H_DDR1_BASE);
-}
 
+	// Get ddr base address
+	const char *node = "/soc";
+	uint32_t ddr_0_base = 0;
+	if(read_prop_from_subnode(fdt, node, "memory-0@40000000", "reg", 1, &ddr_0_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+	ddr_init((uint64_t)ddr_0_base);
+
+	uint64_t ddr_1_base = 0;
+	if(read_prop_64_from_subnode(fdt, node, "memory-1@240000000", "reg", 0, &ddr_1_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+	ddr_init(ddr_1_base);
+}
 
 static void ddr_init(uint64_t ddrbase)
 {
