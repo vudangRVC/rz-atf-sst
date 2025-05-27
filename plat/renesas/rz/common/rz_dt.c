@@ -53,6 +53,39 @@ int8_t read_prop_from_subnode(void *fdt, const char *node, const char *sub_node,
 	return 0;
 }
 
+int8_t read_prop_64_from_subnode(void *fdt, const char *node, const char *sub_node, const char *prop_name,
+	uint8_t index, uint64_t *value)
+{
+	// Get node offset
+	int node_offset = fdt_path_offset(fdt, node);
+	NOTICE("node_offset = %d\n", node_offset);
+
+	// Get sub node offset
+	int sub_node_offset = fdt_subnode_offset(fdt, node_offset, sub_node);
+	NOTICE("sub_node_offset = %d\n", sub_node_offset);
+
+	uint64_t target = 0;
+	int32_t len = 0;
+	const fdt32_t *val = fdt_getprop(fdt, sub_node_offset, prop_name, &len);
+
+	// Check the property exists and length
+	if (!val || len < (index * 8 + 8)) {
+		NOTICE("Missing or invalid property: %s length for 64-bit value at index %d\n", prop_name, index);
+		return -1;
+	}
+
+	// Read the 64-bit value from the property
+	uint32_t high_part = fdt32_to_cpu(val[index * 2]);
+	uint32_t low_part = fdt32_to_cpu(val[index * 2 + 1]);
+
+	// Combine the high and low parts into a single 64-bit value
+	target = ((uint64_t)high_part << 32) | low_part;
+
+	NOTICE("target = 0x%lx\n", target);
+	*value = target;
+	return 0;
+}
+
 // Node -> Sub Node                -> Child Node    -> Grand Child Node -> Property -> 5 Values
 // /soc -> cpg-clk-config@10420000 -> clocks-config -> cr8_part1        -> config   -> 0x0600 0x0000e000 0x0800 0x0000e000 0
 uint8_t read_prop_from_grand_chil_node(void *fdt, 
