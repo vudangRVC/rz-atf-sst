@@ -10,6 +10,7 @@
 #include <lib/mmio.h>
 #include <drivers/delay_timer.h>
 #include <cpg_opt.h>
+#include <rz_fconf.h>
 
 #define	CPG_OFF			(0)
 #define	CPG_ON			(1)
@@ -44,23 +45,18 @@ typedef struct {
 	CPG_REG_SETTING		stby_dat;
 } CPG_PLL_SETDATA_235;
 
+const struct cpg_config_t *g_cpg_fconf_cfg;
+
 static CPG_PLL_SETDATA_146 cpg_pll4_setdata = {
-#if (DDR_PLL4 ==1600)
-	{ CPG_PLL4_CLK1, 0xFAE13203 },
-	{ CPG_PLL4_CLK2, 0x00081000 },
-#elif (DDR_PLL4 == 1333)
-	{ CPG_PLL4_CLK1, 0xA66629C3 },
-	{ CPG_PLL4_CLK2, 0x00080D00 },
-#else
-#error "Unknown Board Type."
-#endif
-	{ CPG_PLL4_STBY, 0x00010001 }
+	{ CPG_PLL4_CLK1 },
+	{ CPG_PLL4_CLK2 },
+	{ CPG_PLL4_STBY }
 };
 
 static CPG_PLL_SETDATA_146 cpg_pll6_setdata = {
-	{ CPG_PLL6_CLK1, 0x00003e83 },
-	{ CPG_PLL6_CLK2, 0x00082D02 },
-	{ CPG_PLL6_STBY, 0x00010001 }, /* SSC OFF */
+	{ CPG_PLL6_CLK1 },
+	{ CPG_PLL6_CLK2 },
+	{ CPG_PLL6_STBY }, /* SSC OFF */
 };
 
 #define	CPG_PLL2_INDEX					(0)
@@ -769,6 +765,16 @@ static void cpg_pll_setup(void)
 	} while ((val & (PLL6_MON_PLL6_RESETB | PLL6_MON_PLL6_LOCK)) != 0);
 #endif
 
+	/* Initialize pll4 struct. */
+	cpg_pll4_setdata.clk1_dat.val = g_cpg_fconf_cfg->pll4_clk1;
+	cpg_pll4_setdata.clk2_dat.val = g_cpg_fconf_cfg->pll4_clk2;
+	cpg_pll4_setdata.stby_dat.val = g_cpg_fconf_cfg->pll4_stby;
+
+	/* Initialize pll6 struct. */
+	cpg_pll6_setdata.clk1_dat.val = g_cpg_fconf_cfg->pll6_clk1;
+	cpg_pll6_setdata.clk2_dat.val = g_cpg_fconf_cfg->pll6_clk2;
+	cpg_pll6_setdata.stby_dat.val = g_cpg_fconf_cfg->pll6_stby;
+
 	/* Set PLL4 to normal mode */
 	cpg_pll_start_146(&cpg_pll4_setdata);
 	/* Set PLL6 to normal mode */
@@ -884,9 +890,10 @@ void cpg_reset_ddr_mc(void)
 
 static void cpu_cpg_setup(void)
 {
+
 	while ((mmio_read_32(CPG_CLKSTATUS) & CLKSTATUS_DIVPL1_STS) != 0x00000000)
 		;
-	mmio_write_32(CPG_PL1_DDIV, PL1_DDIV_DIVPL1_SET_WEN | PL1_DDIV_DIVPL1_SET_1_1);
+	mmio_write_32(CPG_PL1_DDIV, g_cpg_fconf_cfg->divpl1_set | g_cpg_fconf_cfg->divpl1_set_wen);
 	while ((mmio_read_32(CPG_CLKSTATUS) & CLKSTATUS_DIVPL1_STS) != 0x00000000)
 		;
 }
@@ -907,6 +914,9 @@ void cpg_wdtrst_sel_setup(void)
 
 void cpg_setup(void)
 {
+	/* Initialize global CPG config from DTB.  */
+	g_cpg_fconf_cfg = cpg_config_getter();
+
 	cpg_selector_on_off(CPG_SEL_PLL3_3_ON_OFF, CPG_OFF);
 	cpg_div_sel_static_setup();
 	cpg_selector_on_off(CPG_SEL_PLL3_3_ON_OFF, CPG_ON);
