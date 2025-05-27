@@ -11,4 +11,4 @@ DDR_PLL4    := 1600
 $(eval $(call add_define,DDR_PLL4))
 
 # Default Device tree
-DTB_FILE_NAME		?=	rzpi
+DTB_FILE_NAME		?=	rzg2l-sbc

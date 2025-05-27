@@ -8,7 +8,7 @@
 /dts-v1/;
 
 / {
-	compatible = "rzpi", "renesas,r9a07g044l2", "renesas,r9a07g044";
+	compatible = "rzg2l-sbc", "renesas,r9a07g044l2", "renesas,r9a07g044";
 	model = "Renesas RZG2L SBC board";
 	#address-cells = <2>;
 	#size-cells = <2>;
