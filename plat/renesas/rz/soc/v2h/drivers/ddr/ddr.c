@@ -23,7 +23,7 @@ extern const uint32_t retention_phyreglist_1d_size;
 extern const uint32_t retention_phyreglist_2d_size;
 extern const uint32_t retention_mcreglist_size;
 
-static void ddr_init(uint64_t ddraddr);
+static void ddr_init(void *fdt, uint64_t ddraddr);
 static void phyinit_c(void);
 static void phyinit_d2h_1d(void);
 static void phyinit_d2h_2d(void);
@@ -43,21 +43,31 @@ void ddr_setup(void *fdt)
 		ERROR("BL2: Failed to get CPG base address\n");
 		return;
 	}
-	ddr_init((uint64_t)ddr_0_base);
+	ddr_init(fdt, (uint64_t)ddr_0_base);
 
 	uint64_t ddr_1_base = 0;
 	if(read_prop_64_from_subnode(fdt, node, "memory-1@240000000", "reg", 0, &ddr_1_base) != 0) {
 		ERROR("BL2: Failed to get CPG base address\n");
 		return;
 	}
-	ddr_init(ddr_1_base);
+	ddr_init(fdt, ddr_1_base);
 }
 
-static void ddr_init(uint64_t ddrbase)
+static void ddr_init(void *fdt, uint64_t ddrbase)
 {
+	const char *node = "/soc";
+	uint32_t ddr0_phy_base = 0;
+	uint32_t ddr0_memc_base = 0;
+	uint32_t ddr1_phy_base = 0;
+	uint32_t ddr1_memc_base = 0;
+	read_prop_from_subnode(fdt, node, "memory-0@40000000", "ddr0-phy-base", 1, &ddr0_phy_base);
+	read_prop_from_subnode(fdt, node, "memory-0@40000000", "ddr0-memc-base", 1, &ddr0_memc_base);
+	read_prop_from_subnode(fdt, node, "memory-1@240000000", "ddr1-phy-base", 1, &ddr1_phy_base);
+	read_prop_from_subnode(fdt, node, "memory-1@240000000", "ddr1-memc-base", 1, &ddr1_memc_base);
+	
 	if (ddrbase == RZV2H_DDR0_BASE) {
-		set_ddrtop_mc_base_addr(RZV2H_DDR0_MEMC_BASE);
-		set_ddrphy_base_addr(RZV2H_DDR0_PHY_BASE);
+		set_ddrtop_mc_base_addr(ddr0_memc_base);
+		set_ddrphy_base_addr(ddr0_phy_base);
 
 		cpg_ddr0_part1();
 
@@ -65,8 +75,8 @@ static void ddr_init(uint64_t ddrbase)
 
 		cpg_ddr0_part2();
 	} else if (ddrbase == RZV2H_DDR1_BASE) {
-		set_ddrtop_mc_base_addr(RZV2H_DDR1_MEMC_BASE);
-		set_ddrphy_base_addr(RZV2H_DDR1_PHY_BASE);
+		set_ddrtop_mc_base_addr(ddr1_memc_base);
+		set_ddrphy_base_addr(ddr1_phy_base);
 
 		cpg_ddr1_part1();
 
