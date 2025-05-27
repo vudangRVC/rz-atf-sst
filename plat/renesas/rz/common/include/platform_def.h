@@ -45,12 +45,10 @@
 /*******************************************************************************
  * RZ board id defines.
  ******************************************************************************/
-#define BOARD_ID_RZV2H   				22
-#define BOARD_ID_RZV2L 					33
-#define BOARD_ID_RZPI  					44
-#define BOARD_ID_RZG2L 					55
-#define BOARD_ID_RZG2LC 				66
-#define BOARD_ID_RZG2UL 				77
+#define BOARD_ID_RZG2L_EVK				0x10
+#define BOARD_ID_RZG2L_SBC				0x11
+#define BOARD_ID_RZV2L_EVK				0x20
+#define BOARD_ID_RZV2H_EVK				0x30
 
 /*******************************************************************************
  * BL2 specific defines.
