@@ -59,6 +59,9 @@
 #define RZG2L_UART_INCK_HZ          (100000000)
 #define RZG2L_UART_BARDRATE         (115200)
 
+#define RZG2L_BINARY_LIMIT_SIZE     (0x0001A000)
+#define RZG2L_DTB_BASE              (BL2_BASE + RZG2L_BINARY_LIMIT_SIZE)
+
 /* Boot Info base address */
 #define RZG2L_BOOTINFO_BASE         (RZG2L_SRAM_BASE)
 

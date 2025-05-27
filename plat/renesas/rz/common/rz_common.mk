@@ -145,3 +145,6 @@ ifneq (${TRUSTED_BOARD_BOOT},0)
 	BL2_SOURCES		+=	${AUTH_SOURCES}
 
 endif
+
+include lib/fconf/fconf.mk
+PLAT_BL_COMMON_SOURCES	+=	${FCONF_SOURCES}

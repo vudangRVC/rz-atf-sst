@@ -12,6 +12,8 @@
 #endif
 
 #include <arch.h>
+#include <common/tbbr/tbbr_img_def.h>
+#include <rzg2l_def.h>
 
 /*******************************************************************************
  * Platform binary types for linking
@@ -111,6 +113,12 @@
  ******************************************************************************/
 #define BL33_BASE				(0x50000000)
 #define BL33_LIMIT				(BL33_BASE + 0x08000000)
+
+/*******************************************************************************
+ * DTB specific defines.
+ ******************************************************************************/
+#define DTB_BASE			RZG2L_DTB_BASE
+#define DTB_LIMIT			(RZG2L_DTB_BASE + RZG2L_DTB_SIZE)
 
 /*******************************************************************************
  * Platform specific page table and MMU setup constants
