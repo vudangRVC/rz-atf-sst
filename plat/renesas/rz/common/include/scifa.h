@@ -15,7 +15,7 @@
 int console_rz_register(uintptr_t baseaddr, uint32_t clock,
 		uint32_t baud, console_t *console);
 
-void console_setup(void *fdt);
+void console_setup(void *fdt, console_t *console);
 
 #endif /* __ASSEMBLER__ */
 

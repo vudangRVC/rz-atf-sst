@@ -37,6 +37,7 @@
 #include <plat/common/platform.h>
 #include <platform_def.h>
 
+static console_t rzv2h_bl2_console;
 
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
 
@@ -133,7 +134,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	cpg_setup();
 
 	/* setup SCIF console */
-	console_setup(fdt);
+	console_setup(fdt, &rzv2h_bl2_console);
 
 	/* setup pwrc */
 	pwrc_setup();

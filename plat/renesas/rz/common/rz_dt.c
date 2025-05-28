@@ -34,11 +34,9 @@ int8_t read_prop_from_subnode(void *fdt, const char *node, const char *sub_node,
 {
 	// Get node offset
 	int node_offset = fdt_path_offset(fdt, node);
-	NOTICE("node_offset = %d\n", node_offset);
 
 	// Get sub node offset
 	int sub_node_offset = fdt_subnode_offset(fdt, node_offset, sub_node);
-	NOTICE("sub_node_offset = %d\n", sub_node_offset);
 
 	uint32_t target = 0;
 	int32_t len = 0;
@@ -48,7 +46,6 @@ int8_t read_prop_from_subnode(void *fdt, const char *node, const char *sub_node,
 		return -1;
 	}
 	target = fdt32_to_cpu(val[index]);
-	NOTICE("target = 0x%x\n", target);
 	*value = target;
 	return 0;
 }
@@ -58,11 +55,9 @@ int8_t read_prop_64_from_subnode(void *fdt, const char *node, const char *sub_no
 {
 	// Get node offset
 	int node_offset = fdt_path_offset(fdt, node);
-	NOTICE("node_offset = %d\n", node_offset);
 
 	// Get sub node offset
 	int sub_node_offset = fdt_subnode_offset(fdt, node_offset, sub_node);
-	NOTICE("sub_node_offset = %d\n", sub_node_offset);
 
 	uint64_t target = 0;
 	int32_t len = 0;
@@ -70,7 +65,6 @@ int8_t read_prop_64_from_subnode(void *fdt, const char *node, const char *sub_no
 
 	// Check the property exists and length
 	if (!val || len < (index * 8 + 8)) {
-		NOTICE("Missing or invalid property: %s length for 64-bit value at index %d\n", prop_name, index);
 		return -1;
 	}
 
@@ -81,7 +75,6 @@ int8_t read_prop_64_from_subnode(void *fdt, const char *node, const char *sub_no
 	// Combine the high and low parts into a single 64-bit value
 	target = ((uint64_t)high_part << 32) | low_part;
 
-	NOTICE("target = 0x%lx\n", target);
 	*value = target;
 	return 0;
 }
