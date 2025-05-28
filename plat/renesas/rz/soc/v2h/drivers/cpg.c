@@ -2199,59 +2199,90 @@ void cpg_ddr0_part1(void)
 
 void cpg_ddr0_part2(void)
 {
-	mmio_write_32(CPG_RST_11, 0x08000800);
+	// Get ddr base address
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+	uint32_t cpg_base = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "clock-controller@10420000", "reg", 1, &cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
+	mmio_write_32(CPG_RST_11_OFFSET + cpg_base, 0x08000800);
 
 	udelay(10);
 
-	mmio_write_32(CPG_RST_11, 0x04000400);
+	mmio_write_32(CPG_RST_11_OFFSET + cpg_base, 0x04000400);
 
 	udelay(10);
 }
 
 void cpg_ddr1_part1(void)
 {
-	mmio_write_32(CPG_RST_11, 0xF0000000);
-	mmio_write_32(CPG_RST_12, 0x001F0000);
+	// Get ddr base address
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+	uint32_t cpg_base = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "clock-controller@10420000", "reg", 1, &cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
 
-	mmio_write_32(CPG_LP_DDR_CTL1, mmio_read_32(CPG_LP_DDR_CTL1) & ~0x00000002);
+	mmio_write_32(CPG_RST_11_OFFSET + cpg_base, 0xF0000000);
+	mmio_write_32(CPG_RST_12_OFFSET + cpg_base, 0x001F0000);
 
-	mmio_write_32(CPG_PLLDDR1_STBY, 0x00010001);
-	while ((mmio_read_32(CPG_PLLDDR1_MON) & 0x00000011) != 0x00000011)
+	mmio_write_32(CPG_LP_DDR_CTL1_OFFSET + cpg_base, mmio_read_32(CPG_LP_DDR_CTL1_OFFSET + cpg_base) & ~0x00000002);
+
+	mmio_write_32(CPG_PLLDDR1_STBY_OFFSET + cpg_base, 0x00010001);
+	while ((mmio_read_32(CPG_PLLDDR1_MON_OFFSET + cpg_base) & 0x00000011) != 0x00000011)
 		;
 
-	mmio_write_32(CPG_CLKON_12, 0xF000F000);
-	mmio_write_32(CPG_CLKON_13, 0x00030003);
+	mmio_write_32(CPG_CLKON_12_OFFSET + cpg_base, 0xF000F000);
+	mmio_write_32(CPG_CLKON_13_OFFSET + cpg_base, 0x00030003);
 
 	udelay(1);
 
-	mmio_write_32(CPG_RST_11, 0x10001000);
-	mmio_write_32(CPG_LP_DDR_CTL1, mmio_read_32(CPG_LP_DDR_CTL1) | 0x00000002);
+	mmio_write_32(CPG_RST_11_OFFSET + cpg_base, 0x10001000);
+	mmio_write_32(CPG_LP_DDR_CTL1_OFFSET + cpg_base, mmio_read_32(CPG_LP_DDR_CTL1_OFFSET + cpg_base) | 0x00000002);
 
 	udelay(1);
 
-	mmio_write_32(CPG_RST_11, 0xE000E000);
-	mmio_write_32(CPG_RST_12, 0x00070007);
+	mmio_write_32(CPG_RST_11_OFFSET + cpg_base, 0xE000E000);
+	mmio_write_32(CPG_RST_12_OFFSET + cpg_base, 0x00070007);
 
 	udelay(1);
 }
 
 void cpg_ddr1_part2(void)
 {
-	mmio_write_32(CPG_RST_12, 0x00100010);
+	// Get ddr base address
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+	uint32_t cpg_base = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "clock-controller@10420000", "reg", 1, &cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
+
+	mmio_write_32(CPG_RST_12_OFFSET + cpg_base, 0x00100010);
 
 	udelay(10);
 
-	mmio_write_32(CPG_RST_12, 0x00080008);
+	mmio_write_32(CPG_RST_12_OFFSET + cpg_base, 0x00080008);
 
 	udelay(10);
 }
 
 void cpg_ddr_pwrokin_off(uint8_t base)
 {
+	// Get ddr base address
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+	uint32_t cpg_base = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "clock-controller@10420000", "reg", 1, &cpg_base) != 0) {
+		ERROR("BL2: Failed to get CPG base address\n");
+		return;
+	}
 	if (!base)
-		mmio_write_32(CPG_LP_DDR_CTL1, mmio_read_32(CPG_LP_DDR_CTL1) & ~0x00000001);	/* DDR0 */
+		mmio_write_32(CPG_LP_DDR_CTL1_OFFSET + cpg_base, mmio_read_32(CPG_LP_DDR_CTL1_OFFSET + cpg_base) & ~0x00000001);	/* DDR0 */
 	else
-		mmio_write_32(CPG_LP_DDR_CTL1, mmio_read_32(CPG_LP_DDR_CTL1) & ~0x00000002);	/* DDR1 */
+		mmio_write_32(CPG_LP_DDR_CTL1_OFFSET + cpg_base, mmio_read_32(CPG_LP_DDR_CTL1_OFFSET + cpg_base) & ~0x00000002);	/* DDR1 */
 }
 
 void cpg_early_setup(void)
