@@ -26,7 +26,7 @@ typedef struct {
 } CPG_PLL_SETTINGS;
 
 void cpg_early_setup(void);
-void cpg_setup(void);
+void cpg_setup(void *fdt);
 void cpg_ddr0_part1(void);
 void cpg_ddr0_part2(void);
 void cpg_ddr1_part1(void);

@@ -2290,9 +2290,8 @@ void cpg_early_setup(void)
 	/* CGC_SYC_0_CNT_CLK and SYC_0_RESETN are 'forcibly modified by hardware' so do not need setting here */
 }
 
-void cpg_setup(void)
+void cpg_setup(void *fdt)
 {
-	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
 	cpg_div_sel_static_setup(fdt);
 	cpg_pll_setup(fdt);
 	cpg_clk_on_setup(fdt);

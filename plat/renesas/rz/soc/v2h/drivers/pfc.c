@@ -308,10 +308,8 @@ static void pfc_riic_pmic_setup(void *fdt, uintptr_t pfc_base)
 #endif /* PLAT_SYSTEM_SUSPEND */
 }
 
-void pfc_setup(void)
+void pfc_setup(void *fdt)
 {
-	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
-
 	// Get pin-controller base address
 	const char *node = "/soc";
 	const char *sub_node = "pinctrl@10410000";

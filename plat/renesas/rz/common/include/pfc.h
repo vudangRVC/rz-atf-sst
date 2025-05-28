@@ -7,7 +7,7 @@
 #ifndef __PFC_H__
 #define __PFC_H__
 
-void pfc_setup(void);
+void pfc_setup(void *fdt);
 
 
 #endif	/* __PFC_H__ */

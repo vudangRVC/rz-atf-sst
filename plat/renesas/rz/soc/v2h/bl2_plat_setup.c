@@ -105,7 +105,7 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 								u_register_t arg3, u_register_t arg4)
 {
-	/* early setup Clock and Reset */
+	/* Early setup Clock and Reset */
 	cpg_early_setup();
 
 	/* DTB addr */
@@ -123,16 +123,16 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	/* Initialize Timer */
 	generic_delay_timer_init_v2h(fdt);
 
-	/* setup PFC */
-	pfc_setup();
+	/* Setup PFC */
+	pfc_setup(fdt);
 
-	/* setup Clock and Reset */
-	cpg_setup();
+	/* Setup Clock and Reset */
+	cpg_setup(fdt);
 
-	/* setup SCIF console */
+	/* Setup SCIF console */
 	console_setup(fdt, &rzv2h_bl2_console);
 
-	/* setup pwrc */
+	/* Setup pwrc */
 	pwrc_setup_v2h(fdt);
 }
 
@@ -184,6 +184,6 @@ void bl2_platform_setup(void)
 
 	rz_io_setup();
 
-	/* initialize DDR */
+	/* Initialize DDR */
 	plat_ddr_setup(fdt);
 }
