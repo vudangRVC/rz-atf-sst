@@ -84,6 +84,5 @@ void fconf_populate_v2h(const char *config_type, uintptr_t config);
 
 /*FCONF v2h*/
 int dt_validation_v2h(const void *fdt);
-uint32_t fconf_populate_sysc_config_v2h(const void *fdt);
 uint32_t fconf_populate_timer_config_v2h(const void *fdt);
 #endif

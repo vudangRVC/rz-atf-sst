@@ -117,11 +117,8 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 		panic();
 	}
 
-	/* Read syc_inck_hz from DTB */
-	uint32_t syc_inck_hz = fconf_populate_sysc_config_v2h(fdt);
-
-	/* initialize SYC */
-	syc_init(syc_inck_hz);
+	/* Initialize SYC */
+	syc_init_v2h(fdt);
 
 	/* initialize Timer */
 	fconf_populate_timer_config_v2h(fdt);

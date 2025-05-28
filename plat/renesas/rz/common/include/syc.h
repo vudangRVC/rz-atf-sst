@@ -8,6 +8,7 @@
 #define __SYC_H__
 
 void syc_init(unsigned int freq);
+void syc_init_v2h(void *fdt);
 unsigned int syc_get_freq(void);
 
 #endif	/* __SYC_H__ */

@@ -369,27 +369,6 @@ int dt_validation_v2h(const void *fdt)
 }
 
 /**********************************************************************
- * SYSC FCONF v2h
- **********************************************************************/
-uint32_t fconf_populate_sysc_config_v2h(const void *fdt)
-{
-	int soc_node = fdt_path_offset(fdt, "/soc");
-	NOTICE("soc_node = %d\n", soc_node);
-
-	int sysc_node = fdt_subnode_offset(fdt, soc_node, "system-controller@10430000");
-	NOTICE("sysc_node = %d\n", sysc_node);
-
-	const char *sysc_props[] = { "syc_inck_hz" };
-	uint32_t *targets[] = { &sysc_config.syc_inck_hz };
-
-	fconf_read_u32_props(fdt, sysc_node, sysc_props, (uint32_t **)targets, ARRAY_SIZE(sysc_props));
-
-	NOTICE("syc_inck_hz = %d\n", sysc_config.syc_inck_hz);
-
-	return sysc_config.syc_inck_hz;
-}
-
-/**********************************************************************
  * TIMER FCONF v2h
  **********************************************************************/
 uint32_t fconf_populate_timer_config_v2h(const void *fdt)

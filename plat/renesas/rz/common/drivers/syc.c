@@ -7,6 +7,7 @@
 #include <lib/mmio.h>
 #include <rz_soc_def.h>
 #include <rz_fconf.h>
+#include <rz_dt.h>
 
 #define SYC_BASE	RZ_SOC_SYC_BASE
 
@@ -33,6 +34,18 @@ static void enable_counter(unsigned int enable)
 void syc_init(unsigned int freq)
 {
 	syc_reg_write(CNTFID0, freq);
+	enable_counter(CNTCR_EN);
+}
+
+void syc_init_v2h(void *fdt)
+{
+	// Get syc_inck_hz value from FDT
+	uint32_t syc_inck_hz = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "system-controller@10430000", "syc_inck_hz", 0, &syc_inck_hz) != 0) {
+		return;
+	}
+
+	syc_reg_write(CNTFID0, syc_inck_hz);
 	enable_counter(CNTCR_EN);
 }
 
