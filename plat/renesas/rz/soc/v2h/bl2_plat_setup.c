@@ -137,7 +137,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	console_setup(fdt, &rzv2h_bl2_console);
 
 	/* setup pwrc */
-	pwrc_setup();
+	pwrc_setup_v2h(fdt);
 }
 
 void bl2_el3_plat_arch_setup(void)

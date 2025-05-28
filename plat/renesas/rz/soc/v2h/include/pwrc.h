@@ -8,6 +8,7 @@
 #define PWRC_H
 
 void pwrc_setup(void);
+void pwrc_setup_v2h(void *fdt);
 void plat_secondary_reset(void);
 void pwrc_suspend_to_ram(void);
 
