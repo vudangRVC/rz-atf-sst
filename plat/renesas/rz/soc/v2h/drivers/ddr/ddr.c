@@ -318,14 +318,37 @@ static void dwc_ddrphy_apb_poll(uint32_t addr, uint32_t data, uint32_t mask)
 
 static void ddr_retention_enter(uint8_t base)
 {
+	/* DTB addr */
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+
+	// Get ddr base address
+	const char *node = "/soc";
+	
+	uint32_t ddr0_memc_base = 0;
+	if(read_prop_from_subnode(fdt, node, "memory-0@40000000", "ddr0-memc-base", 1, &ddr0_memc_base) != 0) {
+		return;
+	}
+	uint32_t ddr0_phy_base = 0;
+	if(read_prop_from_subnode(fdt, node, "memory-0@40000000", "ddr0-phy-base", 1, &ddr0_phy_base) != 0) {
+		return;
+	}
+	uint32_t ddr1_phy_base = 0;
+	if(read_prop_from_subnode(fdt, node, "memory-1@240000000", "ddr1-phy-base", 1, &ddr1_phy_base) != 0) {
+		return;
+	}
+	uint32_t ddr1_memc_base = 0;
+	if(read_prop_from_subnode(fdt, node, "memory-1@240000000", "ddr1-memc-base", 1, &ddr1_memc_base) != 0) {
+		return;
+	}
+
 	uint32_t val, num_rank;
 
 	if (!base) {
-		set_ddrtop_mc_base_addr(RZV2H_DDR0_MEMC_BASE);
-		set_ddrphy_base_addr(RZV2H_DDR0_PHY_BASE);
+		set_ddrtop_mc_base_addr(ddr0_memc_base);
+		set_ddrphy_base_addr(ddr0_phy_base);
 	} else {
-		set_ddrtop_mc_base_addr(RZV2H_DDR1_MEMC_BASE);
-		set_ddrphy_base_addr(RZV2H_DDR1_PHY_BASE);
+		set_ddrtop_mc_base_addr(ddr1_memc_base);
+		set_ddrphy_base_addr(ddr1_phy_base);
 	}
 
 	val = ddrtop_mc_param_rd(CS_MAP_ADDR, CS_MAP_OFFSET, CS_MAP_WIDTH);
