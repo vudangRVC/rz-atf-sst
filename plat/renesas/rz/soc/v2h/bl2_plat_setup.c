@@ -120,9 +120,8 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	/* Initialize SYC */
 	syc_init_v2h(fdt);
 
-	/* initialize Timer */
-	fconf_populate_timer_config_v2h(fdt);
-	generic_delay_timer_init();
+	/* Initialize Timer */
+	generic_delay_timer_init_v2h(fdt);
 
 	/* setup PFC */
 	pfc_setup();

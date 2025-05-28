@@ -367,29 +367,3 @@ int dt_validation_v2h(const void *fdt)
 
 	return ret;
 }
-
-/**********************************************************************
- * TIMER FCONF v2h
- **********************************************************************/
-uint32_t fconf_populate_timer_config_v2h(const void *fdt)
-{
-	// Get Soc node offset
-	int soc_node = fdt_path_offset(fdt, "/soc");
-
-	// Get System Timer sub node offset
-	int timer_node = fdt_subnode_offset(fdt, soc_node, "system-timer@14010000");
-
-	// Get the properties: syc_timer_mul of the timer
-	const char *mul_props[] = { "syc_timer_mul" };
-	uint32_t *mul_value[] = { &timer_config.timer_mul };
-	fconf_read_u32_props(fdt, timer_node, mul_props, (uint32_t **)mul_value, ARRAY_SIZE(mul_props));
-	INFO("syc_timer_mul = %d\n", timer_config.timer_mul);
-
-	// Get the properties: syc_timer_offset of the timer
-	const char *offset_props[] = { "syc_timer_offset" };
-	uint32_t *offset_value[] = { &timer_config.timer_offset };
-	fconf_read_u32_props(fdt, timer_node, offset_props, (uint32_t **)offset_value, ARRAY_SIZE(offset_props));
-	INFO("syc_timer_offset = %x\n", timer_config.timer_offset);
-
-	return 0;
-}

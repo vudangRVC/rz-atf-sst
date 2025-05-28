@@ -16,6 +16,8 @@
 #include <lib/utils_def.h>
 #include <plat/common/platform.h>
 #include <rz_fconf.h>
+#include <rz_dt.h>
+#include <lib/mmio.h>
 
 static timer_ops_t ops;
 
@@ -51,6 +53,40 @@ void generic_delay_timer_init(void)
 
 	/* Value in ticks per second (Hz) */
 	unsigned int div  = plat_get_syscnt_freq2();
+
+	/* Reduce multiplier and divider by dividing them repeatedly by 10 */
+	while (((mult % 10U) == 0U) && ((div % 10U) == 0U)) {
+		mult /= 10U;
+		div /= 10U;
+	}
+
+	generic_delay_timer_init_args(mult, div);
+}
+
+void generic_delay_timer_init_v2h(void *fdt)
+{
+	assert(is_armv7_gentimer_present());
+
+	// Get timer mul value from FDT
+	uint32_t mult = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "system-timer@14010000", "syc_timer_mul", 0, &mult) != 0) {
+		return;
+	}
+
+	// Get timer offset value from FDT
+	uint32_t timer_offset = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "system-timer@14010000", "syc_timer_offset", 0, &timer_offset) != 0) {
+		return;
+	}
+
+	// Get timer base value from FDT
+	uint32_t timer_base = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "system-timer@14010000", "reg", 1, &timer_base) != 0) {
+		return;
+	}
+
+	/* Value in ticks per second (Hz) */
+	unsigned int div = mmio_read_32(timer_base + timer_offset);
 
 	/* Reduce multiplier and divider by dividing them repeatedly by 10 */
 	while (((mult % 10U) == 0U) && ((div % 10U) == 0U)) {
