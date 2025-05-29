@@ -21,7 +21,7 @@ int dt_validation(uintptr_t dt_addr)
 		ERROR("DTB validation failed: %s (%d)\n", fdt_strerror(ret), ret);
 		ERROR("DTB location: 0x%lx, magic: 0x%x\n", 
 			BL2_LIMIT, 
-			  fdt_magic((const void *)BL2_LIMIT));
+			fdt_magic((const void *)BL2_LIMIT));
 	}
 
 	return ret;

@@ -11,6 +11,9 @@
 #include <lib/fconf/fconf_dyn_cfg_getter.h>
 #include <lib/object_pool.h>
 #include <libfdt.h>
+#include <export/common/tbbr/tbbr_img_def_exp.h>
+#include <platform_def.h>
+
 
 /* We currently use FW, TB_FW, SOC_FW, TOS_FW, NT_FW and HW configs  */
 #define MAX_DTB_INFO	U(6)

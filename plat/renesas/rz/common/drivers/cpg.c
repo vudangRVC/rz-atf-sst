@@ -909,7 +909,7 @@ void cpg_wdtrst_sel_setup(void)
 	mmio_write_32(CPG_WDTRST_SEL, reg);
 }
 
-void cpg_setup(void)
+void cpg_setup(void *fdt)
 {
 	cpg_selector_on_off(CPG_SEL_PLL3_3_ON_OFF, CPG_OFF);
 	cpg_div_sel_static_setup();

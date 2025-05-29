@@ -25,6 +25,7 @@
 #include <rz_soc_def.h>
 #include <rz_private.h>
 #include <drivers/delay_timer.h>
+#include <rz_dt.h>
 
 static const mmap_region_t rzg2l_mmap[] = {
 #if TRUSTED_BOARD_BOOT
@@ -84,6 +85,13 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 								u_register_t arg3, u_register_t arg4)
 {
 	int ret;
+	/* DTB addr */
+	void *fdt = (void *)RZG2L_DTB_BASE;
+
+	/* Validate DTB is valid */
+	if (dt_validation(RZG2L_DTB_BASE) < 0) {
+		panic();
+	}
 
 	/* early setup Clock and Reset */
 	cpg_early_setup();
@@ -95,10 +103,10 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	generic_delay_timer_init();
 
 	/* setup PFC */
-	pfc_setup();
+	pfc_setup(fdt);
 
 	/* setup Clock and Reset */
-	cpg_setup();
+	cpg_setup(fdt);
 
 	/* USB 2.0 Phy workaround for RZ/G2L,LC	*/
 	if (((mmio_read_32(SYS_LSI_DEVID) & 0x0FFFFFFF) == 0x841C447) &&

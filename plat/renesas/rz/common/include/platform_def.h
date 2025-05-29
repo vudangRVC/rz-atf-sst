@@ -46,11 +46,11 @@
  * BL2 specific defines.
  ******************************************************************************/
 #if !TRUSTED_BOARD_BOOT
-#define BL2_BASE				(0x00012000)
-#define BL2_LIMIT				(0x0002F000)
+#define BL2_BASE				UL(0x00012000)
+#define BL2_LIMIT				UL(0x0002F000)
 #else
-#define BL2_BASE				(0x00013000)
-#define BL2_LIMIT				(0x0002F000)
+#define BL2_BASE				UL(0x00013000)
+#define BL2_LIMIT				UL(0x0002F000)
 #endif
 
 /*******************************************************************************
