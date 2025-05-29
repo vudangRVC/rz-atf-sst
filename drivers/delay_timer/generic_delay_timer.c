@@ -67,21 +67,21 @@ void generic_delay_timer_init_v2h(void *fdt)
 {
 	assert(is_armv7_gentimer_present());
 
+	// Get timer base value from FDT
+	uint32_t timer_base = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "system-counter@14010000", "reg", 1, &timer_base) != 0) {
+		return;
+	}
+
 	// Get timer mul value from FDT
 	uint32_t mult = 0;
-	if(read_prop_from_subnode(fdt, "/soc", "system-timer@14010000", "syc_timer_mul", 0, &mult) != 0) {
+	if(read_prop_from_subnode(fdt, "/soc", "system-counter@14010000", "syc_timer_mul", 0, &mult) != 0) {
 		return;
 	}
 
 	// Get timer offset value from FDT
 	uint32_t timer_offset = 0;
-	if(read_prop_from_subnode(fdt, "/soc", "system-timer@14010000", "syc_timer_offset", 0, &timer_offset) != 0) {
-		return;
-	}
-
-	// Get timer base value from FDT
-	uint32_t timer_base = 0;
-	if(read_prop_from_subnode(fdt, "/soc", "system-timer@14010000", "reg", 1, &timer_base) != 0) {
+	if(read_prop_from_subnode(fdt, "/soc", "system-counter@14010000", "syc_timer_offset", 0, &timer_offset) != 0) {
 		return;
 	}
 
