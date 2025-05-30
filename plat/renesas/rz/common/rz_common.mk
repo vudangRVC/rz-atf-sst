@@ -118,7 +118,8 @@ BL31_SOURCES	+=	lib/cpus/aarch64/cortex_a55.S					\
 include lib/xlat_tables_v2/xlat_tables.mk
 PLAT_BL_COMMON_SOURCES	+=	${XLAT_TABLES_LIB_SRCS}					\
 							plat/renesas/rz/common/plat_rz_common.c	\
-							plat/renesas/rz/common/drivers/scifa.S
+							plat/renesas/rz/common/board_info.c	\
+							plat/renesas/rz/common/drivers/scifa.S \
 
 ifneq (${ENABLE_STACK_PROTECTOR},0)
 PLAT_BL_COMMON_SOURCES	+=	plat/renesas/rz/common/rz_stack_protector.c

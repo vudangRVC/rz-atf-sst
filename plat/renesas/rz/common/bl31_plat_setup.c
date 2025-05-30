@@ -16,6 +16,8 @@
 #include <rz_private.h>
 #include <rzg2l_def.h>
 
+#include <board_info.h>
+
 static const mmap_region_t rzg2l_mmap[] = {
 	MAP_REGION_FLAT(RZG2L_SRAM_BASE, RZG2L_SRAM_SIZE,
 			MT_MEMORY | MT_RW | MT_SECURE),
@@ -23,11 +25,15 @@ static const mmap_region_t rzg2l_mmap[] = {
 			MT_DEVICE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(RZG2L_DDR1_BASE, RZG2L_DDR1_SIZE,
 			MT_MEMORY | MT_RW | MT_SECURE),
+	MAP_REGION_FLAT(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE,
+			MT_MEMORY | MT_RW | MT_SECURE),
 	{0}
 };
 
 static console_t rzg2l_bl31_console;
 static bl2_to_bl31_params_mem_t from_bl2;
+
+entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type);
 
 void bl31_early_platform_setup2(u_register_t arg0,
 								u_register_t arg1,
@@ -78,6 +84,18 @@ void bl31_platform_setup(void)
 	plat_gic_driver_init();
 	plat_gic_init();
 #endif
+
+	/* Read model and revision id from QSPI */
+	uint32_t model = get_board_info_u32(RZG2L_SPIROM_BASE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
+	uint32_t revision = get_board_info_u32(RZG2L_SPIROM_BASE, BOARD_INFO_QSPI_OFFSET, OFFSET_REVISION);
+
+	/* Get entry point info for BL33 */
+	entry_point_info_t *bl33_ep_info = bl31_plat_get_next_image_ep_info(NON_SECURE);
+
+	if (bl33_ep_info != NULL) {
+		bl33_ep_info->args.arg2 = model;
+		bl33_ep_info->args.arg3 = revision;
+	}
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
