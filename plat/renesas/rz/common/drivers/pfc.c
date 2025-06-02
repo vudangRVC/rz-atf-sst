@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <pfc_regs.h>
 #include <lib/mmio.h>
+#include <rz_fconf.h>
+
+const struct pfc_config_t *g_pfc_fconf_cfg;
 
 static PFC_REGS pfc_mux_reg_tbl[PFC_MUX_TBL_NUM] = {
 #if RZG2UL
@@ -87,30 +90,30 @@ static PFC_REGS pfc_mux_reg_tbl[PFC_MUX_TBL_NUM] = {
 static PFC_REGS  pfc_qspi_reg_tbl[PFC_QSPI_TBL_NUM] = {
 	/* QSPI0 */
 	{
-		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
-		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH0A, 0x0000020202020202 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD0A, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR0A,   0x0000010101010101 },		/* SR */
-		{ PFC_OFF, (uintptr_t)NULL,       0 }						/* IEN */
+		{ PFC_OFF, (uintptr_t)NULL        },		/* PMC */
+		{ PFC_OFF, (uintptr_t)NULL        },		/* PFC */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH0A  },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD0A  },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR0A    },		/* SR */
+		{ PFC_OFF, (uintptr_t)NULL        } 		/* IEN */
 	},
 	/* QSPI1 */
 	{
-		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
-		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH0B, 0x0000020202020202 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD0B, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR0B,   0x0000010101010101 },		/* SR */
-		{ PFC_OFF, (uintptr_t)NULL,       0 }						/* IEN */
+		{ PFC_OFF, (uintptr_t)NULL        },		/* PMC */
+		{ PFC_OFF, (uintptr_t)NULL        },		/* PFC */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH0B  },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD0B  },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR0B    },		/* SR */
+		{ PFC_OFF, (uintptr_t)NULL        } 		/* IEN */
 	},
 	/* QSPIn */
 	{
-		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
-		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH0C, 0x0000000000020202 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD0C, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR0C,   0x0000000000010000 },		/* SR */
-		{ PFC_OFF, (uintptr_t)NULL,       0 }						/* IEN */
+		{ PFC_OFF, (uintptr_t)NULL        },		/* PMC */
+		{ PFC_OFF, (uintptr_t)NULL        },		/* PFC */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH0C  },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD0C  },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR0C    },		/* SR */
+		{ PFC_OFF, (uintptr_t)NULL        } 		/* IEN */
 	}
 };
 
@@ -202,6 +205,21 @@ static void pfc_qspi_setup(void)
 {
 	int      cnt;
 
+	/* QSPI0 */
+	pfc_qspi_reg_tbl[0].iolh.val = g_pfc_fconf_cfg->qspi0_iolh0a;
+	pfc_qspi_reg_tbl[0].pupd.val = g_pfc_fconf_cfg->qspi0_pupd0a;
+	pfc_qspi_reg_tbl[0].sr.val   = g_pfc_fconf_cfg->qspi0_sr0a;
+
+	/* QSPI1 */
+	pfc_qspi_reg_tbl[1].iolh.val = g_pfc_fconf_cfg->qspi1_iolh0b;
+	pfc_qspi_reg_tbl[1].pupd.val = g_pfc_fconf_cfg->qspi1_pupd0b;
+	pfc_qspi_reg_tbl[1].sr.val   = g_pfc_fconf_cfg->qspi1_sr0b;
+
+	/* QSPIn */
+	pfc_qspi_reg_tbl[2].iolh.val = g_pfc_fconf_cfg->qspin_iolh0c;
+	pfc_qspi_reg_tbl[2].pupd.val = g_pfc_fconf_cfg->qspin_pupd0c;
+	pfc_qspi_reg_tbl[2].sr.val   = g_pfc_fconf_cfg->qspin_sr0c;
+	
 	for (cnt = 0; cnt < PFC_QSPI_TBL_NUM; cnt++) {
 		/* IOLH */
 		if (pfc_qspi_reg_tbl[cnt].iolh.flg == PFC_ON) {
@@ -256,6 +274,9 @@ static void pfc_sd_setup(void)
 
 void pfc_setup(void)
 {
+	/* Initialize global PFC config from DTB.  */
+	g_pfc_fconf_cfg = pfc_config_getter();
+
 	pfc_mux_setup();
 	pfc_qspi_setup();
 	pfc_sd_setup();

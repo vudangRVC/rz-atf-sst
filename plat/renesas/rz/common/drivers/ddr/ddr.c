@@ -9,7 +9,8 @@
 #include	<common/debug.h>
 
 #include <ddr_internal.h>
-#include	<cpg.h>
+#include <cpg.h>
+#include <rz_fconf.h>
 
 #define	CEIL(a, div)	(((a) + ((div) - 1)) / (div))
 #define	_MIN(a, b)		((a) < (b) ? (a) : (b))
@@ -29,6 +30,7 @@ extern const uint32_t mc_phy_settings_tbl[MC_PHYSET_NUM][2];
 extern const uint32_t swizzle_mc_tbl[SWIZZLE_MC_NUM][2];
 extern const uint32_t swizzle_phy_tbl[SIZZLE_PHY_NUM][2];
 extern const char ddr_an_version[];
+const struct ddr_config_t *g_ddr_fconf_cfg;
 
 // prototypes
 void ddr_setup(void);
@@ -76,6 +78,9 @@ void ddr_setup(void)
 	uint32_t	tmp;
 	int i;
 
+	/* Initialize global DDR config from DTB.  */
+	g_ddr_fconf_cfg = ddr_config_getter();
+
 	INFO("BL2: setup DDR (Rev. %s)\n", ddr_an_version);
 	// Step2 - Step11
 	cpg_active_ddr(disable_phy_clk);
@@ -122,10 +127,12 @@ void ddr_setup(void)
 
 	// Step20
 	for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl); i++) {
-		write_mc_reg(swizzle_mc_tbl[i][0], swizzle_mc_tbl[i][1]);
+		INFO("swizzle_mc_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
+		write_mc_reg(swizzle_mc_tbl[i][0], g_ddr_fconf_cfg->ddrmc[i]);
 	}
 	for (i = 0; i < ARRAY_SIZE(swizzle_phy_tbl); i++) {
-		write_phy_reg(swizzle_phy_tbl[i][0], swizzle_phy_tbl[i][1]);
+		INFO("swizzle_phy_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrphy[i]);
+		write_phy_reg(swizzle_phy_tbl[i][0], g_ddr_fconf_cfg->ddrphy[i]);
 	}
 
 	// Step21
@@ -592,12 +599,35 @@ static void disable_phy_clk(void)
 static void program_mc1(uint8_t *lp_auto_entry_en)
 {
 	int i;
+	int offset;
 
 	// Step1
 	for (i = 0; i < ARRAY_SIZE(mc_init_tbl); i++) {
-		if (mc_init_tbl[i][0] == DDRMC_R006) {
+		offset = mc_init_tbl[i][0];
+		if (offset == DDRMC_R006) {
 			*lp_auto_entry_en = mc_init_tbl[i][1] & 0xF;
 			write_mc_reg(DDRMC_R006, mc_init_tbl[i][1] & 0xFFFFFFF0);
+		} else if (offset == DENALI_CTL_30) {
+			INFO("DENALI_CTL_30: %x\n", g_ddr_fconf_cfg->ddrdenali_30);
+			write_mc_reg(DENALI_CTL_30, g_ddr_fconf_cfg->ddrdenali_30);
+		} else if (offset == DENALI_CTL_34) {
+			INFO("DENALI_CTL_34: %x\n", g_ddr_fconf_cfg->ddrdenali_34);
+			write_mc_reg(DENALI_CTL_34, g_ddr_fconf_cfg->ddrdenali_34);
+		} else if (offset == DENALI_CTL_35) {
+			INFO("DENALI_CTL_35: %x\n", g_ddr_fconf_cfg->ddrdenali_35);
+			write_mc_reg(DENALI_CTL_35, g_ddr_fconf_cfg->ddrdenali_35);
+		} else if (offset == DENALI_CTL_122) {
+			INFO("DENALI_CTL_122: %x\n", g_ddr_fconf_cfg->ddrdenali_122);
+			write_mc_reg(DENALI_CTL_122, g_ddr_fconf_cfg->ddrdenali_122);
+		} else if (offset == DENALI_CTL_123) {
+			INFO("DENALI_CTL_123: %x\n", g_ddr_fconf_cfg->ddrdenali_123);
+			write_mc_reg(DENALI_CTL_123, g_ddr_fconf_cfg->ddrdenali_123);
+		} else if (offset == DENALI_CTL_124) {
+			INFO("DENALI_CTL_124: %x\n", g_ddr_fconf_cfg->ddrdenali_124);
+			write_mc_reg(DENALI_CTL_124, g_ddr_fconf_cfg->ddrdenali_124);
+		} else if (offset == DENALI_CTL_125) {
+			INFO("DENALI_CTL_125: %x\n", g_ddr_fconf_cfg->ddrdenali_125);
+			write_mc_reg(DENALI_CTL_125, g_ddr_fconf_cfg->ddrdenali_125);
 		} else {
 			write_mc_reg(mc_init_tbl[i][0], mc_init_tbl[i][1]);
 		}
