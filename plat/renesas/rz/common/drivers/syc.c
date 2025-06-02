@@ -1,13 +1,15 @@
 /*
- * Copyright (c) 2020, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2022, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <lib/mmio.h>
-#include <rzg2l_def.h>
+#include <rz_soc_def.h>
+#include <rz_fconf.h>
+#include <rz_dt.h>
 
-#define SYC_BASE	RZG2L_SYC_BASE
+#define SYC_BASE	RZ_SOC_SYC_BASE
 
 #define CNTCR		(0x000)
 #define CNTFID0		(0x020)
@@ -35,7 +37,21 @@ void syc_init(unsigned int freq)
 	enable_counter(CNTCR_EN);
 }
 
+void syc_init_v2h(void *fdt)
+{
+	// Get syc_inck_hz value from FDT
+	uint32_t syc_inck_hz = 0;
+	if(read_prop_from_subnode(fdt, "/soc", "system-controller@10430000", "syc_inck_hz", 0, &syc_inck_hz) != 0) {
+		return;
+	}
+
+	syc_reg_write(CNTFID0, syc_inck_hz);
+	enable_counter(CNTCR_EN);
+}
+
 unsigned int syc_get_freq(void)
 {
-	return syc_reg_read(CNTFID0);
+	// uint32_t timer_offset = timer_config.timer_offset;
+	// return syc_reg_read(timer_offset);
+	return 1;
 }

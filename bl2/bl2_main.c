@@ -225,6 +225,7 @@ void bl2_main(void)
 
 	NOTICE("BL2: %s\n", version_string);
 	NOTICE("BL2: %s\n", build_message);
+	NOTICE("BL2: V2h \n");
 
 	/* Perform remaining generic architectural setup in S-EL1 */
 	bl2_arch_setup();

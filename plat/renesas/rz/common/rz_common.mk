@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-
+RESET_TO_BL2			:= 1
 BL2_AT_EL3						:= 1
 RESET_TO_BL2				:= 1
 COLD_BOOT_SINGLE_CPU			:= 1
@@ -92,6 +92,7 @@ BL2_SOURCES		+=	lib/cpus/aarch64/cortex_a55.S						\
 					plat/renesas/rz/common/drivers/syc.c				\
 					plat/renesas/rz/common/drivers/pfc.c				\
 					plat/renesas/rz/common/drivers/cpg.c				\
+					plat/renesas/rz/common/rz_fconf.c					\
 					${DDR_SOURCES}										\
 					${SPI_MULTI_SOURCE}									\
 					${SD_SOURCES}
@@ -113,12 +114,14 @@ BL31_SOURCES	+=	lib/cpus/aarch64/cortex_a55.S					\
 					plat/renesas/rz/common/rz_plat_sip_handler.c	\
 					plat/renesas/rz/common/rz_sip_svc.c				\
 					plat/renesas/rz/common/aarch64/plat_helpers.S	\
-					plat/renesas/rz/common/drivers/syc.c
+					plat/renesas/rz/common/rz_fconf.c				\
+					plat/renesas/rz/common/drivers/syc.c			\
 
 include lib/xlat_tables_v2/xlat_tables.mk
 PLAT_BL_COMMON_SOURCES	+=	${XLAT_TABLES_LIB_SRCS}					\
 							plat/renesas/rz/common/plat_rz_common.c	\
-							plat/renesas/rz/common/drivers/scifa.S
+							plat/renesas/rz/common/drivers/scifa.S \
+							plat/renesas/rz/common/drivers/scifa_puccini.S
 
 ifneq (${ENABLE_STACK_PROTECTOR},0)
 PLAT_BL_COMMON_SOURCES	+=	plat/renesas/rz/common/rz_stack_protector.c
