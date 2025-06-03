@@ -7,7 +7,13 @@
 #ifndef _XSPI_REG_H_
 #define _XSPI_REG_H_
 
-#include <rz_soc_def.h>				/* Get the XSPI base address */
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#define SYC_BASE	RZ_SOC_SYC_BASE
+#else
+#include <rzg2l_def.h>
+#define SYC_BASE	RZG2L_SYC_BASE
+#endif				/* Get the XSPI base address */
 
 #define XSPI_WRAPCFG				(XSPI_BASE + 0x000UL)
 #define XSPI_COMCFG					(XSPI_BASE + 0x004UL)

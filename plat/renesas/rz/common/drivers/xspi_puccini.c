@@ -8,7 +8,13 @@
 #include <lib/utils_def.h>
 #include <lib/mmio.h>
 #include <arch_helpers.h>
-#include <rz_soc_def.h>
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#define SYC_BASE	RZ_SOC_SYC_BASE
+#else
+#include <rzg2l_def.h>
+#define SYC_BASE	RZG2L_SYC_BASE
+#endif
 #include <xspi_puccini_regs.h>
 #include <xspi.h>
 #include <sys.h>

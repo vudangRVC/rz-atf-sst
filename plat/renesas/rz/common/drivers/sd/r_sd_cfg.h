@@ -24,7 +24,13 @@
 #ifndef R_SD_CFG_H
 #define R_SD_CFG_H
 
-#include <rz_soc_def.h>						/* Get the SDHI Base addresses and SD_CFG_BASE (if default value is overridden)*/
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#define SYC_BASE	RZ_SOC_SYC_BASE
+#else
+#include <rzg2l_def.h>
+#define SYC_BASE	RZG2L_SYC_BASE
+#endif						/* Get the SDHI Base addresses and SD_CFG_BASE (if default value is overridden)*/
 
 /******************************************************************************
 Includes   <System Includes> , "Project Includes"
