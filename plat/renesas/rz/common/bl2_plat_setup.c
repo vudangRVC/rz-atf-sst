@@ -159,5 +159,9 @@ void bl2_platform_setup(void)
 	ddr_setup();
 #endif /* DEBUG_FPGA */
 
+#if PLAT_SOC_RZV2H
 	rz_io_setup();
+#else
+	rzg2l_io_setup();
+#endif
 }

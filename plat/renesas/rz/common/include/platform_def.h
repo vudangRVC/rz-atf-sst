@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2023, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,6 +12,13 @@
 #endif
 
 #include <arch.h>
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#define SYC_BASE	RZ_SOC_SYC_BASE
+#else
+#include <rzg2l_def.h>
+#define SYC_BASE	RZG2L_SYC_BASE
+#endif
 
 /*******************************************************************************
  * Platform binary types for linking
@@ -65,46 +72,6 @@
 #define BL32_BASE				(0x44100000)
 #define BL32_LIMIT				(BL32_BASE + 0x100000)
 #endif
-
-//#define REMOVE_UBOOT
-/*******************************************************************************
- * FW_CONFIG specific defines.
- *******************************************************************************/
-#define FW_CONFIG_BASE                          (0x42EFF440)
-#define FW_CONFIG_LIMIT                         (FW_CONFIG_BASE + 10000)
-
-/*******************************************************************************
- * HW_CONFIG specific defines.
- *******************************************************************************/
-#define HW_CONFIG_BASE                          (0x00010000)
-#define HW_CONFIG_LIMIT                         (HW_CONFIG_BASE + 5000)
-
-/*******************************************************************************
- * SOC_FW_CONFIG specific defines.
- *******************************************************************************/
-#define SOC_FW_CONFIG_BASE                      (0x0001FF80)
-#define SOC_FW_CONFIG_LIMIT                     (SOC_FW_CONFIG_BASE + 10000)
-
-/*******************************************************************************
- * Realm Monitor Management Firmware specific defines.
- *******************************************************************************/
-#define RMM_FW_BASE                             (0x40010000)
-#define RMM_FW_LIMIT                            (RMM_FW_BASE + 100000)
-
-/*******************************************************************************
- *  BL331
- *******************************************************************************/
-#define BL331_BASE                              (0x48000000)
-#define BL331_LIMIT                             (BL331_BASE + 0x80000)
-#define BL331_IMAGE_ID                          NT_FW_CONFIG_ID
-
-/*******************************************************************************
- *  BL332
- *******************************************************************************/
-#define BL332_BASE                              (0x48080000)
-#define BL332_LIMIT                             (BL332_BASE + 0x08000000)
-#define RZ_BL332_ARG0                           (0x48000000)
-#define BL332_IMAGE_ID                          BL33_IMAGE_ID
 
 /*******************************************************************************
  * BL33
