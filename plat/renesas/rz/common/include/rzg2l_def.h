@@ -66,4 +66,11 @@
 #define PARAMS_BASE                 (RZG2L_SRAM_BASE + 0x0001F000)
 #define PARAMS_SIZE                 (0x1000)
 
+/* eMMC registers */
+#define MMC0_SD_BASE		(0x11C00000U)
+#define MMC1_SD_BASE		(0x11C10000U)
+
+#define RZ_SOC_GICD_BASE			RZG2L_GICD_BASE
+#define RZ_SOC_GICR_BASE			RZG2L_GICR_BASE
+
 #endif /* __RZG2L_DEF_H__ */

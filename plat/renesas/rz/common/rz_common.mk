@@ -67,10 +67,13 @@ SD_SOURCES				:=	plat/renesas/rz/common/drivers/sd/sd_init.c				\
 							plat/renesas/rz/common/drivers/sd/sd_cd.c				\
 							plat/renesas/rz/common/drivers/sd/sd_cmd.c				\
 							plat/renesas/rz/common/drivers/sd/sd_int.c				\
+							plat/renesas/rz/common/drivers/sd/sd_init.c				\
+							plat/renesas/rz/common/drivers/sd/sd_main.c				\
 							plat/renesas/rz/common/drivers/sd/sd_trns.c				\
 							plat/renesas/rz/common/drivers/sd/sd_read.c				\
 							plat/renesas/rz/common/drivers/sd/sd_write.c			\
-							plat/renesas/rz/common/drivers/sd/sd_dev_low.c
+							plat/renesas/rz/common/drivers/sd/sd_dev_low.c			\
+							plat/renesas/rz/common/drivers/io/io_sddrv.c
 
 BL_COMMON_SOURCES		+=	lib/cpus/aarch64/cortex_a55.S							\
 							drivers/arm/tzc/tzc400.c
@@ -103,7 +106,7 @@ BL2_SOURCES				+=	common/desc_image_load.c								\
 							${RZ_TIMER_SOURCES}										\
 							${EMMC_SOURCES}											\
 							${SPI_MULTI_SOURCE}										\
-							${DDR_SOURCES}										\
+							${DDR_SOURCES}											\
 							${SD_SOURCES}
 
 # Include GICv3 driver files
@@ -117,6 +120,7 @@ BL31_SOURCES			+=	plat/common/plat_gicv3.c								\
 							plat/renesas/rz/common/plat_gic.c						\
 							plat/renesas/rz/common/rz_plat_sip_handler.c			\
 							plat/renesas/rz/common/rz_sip_svc.c						\
+							${SD_SOURCES}											\
 							${GICV3_SOURCES}
 
 ifneq (${TRUSTED_BOARD_BOOT},0)

@@ -37,6 +37,8 @@ Includes   <System Includes> , "Project Includes"
 #include "r_sdif.h"
 #include "sd.h"
 #include "sdmmc_iodefine.h"
+#include "esdif.h"
+#include "sys_sel.h"
 
 /******************************************************************************
 Typedef definitions
@@ -436,6 +438,4 @@ int32_t _sd_init_hndl(st_sdhndl_t *p_hndl, uint32_t mode, uint32_t voltage)
 /******************************************************************************
  End of function _sd_init_hndl
  *****************************************************************************/
-
-
 /* End of File */

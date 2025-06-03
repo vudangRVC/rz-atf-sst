@@ -78,7 +78,9 @@ static const io_uuid_spec_t bl31_file_spec = {
 static const io_uuid_spec_t bl32_file_spec = {
 	.uuid = UUID_SECURE_PAYLOAD_BL32,
 };
-
+static const io_uuid_spec_t bl33_file_spec = {
+	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
+};
 
 
 #if TRUSTED_BOARD_BOOT
@@ -253,8 +255,10 @@ void rzg2l_io_setup(void)
 	io_dev_open(rzg2l, 0, &fip_dev_handle);
 
 	/* Boot Mode eSD */
-	stat_md_boot = mmio_read_32(SYS_LSI_MODE) & MASK_BOOTM_DEVICE;
-	if (stat_md_boot == BOOT_MODE_ESD){
+	stat_md_boot = sys_get_boot_mode();
+
+	if (stat_md_boot == SYS_BOOT_MODE_ESD){
+		panic(); // eSD is not supported in RZG2L
 		if (esd_main() != SD_OK) {
 			NOTICE("BL2: Failed to eSD driver initialize.\n");
 			panic();
@@ -262,26 +266,26 @@ void rzg2l_io_setup(void)
 		register_io_dev_sddrv(&sd);
 		io_dev_open(sd, 0, &sddrv_dev_handle);
 
-		struct plat_io_policy sd_fip_policy = {
-				&sddrv_dev_handle,
-				(uintptr_t) &sd_block_spec,
-				&open_sddrv};
+		// struct plat_io_policy sd_fip_policy = {
+		// 		&sddrv_dev_handle,
+		// 		(uintptr_t) &sd_block_spec,
+		// 		&open_sddrv};
 		policies[FIP_IMAGE_ID] =  sd_fip_policy;
 	}
-	else if (stat_md_boot == BOOT_MODE_SPI_1_8 ||
-		stat_md_boot == BOOT_MODE_SPI_3_3) {
+	else if (stat_md_boot == SYS_BOOT_MODE_SPI_1_8 ||
+		stat_md_boot == SYS_BOOT_MODE_SPI_3_3) {
 		spi_multi_setup();
 		register_io_dev_memmap(&memmap);
 		io_dev_open(memmap, 0, &memdrv_dev_handle);
 
-		struct plat_io_policy spirom_fip_policy = {
-				&memdrv_dev_handle,
-				(uintptr_t) &spirom_block_spec,
-				&open_memmap};
+		// struct plat_io_policy spirom_fip_policy = {
+		// 		&memdrv_dev_handle,
+		// 		(uintptr_t) &spirom_block_spec,
+		// 		&open_memmap};
 		policies[FIP_IMAGE_ID] = spirom_fip_policy;
 	}
-	else if (stat_md_boot == BOOT_MODE_EMMC_1_8 ||
-	stat_md_boot == BOOT_MODE_EMMC_3_3) {
+	else if (stat_md_boot == SYS_BOOT_MODE_EMMC_1_8 ||
+	stat_md_boot == SYS_BOOT_MODE_EMMC_3_3) {
 		if (emmc_init() != EMMC_SUCCESS) {
 			NOTICE("BL2: Failed to eMMC driver initialize.\n");
 			panic();
@@ -295,10 +299,10 @@ void rzg2l_io_setup(void)
 		register_io_dev_emmcdrv(&emmc);
 		io_dev_open(emmc, 0, &emmcdrv_dev_handle);
 
-		struct plat_io_policy emmc_fip_policy = {
-				&emmcdrv_dev_handle,
-				(uintptr_t) &emmc_block_spec,
-				&open_emmcdrv};
+		// struct plat_io_policy emmc_fip_policy = {
+		// 		&emmcdrv_dev_handle,
+		// 		(uintptr_t) &emmc_block_spec,
+		// 		&open_emmcdrv};
 		policies[FIP_IMAGE_ID] = emmc_fip_policy;
 	} else {
 		panic();

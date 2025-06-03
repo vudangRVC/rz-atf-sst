@@ -7,6 +7,9 @@
 #ifndef __SYS_H__
 #define __SYS_H__
 
+#define MASK_BOOTM_DEVICE		(0x0F)
+#define MASK_BOOTM_SECURE		(0x10)
+
 typedef enum {
 	SYS_BOOT_MODE_ESD = 0,
 	SYS_BOOT_MODE_EMMC_1_8,

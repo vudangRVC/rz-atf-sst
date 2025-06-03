@@ -27,6 +27,7 @@ Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include <stdint.h>
 #include "r_sdif.h"
+#include "esdif.h"
 #include "sd.h"
 #include "sdmmc_iodefine.h"
 
