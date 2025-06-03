@@ -27,7 +27,7 @@ void plat_tzc400_setup(uintptr_t tzc_base);
 
 /* plat_storage.c */
 void rz_io_setup(void);
-
+void rzg2l_io_setup(void);
 /* plat_ddr_setup.c  */
 void plat_ddr_setup(void);
 
