@@ -11,7 +11,11 @@
 #include <drivers/arm/gicv3.h>
 #include <plat/common/platform.h>
 
-#include <rz_soc_def.h>
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#else
+#include <rzg2l_def.h>
+#endif
 #include <rz_private.h>
 
 static uintptr_t plat_rdistif_base_addrs[PLATFORM_CORE_COUNT];
