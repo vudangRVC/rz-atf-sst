@@ -7,7 +7,7 @@
 #ifndef __SYS_REGS_H__
 #define __SYS_REGS_H__
 
-#include <rz_soc_def.h>						/* Get the System base address */
+#include <rzv2h_soc_def.h>						/* Get the System base address */
 
 #define	SYS_MSTACCCTL0						(SYS_BASE + 0x00000000)
 #define	SYS_MSTACCCTL1						(SYS_BASE + 0x00000004)

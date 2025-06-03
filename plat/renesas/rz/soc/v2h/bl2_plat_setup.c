@@ -21,7 +21,7 @@
 #include <ddr.h>
 #include <sys_regs.h>
 #include <plat_tzc_def.h>
-#include <rz_soc_def.h>
+#include <rzv2h_soc_def.h>
 #include <rz_private.h>
 #include <sys.h>
 #include <pwrc.h>

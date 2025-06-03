@@ -14,7 +14,13 @@
 #include <scifa.h>
 #include <plat_tzc_def.h>
 #include <rz_private.h>
-#include <rz_soc_def.h>
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#define SYC_BASE	RZ_SOC_SYC_BASE
+#else
+#include <rzg2l_def.h>
+#define SYC_BASE	RZG2L_SYC_BASE
+#endif
 #include <pwrc.h>
 
 static console_t rzv2h_bl31_console;

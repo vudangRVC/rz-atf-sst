@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef __RZ_SOC_DEF_H__
-#define __RZ_SOC_DEF_H__
+#ifndef __RZV2H_SOC_DEF_H__
+#define __RZV2H_SOC_DEF_H__
 
 #include <lib/utils_def.h>
 
@@ -167,4 +167,4 @@
 /* Error Interrupt CA55 Status Clear Register k */
 #define RZV2H_ELC_ERINTA55CLR(k)	(RZV2H_ELC + 0x0348 + ((k) * 0x004))
 
-#endif /* __RZ_SOC_DEF_H__ */
+#endif /* __RZV2H_SOC_DEF_H__ */

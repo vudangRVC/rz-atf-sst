@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <assert.h>
 #include <lib/mmio.h>
-#include <rz_soc_def.h>
+#include <rzv2h_soc_def.h>
 #include <riic.h>
 #include <riic_regs.h>
 

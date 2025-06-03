@@ -7,7 +7,7 @@
 #ifndef __CPG_REGS_H__
 #define __CPG_REGS_H__
 
-#include <rz_soc_def.h>				/* Get the CPG base address */
+#include <rzv2h_soc_def.h>				/* Get the CPG base address */
 
 
 #define	CPG_PLLCM33_MON				(CPG_BASE + 0x010)	/* PLLCM33 monitor register */

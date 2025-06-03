@@ -10,7 +10,7 @@
 #include <common/debug.h>
 #include <smccc_helpers.h>
 #include <arch_helpers.h>
-#include <rz_soc_def.h>
+#include <rzv2h_soc_def.h>
 #include <rz_sip_svc.h>
 #include <sys_regs.h>
 

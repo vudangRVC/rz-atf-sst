@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-
+PLAT_SOC_RZV2H		:= 1
 DDR_SOURCES 		+=	plat/renesas/rz/soc/${PLAT}/drivers/ddr/ddr_setup_lpddr4.c	\
 						plat/renesas/rz/soc/${PLAT}/drivers/ddr/ddr_retcsr_lpddr4.c	\
 						plat/renesas/rz/soc/${PLAT}/drivers/ddr/ddr_param_def_lpddr4.c

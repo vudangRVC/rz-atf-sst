@@ -12,7 +12,7 @@
 #endif
 
 #include <arch.h>
-#include <rz_soc_def.h>
+#include <rzv2h_soc_def.h>
 
 /*******************************************************************************
  * Platform binary types for linking

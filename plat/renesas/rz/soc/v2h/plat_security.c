@@ -8,7 +8,7 @@
 #include <lib/mmio.h>
 #include <common/debug.h>
 
-#include "rz_soc_def.h"
+#include "rzv2h_soc_def.h"
 #include "platform_def.h"
 #include "sys_regs.h"
 #include "plat_tzc_def.h"

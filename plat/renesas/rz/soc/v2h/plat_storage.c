@@ -20,7 +20,7 @@
 #include <io_xspidrv.h>
 #endif /* PLAT_SYSTEM_SUSPEND */
 
-#include <rz_soc_def.h>
+#include <rzv2h_soc_def.h>
 #include <sys.h>
 #if PLAT_SOC_RZG2L
 #include <spi_multi.h>

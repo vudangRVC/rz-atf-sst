@@ -8,7 +8,7 @@
 #include <cpg_regs.h>
 #include <lib/mmio.h>
 #include <drivers/delay_timer.h>
-#include <rz_soc_def.h>
+#include <rzv2h_soc_def.h>
 
 
 #define	CPG_OFF							(0)

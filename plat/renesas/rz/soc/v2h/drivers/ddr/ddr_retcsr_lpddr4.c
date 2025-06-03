@@ -5,7 +5,7 @@
  */
 
 #include <stdint.h>
-#include "rz_soc_def.h"
+#include "rzv2h_soc_def.h"
 
 
 const uint32_t retention_phyreglist_1d[] = {

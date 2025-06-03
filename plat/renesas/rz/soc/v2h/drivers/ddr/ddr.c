@@ -8,7 +8,7 @@
 #include <common/debug.h>
 #include <drivers/delay_timer.h>
 #include "ddr_regs.h"
-#include "rz_soc_def.h"
+#include "rzv2h_soc_def.h"
 #include "cpg.h"
 #include "ddr_private.h"
 #include <ddr.h>
