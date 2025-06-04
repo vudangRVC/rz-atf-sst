@@ -1,18 +1,19 @@
 /*
- * Copyright (c) 2022, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2020, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <common/desc_image_load.h>
 #include <plat/common/platform.h>
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#define SYC_BASE	RZ_SOC_SYC_BASE
+#include <platform_def.h>
+
+#if (PLAT_SOC_RZV2H == 1)
+#include <rz_soc_def.h>
 #else
 #include <rzg2l_def.h>
-#define SYC_BASE	RZG2L_SYC_BASE
 #endif
+
 
 #if (RZG2L_BL33_EXECUTION_EL == 0)
 #define BL33_MODE MODE_EL1
@@ -35,37 +36,16 @@ static bl_mem_params_node_t bl2_mem_params_descs[] = {
 			image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
 		.image_info.image_max_size = BL31_LIMIT - BL31_BASE,
 		.image_info.image_base = BL31_BASE,
-
-# ifdef BL32_BASE
-		.next_handoff_image_id = BL32_IMAGE_ID,
-# else
 		.next_handoff_image_id = BL33_IMAGE_ID,
-# endif /* BL32_BASE */
+
 	},
-# ifdef BL32_BASE
-	{
-		.image_id = BL32_IMAGE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-			entry_point_info_t, SECURE | EXECUTABLE),
-		.ep_info.pc = BL32_BASE,
-		.ep_info.spsr = 0,
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-			image_info_t, 0),
-		.image_info.image_max_size = BL32_LIMIT - BL32_BASE,
-		.image_info.image_base = BL32_BASE,
-
-		.next_handoff_image_id = BL33_IMAGE_ID,
-	},
-# endif /* BL32_BASE */
 	{
 		.image_id = BL33_IMAGE_ID,
-
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
 			entry_point_info_t, NON_SECURE | EXECUTABLE),
 		.ep_info.spsr = SPSR_64(BL33_MODE, MODE_SP_ELX,
 			DISABLE_ALL_EXCEPTIONS),
+
 		.ep_info.pc = BL33_BASE,
 
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
