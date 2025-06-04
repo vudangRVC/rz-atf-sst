@@ -73,4 +73,10 @@
 #define RZ_SOC_GICD_BASE			RZG2L_GICD_BASE
 #define RZ_SOC_GICR_BASE			RZG2L_GICR_BASE
 
+#define BOOT_MODE_ESD           (0)
+#define BOOT_MODE_EMMC_1_8      (1)
+#define BOOT_MODE_EMMC_3_3      (2)
+#define BOOT_MODE_SPI_1_8       (3)
+#define BOOT_MODE_SPI_3_3       (4)
+#define BOOT_MODE_SCIF          (5)
 #endif /* __RZG2L_DEF_H__ */
