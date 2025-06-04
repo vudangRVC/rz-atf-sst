@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2020-2022, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,29 +15,28 @@
 #include <io_sddrv.h>
 #include <lib/mmio.h>
 #include <tools_share/firmware_image_package.h>
-#include <emmc_def.h>
-#include <sys.h>
-#include <sys_regs.h>
 #if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
 #include <xspi.h>
+#include <rz_soc_def.h>
 #else
-#include <rzg2l_def.h>
 #include <spi_multi.h>
+#include <rzg2l_def.h>
 #include <esdif.h>
 #include <io_sddrv.h>
 #include <platform_def.h>
 #endif
-
-
-
+#include <sys.h>
+#include <emmc_def.h>
+#include <sys_regs.h>
 
 static uintptr_t memdrv_dev_handle;
 static uintptr_t fip_dev_handle;
 static uintptr_t emmcdrv_dev_handle;
 static uintptr_t sddrv_dev_handle;
 
+
 static uintptr_t boot_io_drv_id;
+
 #if PLAT_SOC_RZV2H
 static const io_block_spec_t spirom_block_spec = {
 	.offset = RZ_SOC_SPIROM_FIP_BASE,
@@ -70,7 +69,6 @@ static const io_drv_spec_t sd_block_spec = {
 };
 #endif
 
-
 static const io_uuid_spec_t bl31_file_spec = {
 	.uuid = UUID_EL3_RUNTIME_FIRMWARE_BL31,
 };
@@ -78,10 +76,34 @@ static const io_uuid_spec_t bl31_file_spec = {
 static const io_uuid_spec_t bl32_file_spec = {
 	.uuid = UUID_SECURE_PAYLOAD_BL32,
 };
-static const io_uuid_spec_t bl33_file_spec = {
-	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
+
+#ifdef REMOVE_UBOOT
+static const io_uuid_spec_t fw_config_file_spec = {
+	.uuid = UUID_FW_CONFIG,
 };
 
+static const io_uuid_spec_t hw_config_file_spec = {
+	.uuid = UUID_HW_CONFIG,
+};
+
+static const io_uuid_spec_t soc_fw_config_file_spec = {
+	.uuid = UUID_SOC_FW_CONFIG,
+};
+
+static const io_uuid_spec_t rmm_fw_file_spec = {
+	.uuid = UUID_REALM_MONITOR_MGMT_FIRMWARE,
+};
+
+static const io_uuid_spec_t bl331_file_spec = {
+	.uuid = UUID_NT_FW_CONFIG,
+};
+
+static const io_uuid_spec_t bl332_file_spec = {
+#else
+static const io_uuid_spec_t bl33_file_spec = {
+#endif /* REMOVE_UBOOT */
+	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
+};
 
 #if TRUSTED_BOARD_BOOT
 static const io_uuid_spec_t soc_fw_key_cert_file_spec = {
@@ -111,8 +133,9 @@ static const io_uuid_spec_t nt_fw_content_cert_file_spec = {
 
 static int32_t open_emmcdrv(const uintptr_t spec);
 static int32_t open_memmap(const uintptr_t spec);
-static int32_t open_sddrv(const uintptr_t spec);
 static int32_t open_fipdrv(const uintptr_t spec);
+static int32_t open_sddrv(const uintptr_t spec);
+
 
 struct plat_io_policy {
 	uintptr_t *dev_handle;
@@ -120,6 +143,7 @@ struct plat_io_policy {
 	int32_t (*check)(const uintptr_t spec);
 };
 
+#if PLAT_SOC_RZV2H
 static const struct plat_io_policy sd_fip_policy = {
 	&sddrv_dev_handle,
 	(uintptr_t) &sd_block_spec,
@@ -137,10 +161,10 @@ static const struct plat_io_policy spirom_fip_policy = {
 	(uintptr_t) &spirom_block_spec,
 	&open_memmap
 };
+#endif
+
 
 static struct plat_io_policy policies[] = {
-	/* FIP_IMAGE_ID structure is added to this array on a bootmode basis */
-
 	[BL31_IMAGE_ID] = {
 				&fip_dev_handle,
 				(uintptr_t) &bl31_file_spec,
@@ -178,8 +202,8 @@ static struct plat_io_policy policies[] = {
 				&fip_dev_handle,
 				(uintptr_t) &nt_fw_content_cert_file_spec,
 				&open_fipdrv},
-#endif /* TRUSTED_BOARD_BOOT */
-	{0, 0, 0}
+#endif
+	{ 0, 0, 0}
 };
 
 static int32_t open_fipdrv(const uintptr_t spec)
@@ -219,6 +243,7 @@ static int32_t open_sddrv(const uintptr_t spec)
 	return io_dev_init(sddrv_dev_handle, 0);
 }
 
+#if PLAT_SOC_RZV2H
 static void update_dev_policies(uint16_t boot_mode)
 {
 	switch (boot_mode) {
@@ -237,79 +262,6 @@ static void update_dev_policies(uint16_t boot_mode)
 		panic();
 	}
 }
-
-
-void rzg2l_io_setup(void)
-{
-	const io_dev_connector_t *memmap;
-	const io_dev_connector_t *emmc;
-	const io_dev_connector_t *rzg2l;
-	const io_dev_connector_t *sd;
-	
-	uint32_t stat_md_boot;
-
-	boot_io_drv_id = FIP_IMAGE_ID;
-
-	register_io_dev_fip(&rzg2l);
-
-	io_dev_open(rzg2l, 0, &fip_dev_handle);
-
-	/* Boot Mode eSD */
-	stat_md_boot = sys_get_boot_mode();
-
-	if (stat_md_boot == SYS_BOOT_MODE_ESD){
-		panic(); // eSD is not supported in RZG2L
-		if (esd_main() != SD_OK) {
-			NOTICE("BL2: Failed to eSD driver initialize.\n");
-			panic();
-		}
-		register_io_dev_sddrv(&sd);
-		io_dev_open(sd, 0, &sddrv_dev_handle);
-
-		// struct plat_io_policy sd_fip_policy = {
-		// 		&sddrv_dev_handle,
-		// 		(uintptr_t) &sd_block_spec,
-		// 		&open_sddrv};
-		policies[FIP_IMAGE_ID] =  sd_fip_policy;
-	}
-	else if (stat_md_boot == SYS_BOOT_MODE_SPI_1_8 ||
-		stat_md_boot == SYS_BOOT_MODE_SPI_3_3) {
-		spi_multi_setup();
-		register_io_dev_memmap(&memmap);
-		io_dev_open(memmap, 0, &memdrv_dev_handle);
-
-		// struct plat_io_policy spirom_fip_policy = {
-		// 		&memdrv_dev_handle,
-		// 		(uintptr_t) &spirom_block_spec,
-		// 		&open_memmap};
-		policies[FIP_IMAGE_ID] = spirom_fip_policy;
-	}
-	else if (stat_md_boot == SYS_BOOT_MODE_EMMC_1_8 ||
-	stat_md_boot == SYS_BOOT_MODE_EMMC_3_3) {
-		if (emmc_init() != EMMC_SUCCESS) {
-			NOTICE("BL2: Failed to eMMC driver initialize.\n");
-			panic();
-		}
-		emmc_memcard_power(EMMC_POWER_ON);
-		if (emmc_mount() != EMMC_SUCCESS) {
-			NOTICE("BL2: Failed to eMMC mount operation.\n");
-			panic();
-		}
-
-		register_io_dev_emmcdrv(&emmc);
-		io_dev_open(emmc, 0, &emmcdrv_dev_handle);
-
-		// struct plat_io_policy emmc_fip_policy = {
-		// 		&emmcdrv_dev_handle,
-		// 		(uintptr_t) &emmc_block_spec,
-		// 		&open_emmcdrv};
-		policies[FIP_IMAGE_ID] = emmc_fip_policy;
-	} else {
-		panic();
-	}
-}
-
-
 void rz_io_setup(void)
 {
 	const io_dev_connector_t *memmap;
@@ -359,7 +311,76 @@ void rz_io_setup(void)
 
 	update_dev_policies(boot_mode);
 }
+#else
+void rz_io_setup(void)
+{
+	const io_dev_connector_t *memmap;
+	const io_dev_connector_t *emmc;
+	const io_dev_connector_t *rzg2l;
+	const io_dev_connector_t *sd;
+	
+	uint32_t stat_md_boot;
 
+	boot_io_drv_id = FIP_IMAGE_ID;
+
+	register_io_dev_fip(&rzg2l);
+
+	io_dev_open(rzg2l, 0, &fip_dev_handle);
+
+	/* Boot Mode eSD */
+	stat_md_boot = mmio_read_32(SYS_LSI_MODE) & MASK_BOOTM_DEVICE;
+	if (stat_md_boot == BOOT_MODE_ESD){
+		panic();
+		if (esd_main() != SD_OK) {
+			NOTICE("BL2: Failed to eSD driver initialize.\n");
+			panic();
+		}
+		register_io_dev_sddrv(&sd);
+		io_dev_open(sd, 0, &sddrv_dev_handle);
+
+		struct plat_io_policy sd_fip_policy = {
+				&sddrv_dev_handle,
+				(uintptr_t) &sd_block_spec,
+				&open_sddrv};
+		policies[FIP_IMAGE_ID] =  sd_fip_policy;
+	}
+	else if (stat_md_boot == BOOT_MODE_SPI_1_8 ||
+		stat_md_boot == BOOT_MODE_SPI_3_3) {
+		spi_multi_setup();
+		register_io_dev_memmap(&memmap);
+		io_dev_open(memmap, 0, &memdrv_dev_handle);
+
+		struct plat_io_policy spirom_fip_policy = {
+				&memdrv_dev_handle,
+				(uintptr_t) &spirom_block_spec,
+				&open_memmap};
+		policies[FIP_IMAGE_ID] = spirom_fip_policy;
+	}
+	else if (stat_md_boot == BOOT_MODE_EMMC_1_8 ||
+	stat_md_boot == BOOT_MODE_EMMC_3_3) {
+		if (emmc_init() != EMMC_SUCCESS) {
+			NOTICE("BL2: Failed to eMMC driver initialize.\n");
+			panic();
+		}
+		emmc_memcard_power(EMMC_POWER_ON);
+		if (emmc_mount() != EMMC_SUCCESS) {
+			NOTICE("BL2: Failed to eMMC mount operation.\n");
+			panic();
+		}
+
+		register_io_dev_emmcdrv(&emmc);
+		io_dev_open(emmc, 0, &emmcdrv_dev_handle);
+
+		struct plat_io_policy emmc_fip_policy = {
+				&emmcdrv_dev_handle,
+				(uintptr_t) &emmc_block_spec,
+				&open_emmcdrv};
+		policies[FIP_IMAGE_ID] = emmc_fip_policy;
+	} else {
+		panic();
+	}
+}
+#endif
 int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 				uintptr_t *image_spec)
 {
@@ -377,4 +398,3 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 
 	return 0;
 }
-

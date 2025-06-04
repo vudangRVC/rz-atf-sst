@@ -8,8 +8,8 @@
 #include <plat/common/platform.h>
 #include <platform_def.h>
 
-#if (PLAT_SOC_RZV2H == 1)
-#include <rz_soc_def.h>
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
 #else
 #include <rzg2l_def.h>
 #endif
