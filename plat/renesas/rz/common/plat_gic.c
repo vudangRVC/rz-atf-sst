@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2022, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,10 +11,17 @@
 #include <drivers/arm/gicv3.h>
 #include <plat/common/platform.h>
 
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#else
 #include <rzg2l_def.h>
+#endif
 #include <rz_private.h>
 
-uintptr_t plat_rdistif_base_addrs[PLATFORM_CORE_COUNT];
+static uintptr_t plat_rdistif_base_addrs[PLATFORM_CORE_COUNT];
+
+static gicv3_redist_ctx_t rdist_ctx;
+static gicv3_dist_ctx_t dist_ctx;
 
 static unsigned int plat_mpidr_to_core_pos(u_register_t mpidr)
 {
@@ -23,8 +30,8 @@ static unsigned int plat_mpidr_to_core_pos(u_register_t mpidr)
 }
 
 const gicv3_driver_data_t rzg2l_gic_data = {
-	.gicd_base = RZG2L_GICD_BASE,
-	.gicr_base = RZG2L_GICR_BASE,
+	.gicd_base = RZ_SOC_GICD_BASE,
+	.gicr_base = RZ_SOC_GICR_BASE,
 	.rdistif_num = PLATFORM_CORE_COUNT,
 	.rdistif_base_addrs = plat_rdistif_base_addrs,
 	.mpidr_to_core_pos = plat_mpidr_to_core_pos,
@@ -55,4 +62,19 @@ void plat_gic_cpuif_disable(void)
 void plat_gic_pcpu_init(void)
 {
 	gicv3_rdistif_init(plat_my_core_pos());
+}
+
+void plat_gic_save(void)
+{
+	gicv3_rdistif_save(plat_my_core_pos(), &rdist_ctx);
+
+	gicv3_distif_save(&dist_ctx);
+}
+
+
+void plat_gic_resume(void)
+{
+	gicv3_distif_init_restore(&dist_ctx);
+
+	gicv3_rdistif_init_restore(plat_my_core_pos(), &rdist_ctx);
 }
