@@ -12,8 +12,15 @@
 #endif
 
 #include <arch.h>
+
 #include <common/tbbr/tbbr_img_def.h>
+
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#else
 #include <rzg2l_def.h>
+#endif
+
 
 #include <common/tbbr/tbbr_img_def.h>
 
