@@ -26,7 +26,6 @@
 
 /* ==== Define  ==== */
 /* ---- SD Driver work buffer ---- */
-#define SD_SIZE_OF_INIT         (640)
 
 /* ---- Error code ---- */
 #define SD_OK                   (0)             /* OK */
