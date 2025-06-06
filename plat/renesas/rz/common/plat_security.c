@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2022, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,7 +8,11 @@
 #include <lib/mmio.h>
 #include <common/debug.h>
 
-#include "rzg2l_def.h"
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#else
+#include <rzg2l_def.h>
+#endif
 #include "sys_regs.h"
 #include "plat_tzc_def.h"
 
@@ -55,10 +59,11 @@ void plat_access_control_setup(void)
 {
 	uint32_t i;
 
-	for (i = 0; i < ARRAY_SIZE(sys_acctl); i++)
-	{
+	for (i = 0; i < ARRAY_SIZE(sys_acctl); i++) {
 		uint32_t val = mmio_read_32(sys_acctl[i].reg) & (~sys_acctl[i].msk);
+
 		val |= (sys_acctl[i].val & sys_acctl[i].msk);
+
 		mmio_write_32(sys_acctl[i].reg, val);
 	}
 }
@@ -72,7 +77,7 @@ uint8_t tzc400_get_num_filters(uintptr_t tzc_base)
 	return (uint8_t)((tzc400_build >> BUILD_CONFIG_NF_SHIFT) & BUILD_CONFIG_NF_MASK) + 1U;
 }
 
-void plat_tzc400_setup(uintptr_t tzc_base, const arm_tzc_regions_info_t *tzc_regions)
+static void plat_tzc400_setup(uintptr_t tzc_base, const arm_tzc_regions_info_t *tzc_regions)
 {
 	uint8_t num_filters;
 	unsigned int region_index = 1U;
@@ -149,7 +154,7 @@ static void bl31_security_setup(void)
 #endif /* TRUSTED_BOARD_BOOT */
 		{}
 	};
-	
+
 	/* Additional settings for TZC-400 SRAM */
 	plat_tzc400_setup(RZG2L_TZC_MSRAM_BASE, &msram_tzc_regions[0]);
 	plat_tzc400_setup(RZG2L_TZC_ASRAM_BASE, &asram_tzc_regions[0]);

@@ -53,3 +53,6 @@ node_modules/
 env/
 .venv/
 venv/
+tools/renesas/rz_boot_param/bptool
+bl2_with_dtb.hex
+

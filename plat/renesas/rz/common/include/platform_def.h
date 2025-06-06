@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2023, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,8 +12,15 @@
 #endif
 
 #include <arch.h>
+
 #include <common/tbbr/tbbr_img_def.h>
+
+#if PLAT_SOC_RZV2H
+#include <rzv2h_soc_def.h>
+#else
 #include <rzg2l_def.h>
+#endif
+
 
 /*******************************************************************************
  * Platform binary types for linking
