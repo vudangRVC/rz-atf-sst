@@ -139,7 +139,7 @@ static CPG_SETUP_DATA cpg_clk_on_tbl[] = {
 #endif
 		CPG_T_CLK
 	},
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_FPGA
 	{		/* DDR */
 		(uintptr_t)CPG_CLKON_DDR,
 		(uintptr_t)CPG_CLKMON_DDR,
@@ -349,7 +349,7 @@ static CPG_SETUP_DATA cpg_reset_tbl[] = {
 #endif
 		CPG_T_RST
 	},
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_FPGA
 	{		/* DDR */
 		(uintptr_t)CPG_RST_DDR,
 		(uintptr_t)CPG_RSTMON_DDR,
@@ -505,7 +505,7 @@ static CPG_REG_SETTING cpg_static_select_tbl[] = {
 
 static CPG_REG_SETTING cpg_dynamic_select_tbl[] = {
 	{ (uintptr_t)CPG_PL4_DSEL,              0x00010001 },
-	{ (uintptr_t)CPG_PL2SDHI_DSEL, 		0x00110022 },
+	{ (uintptr_t)CPG_PL2SDHI_DSEL,          0x00110022 },
 };
 
 #define CPG_SEL_PLL1_ON_OFF					(0)
@@ -749,7 +749,7 @@ static void cpg_pll_start_146(CPG_PLL_SETDATA_146 *pdata)
 /* It is assumed that the PLL has stopped by the time this function is executed. */
 static void cpg_pll_setup(void)
 {
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_FPGA
 	uint32_t val = 0;
 
 	/* PLL4 startup */
@@ -763,7 +763,7 @@ static void cpg_pll_setup(void)
 	do {
 		val = mmio_read_32(CPG_PLL6_MON);
 	} while ((val & (PLL6_MON_PLL6_RESETB | PLL6_MON_PLL6_LOCK)) != 0);
-#endif
+#endif /* DEBUG_FPGA */
 
 	/* Initialize pll4 struct. */
 	cpg_pll4_setdata.clk1_dat.val = g_cpg_fconf_cfg->pll4_clk1;
@@ -780,7 +780,7 @@ static void cpg_pll_setup(void)
 	/* Set PLL6 to normal mode */
 	cpg_pll_start_146(&cpg_pll6_setdata);
 
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_FPGA
 	/* PLL4 normal mode transition confirmation */
 	do {
 		val = mmio_read_32(CPG_PLL4_MON);
@@ -790,7 +790,7 @@ static void cpg_pll_setup(void)
 	do {
 		val = mmio_read_32(CPG_PLL6_MON);
 	} while ((val & (PLL6_MON_PLL6_RESETB | PLL6_MON_PLL6_LOCK)) == 0);
-#endif
+#endif /* DEBUG_FPGA */
 }
 
 static void cpg_div_sel_setup(CPG_REG_SETTING *tbl, uint32_t size)
@@ -801,7 +801,7 @@ static void cpg_div_sel_setup(CPG_REG_SETTING *tbl, uint32_t size)
 		mmio_write_32(tbl->reg, tbl->val);
 	}
 
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_FPGA
 	/* Wait for completion of settings */
 	while (mmio_read_32(CPG_CLKSTATUS) != 0)
 		;
@@ -906,10 +906,14 @@ void cpg_early_setup(void)
 
 void cpg_wdtrst_sel_setup(void)
 {
-	mmio_write_32(CPG_WDTRST_SEL, mmio_read_32(CPG_WDTRST_SEL) |
-					WDTRST_SEL_WDTRSTSEL0 |
-					WDTRST_SEL_WDTRSTSEL1 |
-					WDTRST_SEL_WDTRSTSEL2);
+	uint32_t reg;
+
+	reg = mmio_read_32(CPG_WDTRST_SEL);
+	reg |=
+		WDTRST_SEL_WDTRSTSEL0 | WDTRST_SEL_WDTRSTSEL0_WEN |
+		WDTRST_SEL_WDTRSTSEL1 | WDTRST_SEL_WDTRSTSEL1_WEN |
+		WDTRST_SEL_WDTRSTSEL2 | WDTRST_SEL_WDTRSTSEL2_WEN;
+	mmio_write_32(CPG_WDTRST_SEL, reg);
 }
 
 void cpg_setup(void)
