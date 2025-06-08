@@ -26,6 +26,18 @@
 #include <sys.h>
 #include <pwrc.h>
 
+#include <lib/fconf/fconf.h>
+#include <rz_dt.h>
+#include <rz_fconf.h>
+#include <libfdt.h>
+
+#include <common/debug.h>
+#include <common/fdt_wrappers.h>
+
+#include <lib/fconf/fconf_dyn_cfg_getter.h>
+#include <plat/common/platform.h>
+#include <platform_def.h>
+
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
 static console_t rzv2h_bl2_console;
 
@@ -97,6 +109,13 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 
 	/* early setup Clock and Reset */
 	cpg_early_setup();
+
+	/* Validate DTB is valid */
+	int dt_validate = dt_validation(V2H_DTB_LOAD_ADDR);
+	if (dt_validate < 0) {
+		panic();
+	}
+
 
 	/* initialize SYC */
 	syc_init(RZV2H_SYC_INCK_HZ);

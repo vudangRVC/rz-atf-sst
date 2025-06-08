@@ -19,9 +19,9 @@ int dt_validation(uintptr_t dt_addr)
 	ret = fdt_check_header((void *)dt_addr);
 	if (ret != 0) {
 		ERROR("DTB validation failed: %s (%d)\n", fdt_strerror(ret), ret);
-		ERROR("DTB location: 0x%x, magic: 0x%x\n", 
-			  RZG2L_DTB_BASE, 
-			  fdt_magic((const void *)RZG2L_DTB_BASE));
+		ERROR("DTB location: 0x%lx, magic: 0x%x\n", 
+			  dt_addr, 
+			  fdt_magic((const void *)dt_addr));
 	}
 
 	return ret;
