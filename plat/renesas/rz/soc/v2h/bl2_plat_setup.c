@@ -37,6 +37,7 @@
 #include <lib/fconf/fconf_dyn_cfg_getter.h>
 #include <plat/common/platform.h>
 #include <platform_def.h>
+#include <rzv2h_syc.h>
 
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
 static console_t rzv2h_bl2_console;
@@ -116,9 +117,12 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 		panic();
 	}
 
+	/* DTB addr */
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
 
 	/* initialize SYC */
-	syc_init(RZV2H_SYC_INCK_HZ);
+	uint32_t syc_inck_hz = get_syc_inck_hz(fdt);
+	syc_init(syc_inck_hz);
 
 	/* initialize Timer */
 	generic_delay_timer_init();
