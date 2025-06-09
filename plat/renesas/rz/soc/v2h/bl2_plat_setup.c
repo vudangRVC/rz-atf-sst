@@ -146,7 +146,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	console_set_scope(&rzv2h_bl2_console,
 			CONSOLE_FLAG_BOOT | CONSOLE_FLAG_CRASH);
 
-	pwrc_setup();
+	rzv2h_pwrc_setup(fdt);
 }
 
 void bl2_el3_plat_arch_setup(void)
