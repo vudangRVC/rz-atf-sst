@@ -27,7 +27,7 @@ BL2_SOURCES				+=	plat/renesas/rz/soc/v2h/bl2_plat_setup.c		\
 							plat/renesas/rz/soc/v2h/plat_storage.c			\
 							plat/renesas/rz/soc/v2h/drivers/sys.c			\
 							plat/renesas/rz/soc/v2h/drivers/rzv2h_syc.c			\
-							plat/renesas/rz/soc/v2h/drivers/pfc.c
+							plat/renesas/rz/soc/v2h/drivers/rzv2h_pfc.c
 
 BL31_SOURCES			+=	plat/renesas/rz/soc/v2h/bl31_plat_setup.c		\
 							plat/renesas/rz/soc/v2h/plat_pm.c				\

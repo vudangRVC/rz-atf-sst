@@ -38,6 +38,7 @@
 #include <plat/common/platform.h>
 #include <platform_def.h>
 #include <rzv2h_syc.h>
+#include <rzv2h_pfc.h>
 
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
 static console_t rzv2h_bl2_console;
@@ -128,7 +129,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	generic_delay_timer_init();
 
 	/* setup PFC */
-	pfc_setup();
+	rzv2h_pfc_setup(fdt);
 
 	/* setup Clock and Reset */
 	cpg_setup();
