@@ -18,8 +18,9 @@
 #include <lib/xlat_tables/xlat_tables_defs.h>
 #include <plat/common/platform.h>
 #include <sys.h>
-#include <ddr.h>
+#include <rzv2h_ddr.h>
 #include <plat_tbbr_img_def.h>
+#include <rz_dt.h>
 
 uint32_t ddr_csr_table[RET_CSR_SIZE] __attribute__ ((aligned(8)));
 
@@ -97,7 +98,7 @@ exit:
 	return io_result;
 }
 
-void plat_ddr_setup(void)
+void rzv2h_plat_ddr_setup(void *fdt)
 {
 	if (!sys_is_resume_reboot()) {
 		ddr_setup();
@@ -117,8 +118,8 @@ void plat_ddr_setup(void)
 	}
 }
 #else
-void plat_ddr_setup(void)
+void rzv2h_plat_ddr_setup(void *fdt)
 {
-	ddr_setup();
+	ddr_setup(fdt);
 }
 #endif /* PLAT_SYSTEM_SUSPEND */

@@ -1,0 +1,120 @@
+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+/*
+ * Device Tree Source for the RZ/V2H EVK Version 1 board
+ *
+ * Copyright (C) 2023 Renesas Electronics Corp.
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "renesas,r9a09g057h4-dev", "renesas,r9a09g057h4", "renesas,r9a09g057";
+	model = "Renesas EVK Version 1 based on r9a09g057h4";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	/* clock can be either from exclk or crystal oscillator (XIN/XOUT) */
+	extal_clk: extal-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	/* et0_txc_tx_clk clock input */
+	et0_txc_tx_clk: et0_txc_tx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	/* et0_rxc_rx_clk clock input */
+	et0_rxc_rx_clk: et0_rxc_rx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	/* et1_txc_tx_clk clock input */
+	et1_txc_tx_clk: et1_txc_tx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	/* et1_rxc_rx_clk clock input */
+	et1_rxc_rx_clk: et1_rxc_rx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	v2h: soc {
+		compatible = "simple-bus";
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+
+		sysc: system-controller@10430000 {
+			compatible = "renesas,r9a09g057-sysc";
+			reg = <0 0x10430000 0 0x10000>;
+			syc_inck_hz = <24000000>;
+		};
+
+		syc: system-counter@14010000 {
+			compatible = "renesas,r9a09g057-syc";
+			reg = <0 0x14010000 0 0x10000>;
+			syc_timer_mul = <1000000>;
+			syc_timer_offset = <0x020>;
+		};
+
+		cpg: clock-controller@10420000 {
+			compatible = "renesas,r9a09g057-cpg";
+			reg = <0 0x10420000 0 0x10000>;
+			clocks = <&extal_clk>,
+				 <&et0_txc_tx_clk>, <&et0_rxc_rx_clk>,
+				 <&et1_txc_tx_clk>, <&et1_rxc_rx_clk>;
+			clock-names = "extal",
+				      "et0_txc_tx_clk", "et0_rxc_rx_clk",
+				      "et1_txc_tx_clk", "et1_rxc_rx_clk";
+			#clock-cells = <2>;
+			#reset-cells = <1>;
+			#power-domain-cells = <0>;
+
+		};
+
+		icu: interrupt-unit@10400000 {
+			compatible = "renesas,r9a09g057-icu";
+			reg = <0 0x10400000 0 0x10000>;
+		};
+
+		pfc: pinctrl@10410000 {
+			compatible = "renesas,r9a09g057-pfc";
+			reg = <0 0x10410000 0 0x10000>;
+		};
+
+		scif0: serial@11c01400 {
+			compatible = "renesas,scif-r9a09g057","renesas,scif";
+			reg = <0 0x11c01400 0 0x400>;
+			uart_inck_hz = <100000000>;
+			uart_bardrate = <115200>;
+		};
+
+		ddr0: memory-0@40000000 {
+			compatible = "renesas,r9a09g057-sdram-0";
+			reg = <0 0x40000000 0 0x10000>;
+			ddr0-phy-base = <0x00000000 0x1A000000>;
+			ddr0-memc-base = <0x00000000 0x1E000000>;
+		};
+
+		ddr1: memory-1@240000000 {
+			compatible = "renesas,r9a09g057-sdram-1";
+			reg = <0x00000002 0x40000000 0x00000000 0x10000>;
+			ddr1-phy-base = <0x00000000 0x1C000000>;
+			ddr1-memc-base = <0x00000000 0x1E010000>;
+		};
+	};
+};

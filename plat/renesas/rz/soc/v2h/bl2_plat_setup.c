@@ -15,16 +15,30 @@
 #include <plat/common/common_def.h>
 #include <lib/mmio.h>
 #include <pfc.h>
-#include <cpg.h>
 #include <syc.h>
 #include <scifa.h>
-#include <ddr.h>
 #include <sys_regs.h>
 #include <plat_tzc_def.h>
 #include <rzv2h_soc_def.h>
 #include <rz_private.h>
 #include <sys.h>
 #include <pwrc.h>
+
+#include <lib/fconf/fconf.h>
+#include <rz_dt.h>
+#include <rz_fconf.h>
+#include <libfdt.h>
+
+#include <common/debug.h>
+#include <common/fdt_wrappers.h>
+
+#include <lib/fconf/fconf_dyn_cfg_getter.h>
+#include <plat/common/platform.h>
+#include <platform_def.h>
+#include <rzv2h_syc.h>
+#include <rzv2h_pfc.h>
+#include <rzv2h_cpg.h>
+#include <rzv2h_ddr.h>
 
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
 static console_t rzv2h_bl2_console;
@@ -98,17 +112,27 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	/* early setup Clock and Reset */
 	cpg_early_setup();
 
+	/* Validate DTB is valid */
+	int dt_validate = dt_validation(V2H_DTB_LOAD_ADDR);
+	if (dt_validate < 0) {
+		panic();
+	}
+
+	/* DTB addr */
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+
 	/* initialize SYC */
-	syc_init(RZV2H_SYC_INCK_HZ);
+	uint32_t syc_inck_hz = get_syc_inck_hz(fdt);
+	syc_init(syc_inck_hz);
 
 	/* initialize Timer */
 	generic_delay_timer_init();
 
 	/* setup PFC */
-	pfc_setup();
+	rzv2h_pfc_setup(fdt);
 
 	/* setup Clock and Reset */
-	cpg_setup();
+	rzv2h_cpg_setup(fdt);
 
 	/* initialize console driver */
 	ret = console_rzg2l_register(
@@ -122,7 +146,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	console_set_scope(&rzv2h_bl2_console,
 			CONSOLE_FLAG_BOOT | CONSOLE_FLAG_CRASH);
 
-	pwrc_setup();
+	rzv2h_pwrc_setup(fdt);
 }
 
 void bl2_el3_plat_arch_setup(void)
@@ -165,11 +189,14 @@ void bl2_el3_plat_arch_setup(void)
 
 void bl2_platform_setup(void)
 {
+	/* DTB addr */
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+
 	/* Setup TZC-400, Access Control */
 	plat_security_setup();
 
 	rz_io_setup();
 
 	/* initialize DDR */
-	plat_ddr_setup();
+	rzv2h_plat_ddr_setup(fdt);
 }
