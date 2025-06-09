@@ -9,7 +9,7 @@
 #include <drivers/delay_timer.h>
 #include "ddr_regs.h"
 #include "rzv2h_soc_def.h"
-#include "cpg.h"
+#include "rzv2h_cpg.h"
 #include "ddr_private.h"
 #include <ddr.h>
 

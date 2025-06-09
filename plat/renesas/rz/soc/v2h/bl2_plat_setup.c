@@ -15,7 +15,6 @@
 #include <plat/common/common_def.h>
 #include <lib/mmio.h>
 #include <pfc.h>
-#include <cpg.h>
 #include <syc.h>
 #include <scifa.h>
 #include <ddr.h>
@@ -39,6 +38,7 @@
 #include <platform_def.h>
 #include <rzv2h_syc.h>
 #include <rzv2h_pfc.h>
+#include <rzv2h_cpg.h>
 
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
 static console_t rzv2h_bl2_console;
@@ -132,7 +132,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	rzv2h_pfc_setup(fdt);
 
 	/* setup Clock and Reset */
-	cpg_setup();
+	rzv2h_cpg_setup(fdt);
 
 	/* initialize console driver */
 	ret = console_rzg2l_register(

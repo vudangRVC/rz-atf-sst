@@ -8,7 +8,7 @@
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
-#include <cpg.h>
+#include <rzv2h_cpg.h>
 #include <ddr.h>
 #include <pwrc.h>
 #include <pwrc_board.h>
