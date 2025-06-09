@@ -8,11 +8,13 @@
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
-#include <cpg.h>
-#include <ddr.h>
+#include <rzv2h_cpg.h>
+#include <rzv2h_ddr.h>
 #include <pwrc.h>
 #include <pwrc_board.h>
 #include <sys_regs.h>
+#include <sys_regs_offset.h>
+#include <rz_dt.h>
 
 extern void pwrc_func_call_with_pmustack(uintptr_t jump, void *arg);
 
@@ -51,6 +53,42 @@ void pwrc_setup(void)
 	};
 
 	unsigned int i;
+	uint32_t rvah0 = (uint32_t)(((uintptr_t)&plat_secondary_reset >> 32) & 0xFF);
+	uint32_t rval0 = (uint32_t)((uintptr_t)&plat_secondary_reset & 0xFFFFFFFC);
+
+	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+		mmio_write_32(rval[i][1], rvah0);
+		mmio_write_32(rval[i][0], rval0);
+	}
+}
+
+void rzv2h_pwrc_setup(void *fdt)
+{
+	const char *node = "/soc";
+	const char *sub_node = "system-controller@10430000";
+	const char *prop_name = "reg";
+
+	// Get clock-controller base address
+	uint32_t sysc_base = 0;
+	if(read_prop_from_subnode(fdt, node, sub_node, prop_name, 1, &sysc_base) != 0) {
+		ERROR("BL2: Failed to get SYSC base address\n");
+		return;
+	}
+
+	// Set reset regiters values
+	uint32_t rval[PLATFORM_CORE_COUNT][2] = {
+		{ SYS_ACPU_CFG_RVAL0_OFFSET, SYS_ACPU_CFG_RVAH0_OFFSET },
+		{ SYS_ACPU_CFG_RVAL1_OFFSET, SYS_ACPU_CFG_RVAH1_OFFSET },
+		{ SYS_ACPU_CFG_RVAL2_OFFSET, SYS_ACPU_CFG_RVAH2_OFFSET },
+		{ SYS_ACPU_CFG_RVAL3_OFFSET, SYS_ACPU_CFG_RVAH3_OFFSET }
+	};
+
+	unsigned int i;
+	for(i = 0; i < PLATFORM_CORE_COUNT; i++) {
+		rval[i][0] += sysc_base;
+		rval[i][1] += sysc_base;
+	}
+
 	uint32_t rvah0 = (uint32_t)(((uintptr_t)&plat_secondary_reset >> 32) & 0xFF);
 	uint32_t rval0 = (uint32_t)((uintptr_t)&plat_secondary_reset & 0xFFFFFFFC);
 
