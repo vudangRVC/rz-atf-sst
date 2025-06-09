@@ -11,7 +11,7 @@ FIP_ALIGN		:=	16
 include plat/renesas/rz/common/v2h_common.mk
 include plat/renesas/rz/board/${BOARD}/rz_board.mk
 
-DDR_SOURCES	+=				plat/renesas/rz/soc/v2h/drivers/ddr/ddr.c	\
+DDR_SOURCES	+=				plat/renesas/rz/soc/v2h/drivers/ddr/rzv2h_ddr.c	\
 							plat/renesas/rz/soc/v2h/drivers/ddr/ddr_misc.c	\
 							plat/renesas/rz/soc/v2h/plat_ddr_setup.c
 

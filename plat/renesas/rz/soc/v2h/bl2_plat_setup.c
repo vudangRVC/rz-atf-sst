@@ -17,7 +17,6 @@
 #include <pfc.h>
 #include <syc.h>
 #include <scifa.h>
-#include <ddr.h>
 #include <sys_regs.h>
 #include <plat_tzc_def.h>
 #include <rzv2h_soc_def.h>
@@ -39,6 +38,7 @@
 #include <rzv2h_syc.h>
 #include <rzv2h_pfc.h>
 #include <rzv2h_cpg.h>
+#include <rzv2h_ddr.h>
 
 extern void bl2_enter_bl31(const struct entry_point_info *bl_ep_info);
 static console_t rzv2h_bl2_console;
@@ -189,11 +189,14 @@ void bl2_el3_plat_arch_setup(void)
 
 void bl2_platform_setup(void)
 {
+	/* DTB addr */
+	void *fdt = (void *)V2H_DTB_LOAD_ADDR;
+
 	/* Setup TZC-400, Access Control */
 	plat_security_setup();
 
 	rz_io_setup();
 
 	/* initialize DDR */
-	plat_ddr_setup();
+	rzv2h_plat_ddr_setup(fdt);
 }
