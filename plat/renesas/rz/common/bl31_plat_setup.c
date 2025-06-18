@@ -86,8 +86,8 @@ void bl31_platform_setup(void)
 #endif
 
 	/* Read model and revision id from QSPI */
-	uint32_t model = get_board_info_u32(RZG2L_SPIROM_BASE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
-	uint32_t revision = get_board_info_u32(RZG2L_SPIROM_BASE, BOARD_INFO_QSPI_OFFSET, OFFSET_REVISION);
+	uint32_t model = get_board_info_u32(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
+	uint32_t revision = get_board_info_u32(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE, BOARD_INFO_QSPI_OFFSET, OFFSET_REVISION);
 
 	/* Get entry point info for BL33 */
 	entry_point_info_t *bl33_ep_info = bl31_plat_get_next_image_ep_info(NON_SECURE);

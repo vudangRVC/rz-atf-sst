@@ -19,14 +19,15 @@
 /**
  * get_board_info_u32 - Read a 32-bit field from the board info region
  *
- * @flash_base:           Base address of the memory-mapped QSPI flash.
+ * @flash_map_base:             Base start address of the memory-mapped QSPI/xSPI flash.
+ * @flash_size:                 Size of QSPI/xSPI flash.
  * @board_info_offset:    Offset to the start of the board info structure.
  * @field_offset:         Offset to a specific field within the structure.
  *
  * Example:
- *   uint32_t model_id = get_board_info_u32(RZG2L_SPIROM_BASE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
+ *   uint32_t model_id = get_board_info_u32(RZV2H_XSPI_MEMORY_MAP_BASE, RZV2H_XSPI_SIZE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
  */
-uint32_t get_board_info_u32(uintptr_t flash_base, size_t board_info_offset, size_t field_offset);
+uint32_t get_board_info_u32(uintptr_t flash_map_base, uintptr_t flash_size, size_t board_info_offset, size_t field_offset);
 
 /**
  * get_board_info_string - Read a string field from the board info region
