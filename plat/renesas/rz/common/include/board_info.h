@@ -8,6 +8,10 @@
 #define BOARD_INFO_QSPI_OFFSET U(0x1C700)
 #define BOARD_INFO_QSPI_END    U(0x1CF0F)
 
+/* Offset range of board information within the eMMC flash region */
+#define BOARD_INFO_EMMC_OFFSET U(0x00040000)
+#define BOARD_INFO_EMMC_END    U(0x0004080F)
+
 #define MAX_STRING_LEN           256
 
 /* Offsets for various fields inside the board info region */

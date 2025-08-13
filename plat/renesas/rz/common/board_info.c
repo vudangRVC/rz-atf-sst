@@ -10,6 +10,9 @@
 #include <lib/mmio.h>
 #include <assert.h>
 #include <board_info.h>
+#include <drivers/mmc.h>
+#include <common/debug.h>
+#include <lib/utils.h>
 
 /**
  * get_board_info_field - Read a 32-bit field from the board info region
@@ -40,6 +43,45 @@ uint32_t get_board_info_u32(uintptr_t flash_map_base, uintptr_t flash_size, size
 	}
 
 	return mmio_read_32(addr);
+}
+
+/**
+ * get_board_info_u32_emmc - Read a 32-bitalue from eMMC
+ *
+ * @mmc_dev:           Pointer to initialized MMC device structure.
+ * @board_info_offset: Offset to start of board info structure (in bytes).
+ * @field_offset:      Offset to a specific field inside the structure (in bytes).
+ *
+ * Returns: The 32-bit value read from eMMC.
+ */
+uint32_t get_board_info_u32_emmc(const io_dev_connector_t *mmc_dev,
+                                 size_t board_info_offset,
+                                 size_t field_offset)
+{
+    size_t addr = board_info_offset + field_offset;
+    uint8_t buf[sizeof(uint32_t)];
+    int ret;
+
+    /* Check that the read address is inside eMMC capacity */
+    if (addr + sizeof(uint32_t) > mmc_dev->capacity) {
+        ERROR("Board info offset out of bounds: addr=0x%zx (valid: 0 - 0x%llx)\n",
+              addr, (unsigned long long)mmc_dev->capacity);
+#if DEBUG
+        assert(0);
+#else
+        panic();
+#endif
+    }
+
+    /* Read from eMMC */
+    ret = mmc_read_blocks(mmc_dev, buf, addr / mmc_dev->block_size, 1);
+    if (ret != 0) {
+        ERROR("Failed to read eMMC at addr=0x%zx, ret=%d\n", addr, ret);
+        panic();
+    }
+
+    /* If offset is not aligned to block, adjust */
+    return *((uint32_t *)(buf + (addr % mmc_dev->block_size)));
 }
 
 /**

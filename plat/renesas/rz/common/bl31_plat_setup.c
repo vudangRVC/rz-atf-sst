@@ -32,6 +32,7 @@ static const mmap_region_t rzg2l_mmap[] = {
 
 static console_t rzg2l_bl31_console;
 static bl2_to_bl31_params_mem_t from_bl2;
+const io_dev_connector_t *emmc_dev;
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type);
 
@@ -85,9 +86,30 @@ void bl31_platform_setup(void)
 	plat_gic_init();
 #endif
 
-	/* Read model and revision id from QSPI */
-	uint32_t model = get_board_info_u32(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
-	uint32_t revision = get_board_info_u32(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE, BOARD_INFO_QSPI_OFFSET, OFFSET_REVISION);
+	uint32_t model;
+	uint32_t revision;
+	boot_mode_t boot_mode;
+	boot_mode = sys_get_boot_mode();
+
+	if (boot_mode == SYS_BOOT_MODE_SPI_1_8 ||
+		boot_mode == SYS_BOOT_MODE_SPI_3_3) {
+		/* Read model and revision id from QSPI */
+		model = get_board_info_u32(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
+		revision = get_board_info_u32(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE, BOARD_INFO_QSPI_OFFSET, OFFSET_REVISION);
+		
+	} else if  (boot_mode == SYS_BOOT_MODE_EMMC_1_8 ||
+		register_io_dev_emmcdrv(&emmc_dev);
+		boot_mode == SYS_BOOT_MODE_EMMC_3_3) {
+		model = get_board_info_u32_emmc(&emmc_dev, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
+
+	} else if (boot_mode == SYS_BOOT_MODE_ESD) {
+		/* Placeholder for eSD support, currently it is unsupported. */
+		ERROR("Unsupported IO device %d.\n", boot_mode);
+		panic();
+	} else {
+		ERROR("Unsupported IO device %d.\n", boot_mode);
+		panic();
+	}
 
 	/* Get entry point info for BL33 */
 	entry_point_info_t *bl33_ep_info = bl31_plat_get_next_image_ep_info(NON_SECURE);
