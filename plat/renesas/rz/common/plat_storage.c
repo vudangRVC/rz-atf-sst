@@ -357,7 +357,6 @@ void rz_io_setup(void)
 
 	/* Boot Mode eSD */
 	stat_md_boot = mmio_read_32(SYS_LSI_MODE) & MASK_BOOTM_DEVICE;
-	printf("BL2: Boot Mode: %d\n", stat_md_boot);
 	if (stat_md_boot == BOOT_MODE_ESD){
 		panic();
 		if (esd_main() != SD_OK) {
