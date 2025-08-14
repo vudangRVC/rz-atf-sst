@@ -10,6 +10,8 @@
 
 #include <ddr_internal.h>
 #include <cpg.h>
+#include <lib/fconf/fconf.h>
+#include <lib/libfdt/libfdt.h>
 #include <rz_fconf.h>
 
 #define	CEIL(a, div)	(((a) + ((div) - 1)) / (div))
@@ -78,17 +80,23 @@ void ddr_setup(void)
 	uint32_t	tmp;
 	int i;
 
+	uint32_t rzcmn_board_id = FCONF_GET_PROPERTY(hw_config, common_config, board_id);
+	INFO("BL2: DDR setup for board ID: 0x%x\n", rzcmn_board_id);
+
 	/* Initialize global DDR config from DTB.  */
 	g_ddr_fconf_cfg = ddr_config_getter();
 
 	INFO("BL2: setup DDR (Rev. %s)\n", ddr_an_version);
 	// Step2 - Step11
+	INFO("DDR: Step2 - Step11\n");
 	cpg_active_ddr(disable_phy_clk);
 
 	// Step12
+	INFO("DDR: Step12\n");
 	program_mc1(&lp_auto_entry_en);
 
 	// Step13
+	INFO("DDR: Step13\n");
 	tmp = read_mc_reg(DDRMC_R019);
 	sl_lanes	= ((tmp & 0x1) == 0) ? 3 : 1;
 	byte_lanes	= ((tmp & 0x1) == 0) ? 2 : 1;
@@ -98,34 +106,51 @@ void ddr_setup(void)
 	runVREF		= (tmp >> 25) & 0x1;
 
 	// Step14
+	INFO("DDR: Step14\n");
 	program_phy1(sl_lanes, byte_lanes);
 
 	// Step15
+	INFO("DDR: Step15\n");
 	while ((read_phy_reg(DDRPHY_R42) & 0x00000003) != sl_lanes)
 		;
 
 	// Step16
+	INFO("DDR: Step16\n");
+	INFO("DDR: Step16 - ddr_ctrl_reten_en_n(0);\n");
 	ddr_ctrl_reten_en_n(0);
+	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, 0x00000000);\n");
 	rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, 0x00000000);
+	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, 0x01000000);\n");
 	rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, 0x01000000);
+	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);\n");
 	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
+	INFO("while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)\n");
 	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
 		;
+	INFO("DDR: Step16 - rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00080000);\n");
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00080000);
+	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R029, 0xFF0000FF, 64 << 8);\n");
 	rmw_mc_reg(DDRMC_R029, 0xFF0000FF, 64 << 8);
+	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R027, 0xE00000FF, 111 << 8);\n");
 	rmw_mc_reg(DDRMC_R027, 0xE00000FF, 111 << 8);
+	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, 0x00000100);\n");
 	rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, 0x00000100);
+	INFO("DDR: Step16 - udelay(1);\n");
 	udelay(1);
+	INFO("DDR: Step16 - rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00000000);\n");
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00000000);
 
 	// Step17
+	INFO("DDR: Step17\n");
 	cpg_reset_ddr_mc();
 	ddr_ctrl_reten_en_n(1);
 
 	// Step18-19
+	INFO("DDR: Step18-19\n");
 	program_mc1(&lp_auto_entry_en);
 
 	// Step20
+	INFO("DDR: Step20\n");
 	for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl); i++) {
 		INFO("swizzle_mc_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
 		write_mc_reg(swizzle_mc_tbl[i][0], g_ddr_fconf_cfg->ddrmc[i]);
@@ -136,40 +161,50 @@ void ddr_setup(void)
 	}
 
 	// Step21
+	INFO("DDR: Step21\n");
 	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
 
 	// Step22
-	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
-		;
+	INFO("DDR: Step22\n");
+	udelay(1);
 
 	// Step23
+	INFO("DDR: Step23\n");
 	rmw_mc_reg(DDRMC_R023, 0xFDFFFFFF, 0x02000000);
 
 	// Step24
+	INFO("DDR: Step24\n");
 	exec_trainingWRLVL(sl_lanes);
 
 	// Step25
+	INFO("DDR: Step25\n");
 	if (runVREF == 1)
 		exec_trainingVREF(sl_lanes, byte_lanes);
 
 	// Step26
+	INFO("DDR: Step26\n");
 	if (runBITLVL == 1)
 		exec_trainingBITLVL(sl_lanes);
 
 	// Step27
+	INFO("DDR: Step27\n");
 	opt_delay(sl_lanes, byte_lanes);
 
 	// Step28
+	INFO("DDR: Step28\n");
 	if (runSL == 1)
 		exec_trainingSL(sl_lanes);
 
 	// Step29
+	INFO("DDR: Step29\n");
 	program_phy2();
 
 	// Step30
+	INFO("DDR: Step30\n");
 	program_mc2();
 
 	// Step31 is skipped because ECC is unused.
+	INFO("DDR: Step31 is skipped because ECC is unused\n.");
 #if (DDR_ECC_ENABLE == 1)
 	printf("NOTICE:  BL2: ECC MODE: ");
 #if(DDR_ECC_DETECT_CORRECT == 1)
@@ -195,6 +230,7 @@ void ddr_setup(void)
 	mdelay(10);
 
 	// Step32
+	INFO("DDR: Step32\n");
 	// let the auto_exit_en to be value|0x8
 	// recommended value for "value" is 0x0
 	tmp = read_mc_reg(DENALI_CTL_60);

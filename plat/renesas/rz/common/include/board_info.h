@@ -16,6 +16,14 @@
 #define OFFSET_MODEL_STRING      0x08
 #define OFFSET_MFG_NAME          0x08 + MAX_STRING_LEN
 
+/* RZ board id defines, it will be used to compare with the parameter
+ * passed by ATF to decide how to configure U-Boot
+ */
+#define BOARD_ID_RZG2L_EVK				0x10
+#define BOARD_ID_RZG2L_SBC				0x11
+#define BOARD_ID_RZV2L_EVK				0x20
+#define BOARD_ID_RZV2H_EVK				0x30
+
 /**
  * get_board_info_u32 - Read a 32-bit field from the board info region
  *

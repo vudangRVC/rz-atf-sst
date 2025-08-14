@@ -1,11 +1,16 @@
 #ifndef RZ_CONFIG_H
 #define RZ_CONFIG_H
 
+#define hw_config__common_config_getter(prop) common_config.prop
 #define hw_config__cpg_config_getter(prop) cpg_config.prop
 #define hw_config__sysc_config_getter(prop) sysc_config.prop
 #define hw_config__pfc_config_getter(prop) pfc_config.prop
 #define hw_config__ddr_config_getter(prop) ddr_config.prop
 #define hw_config__spi_config_getter(prop) spi_config.prop
+
+struct common_config_t {
+    uint32_t board_id;
+};
 
 struct cpg_config_t {
     uint32_t divpl1_set;
@@ -61,12 +66,14 @@ struct spi_config_t {
     uint32_t drdrenr;
 };
 
+extern struct common_config_t common_config;
 extern struct cpg_config_t cpg_config;
 extern struct sysc_config_t sysc_config;
 extern struct pfc_config_t pfc_config;
 extern struct ddr_config_t ddr_config;
 extern struct spi_config_t spi_config;
 
+const struct common_config_t *common_config_getter(void);
 const struct cpg_config_t *cpg_config_getter(void);
 const struct pfc_config_t *pfc_config_getter(void);
 const struct sysc_config_t *sysc_config_getter(void);

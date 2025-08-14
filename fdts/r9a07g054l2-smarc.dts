@@ -23,6 +23,7 @@
 
 	sbc: soc {
 		compatible = "simple-bus";
+		board_id = <0x20>;
 		#address-cells = <0x02>;
 		#size-cells = <0x02>;
 
@@ -135,13 +136,13 @@
 			ddrphy_setup_step16 = <0x001E1C0C>;
 
 			// DDR_DENALI
-			ddr_denali_ctl_30 = <0x000001B8>;
-			ddr_denali_ctl_34 = <0x01C00255>;
-			ddr_denali_ctl_35 = <0x000001C0>;
-			ddr_denali_ctl_122 = <0x00010100>;
-			ddr_denali_ctl_123 = <0x00010100>;
-			ddr_denali_ctl_124 = <0x1FFF0000>;
-			ddr_denali_ctl_125 = <0x0003FF00>;
+			ddr_denali_ctl_30 = <0x00000000>;
+			ddr_denali_ctl_34 = <0x00000005>;
+			ddr_denali_ctl_35 = <0x00140005>;
+			ddr_denali_ctl_122 = <0x00080C18>;
+			ddr_denali_ctl_123 = <0x00BEBD03>;
+			ddr_denali_ctl_124 = <0x0000C350>;
+			ddr_denali_ctl_125 = <0x00000000>;
 		};
 
 		dmac: dma-controller@11820000 {

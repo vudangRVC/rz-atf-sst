@@ -3,6 +3,7 @@
 #include <lib/libfdt/libfdt.h>
 #include <rz_fconf.h>
 
+struct common_config_t common_config;
 struct cpg_config_t cpg_config;
 struct sysc_config_t sysc_config;
 struct pfc_config_t pfc_config;
@@ -30,6 +31,33 @@ void fconf_read_u32_props(const void *fdt, int node_offset,
 	}
 }
 
+
+/**********************************************************************
+ * COMMON FCONF function
+ **********************************************************************/
+int fconf_populate_common_config(uintptr_t config)
+{
+	const void *fdt = (const void *)config;
+
+	int soc_node = fdt_path_offset(fdt, "/soc");
+
+	const char *common_props[] = {
+		"board_id",
+	};
+
+	uint32_t *common_targets[] = {
+		&common_config.board_id,
+	};
+
+	fconf_read_u32_props(fdt, soc_node, common_props, (uint32_t **)common_targets, ARRAY_SIZE(common_props));
+
+	return 0;
+}
+
+const struct common_config_t *common_config_getter(void)
+{
+	return &common_config;
+}
 
 /**********************************************************************
  * CPG FCONF function
@@ -296,6 +324,7 @@ const struct spi_config_t *spi_config_getter(void)
 /**********************************************************************
  * FCONF registration
  **********************************************************************/
+FCONF_REGISTER_POPULATOR(HW_CONFIG, common_config, fconf_populate_common_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, cpg_config, fconf_populate_cpg_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, sysc_config, fconf_populate_sysc_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, pfc_config, fconf_populate_pfc_config);
