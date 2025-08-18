@@ -45,7 +45,7 @@ static inline void rmw_phy_reg(uint32_t offset, uint32_t mask, uint32_t val)
 	write_phy_reg(offset, (read_phy_reg(offset) & mask) | val);
 }
 
-void ddr_ctrl_reten_en_n(uint8_t val);
+void ddr_ctrl_reten_en_n(uint8_t val, uint8_t board_id);
 
 
 #endif	/* __DDR_INTERNAL_H__ */

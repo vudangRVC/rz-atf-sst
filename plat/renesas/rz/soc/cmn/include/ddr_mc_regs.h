@@ -10,7 +10,8 @@
 #include <rzg2l_def.h>
 
 #define DDR_MC_BASE			RZG2L_DDR_MEMC_BASE
-#define MC_INIT_NUM			(507)
+#define MC_INIT_NUM_G2L			(436)
+#define MC_INIT_NUM_V2L			(507)
 
 #define	DENALI_CTL_00		(0x0000)
 #define	DENALI_CTL_01		(0x0004)

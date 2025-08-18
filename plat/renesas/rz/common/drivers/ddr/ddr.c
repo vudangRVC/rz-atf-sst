@@ -13,6 +13,7 @@
 #include <lib/fconf/fconf.h>
 #include <lib/libfdt/libfdt.h>
 #include <rz_fconf.h>
+#include <board_info.h>
 
 #define	CEIL(a, div)	(((a) + ((div) - 1)) / (div))
 #define	_MIN(a, b)		((a) < (b) ? (a) : (b))
@@ -22,17 +23,21 @@
 #define	MAX_BEST_VREF_SAVED	(30U)
 #define	VREF_SETP			(1U)
 
-extern const uint32_t mc_init_tbl[MC_INIT_NUM][2];
+extern const uint32_t mc_init_tbl_g2l[MC_INIT_NUM_G2L][2];
+extern const uint32_t mc_init_tbl_v2l[MC_INIT_NUM_V2L][2];
 extern const uint32_t mc_odt_pins_tbl[4];
 extern const uint32_t mc_mr1_tbl[2];
 extern const uint32_t mc_mr2_tbl[2];
 extern const uint32_t mc_mr5_tbl[2];
 extern const uint32_t mc_mr6_tbl[2];
-extern const uint32_t mc_phy_settings_tbl[MC_PHYSET_NUM][2];
-extern const uint32_t swizzle_mc_tbl[SWIZZLE_MC_NUM][2];
+extern const uint32_t mc_phy_settings_tbl_g2l[MC_PHYSET_NUM][2];
+extern const uint32_t mc_phy_settings_tbl_v2l[MC_PHYSET_NUM][2];
+extern const uint32_t swizzle_mc_tbl_g2l[SWIZZLE_MC_NUM][2];
+extern const uint32_t swizzle_mc_tbl_v2l[SWIZZLE_MC_NUM][2];
 extern const uint32_t swizzle_phy_tbl[SIZZLE_PHY_NUM][2];
 extern const char ddr_an_version[];
 const struct ddr_config_t *g_ddr_fconf_cfg;
+uint32_t rzcmn_board_id;
 
 // prototypes
 void ddr_setup(void);
@@ -80,7 +85,7 @@ void ddr_setup(void)
 	uint32_t	tmp;
 	int i;
 
-	uint32_t rzcmn_board_id = FCONF_GET_PROPERTY(hw_config, common_config, board_id);
+	rzcmn_board_id = FCONF_GET_PROPERTY(hw_config, common_config, board_id);
 	INFO("BL2: DDR setup for board ID: 0x%x\n", rzcmn_board_id);
 
 	/* Initialize global DDR config from DTB.  */
@@ -88,123 +93,104 @@ void ddr_setup(void)
 
 	INFO("BL2: setup DDR (Rev. %s)\n", ddr_an_version);
 	// Step2 - Step11
-	INFO("DDR: Step2 - Step11\n");
 	cpg_active_ddr(disable_phy_clk);
 
 	// Step12
-	INFO("DDR: Step12\n");
 	program_mc1(&lp_auto_entry_en);
 
 	// Step13
-	INFO("DDR: Step13\n");
-	tmp = read_mc_reg(DDRMC_R019);
+	tmp = read_mc_reg(DDRMC_R019(rzcmn_board_id));
 	sl_lanes	= ((tmp & 0x1) == 0) ? 3 : 1;
 	byte_lanes	= ((tmp & 0x1) == 0) ? 2 : 1;
-	tmp = read_mc_reg(DDRMC_R039);
+	tmp = read_mc_reg(DDRMC_R039(rzcmn_board_id));
 	runBITLVL	= (tmp >> 20) & 0x1;
 	runSL		= (tmp >> 21) & 0x1;
 	runVREF		= (tmp >> 25) & 0x1;
 
 	// Step14
-	INFO("DDR: Step14\n");
 	program_phy1(sl_lanes, byte_lanes);
 
 	// Step15
-	INFO("DDR: Step15\n");
 	while ((read_phy_reg(DDRPHY_R42) & 0x00000003) != sl_lanes)
 		;
 
 	// Step16
-	INFO("DDR: Step16\n");
-	INFO("DDR: Step16 - ddr_ctrl_reten_en_n(0);\n");
-	ddr_ctrl_reten_en_n(0);
-	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, 0x00000000);\n");
-	rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, 0x00000000);
-	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, 0x01000000);\n");
-	rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, 0x01000000);
-	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);\n");
-	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
-	INFO("while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)\n");
-	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
+	ddr_ctrl_reten_en_n(0, rzcmn_board_id);
+	rmw_mc_reg(DDRMC_R007(rzcmn_board_id), 0xFFFFFEFF, 0x00000000);
+	rmw_mc_reg(DDRMC_R001(rzcmn_board_id), 0xFEFFFFFF, 0x01000000);
+	rmw_mc_reg(DDRMC_R000(rzcmn_board_id), 0xFFFFFFFE, 0x00000001);
+	INFO("while ((read_mc_reg(DDRMC_R021(rzcmn_board_id)) & 0x02000000) != 0x02000000)\n");
+	while ((read_mc_reg(DDRMC_R021(rzcmn_board_id)) & 0x02000000) != 0x02000000)
 		;
-	INFO("DDR: Step16 - rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00080000);\n");
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00080000);
-	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R029, 0xFF0000FF, 64 << 8);\n");
-	rmw_mc_reg(DDRMC_R029, 0xFF0000FF, 64 << 8);
-	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R027, 0xE00000FF, 111 << 8);\n");
-	rmw_mc_reg(DDRMC_R027, 0xE00000FF, 111 << 8);
-	INFO("DDR: Step16 - rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, 0x00000100);\n");
-	rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, 0x00000100);
-	INFO("DDR: Step16 - udelay(1);\n");
+	rmw_mc_reg(DDRMC_R029(rzcmn_board_id), 0xFF0000FF, 64 << 8);
+	rmw_mc_reg(DDRMC_R027(rzcmn_board_id), 0xE00000FF, 111 << 8);
+	rmw_mc_reg(DDRMC_R020(rzcmn_board_id), 0xFFFFFEFF, 0x00000100);
 	udelay(1);
-	INFO("DDR: Step16 - rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00000000);\n");
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00000000);
 
 	// Step17
-	INFO("DDR: Step17\n");
 	cpg_reset_ddr_mc();
-	ddr_ctrl_reten_en_n(1);
+	ddr_ctrl_reten_en_n(1, rzcmn_board_id);
 
 	// Step18-19
-	INFO("DDR: Step18-19\n");
 	program_mc1(&lp_auto_entry_en);
 
 	// Step20
-	INFO("DDR: Step20\n");
-	for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl); i++) {
-		INFO("swizzle_mc_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
-		write_mc_reg(swizzle_mc_tbl[i][0], g_ddr_fconf_cfg->ddrmc[i]);
+	if (rzcmn_board_id == BOARD_ID_RZG2L_EVK ||
+	    rzcmn_board_id == BOARD_ID_RZG2L_SBC) {
+		for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl_g2l); i++) {
+			INFO("swizzle_mc_tbl_g2l[%d]: 0x%x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
+			write_mc_reg(swizzle_mc_tbl_g2l[i][0], g_ddr_fconf_cfg->ddrmc[i]);
+		}
+	} else if (rzcmn_board_id == BOARD_ID_RZV2L_EVK) {
+		for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl_v2l); i++) {
+			INFO("swizzle_mc_tbl_v2l[%d]: 0x%x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
+			write_mc_reg(swizzle_mc_tbl_v2l[i][0], g_ddr_fconf_cfg->ddrmc[i]);
+		}
+	} else if (rzcmn_board_id == BOARD_ID_RZV2H_EVK) {
+		// Todo: Add RZV2H specific swizzle table
 	}
+
 	for (i = 0; i < ARRAY_SIZE(swizzle_phy_tbl); i++) {
-		INFO("swizzle_phy_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrphy[i]);
+		INFO("swizzle_phy_tbl[%d]: 0x%x\n", i, g_ddr_fconf_cfg->ddrphy[i]);
 		write_phy_reg(swizzle_phy_tbl[i][0], g_ddr_fconf_cfg->ddrphy[i]);
 	}
 
 	// Step21
-	INFO("DDR: Step21\n");
-	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
+	rmw_mc_reg(DDRMC_R000(rzcmn_board_id), 0xFFFFFFFE, 0x00000001);
 
 	// Step22
-	INFO("DDR: Step22\n");
 	udelay(1);
 
 	// Step23
-	INFO("DDR: Step23\n");
-	rmw_mc_reg(DDRMC_R023, 0xFDFFFFFF, 0x02000000);
+	rmw_mc_reg(DDRMC_R023(rzcmn_board_id), 0xFDFFFFFF, 0x02000000);
 
 	// Step24
-	INFO("DDR: Step24\n");
 	exec_trainingWRLVL(sl_lanes);
 
 	// Step25
-	INFO("DDR: Step25\n");
 	if (runVREF == 1)
 		exec_trainingVREF(sl_lanes, byte_lanes);
 
 	// Step26
-	INFO("DDR: Step26\n");
 	if (runBITLVL == 1)
 		exec_trainingBITLVL(sl_lanes);
 
 	// Step27
-	INFO("DDR: Step27\n");
 	opt_delay(sl_lanes, byte_lanes);
 
 	// Step28
-	INFO("DDR: Step28\n");
 	if (runSL == 1)
 		exec_trainingSL(sl_lanes);
 
 	// Step29
-	INFO("DDR: Step29\n");
 	program_phy2();
 
 	// Step30
-	INFO("DDR: Step30\n");
 	program_mc2();
 
 	// Step31 is skipped because ECC is unused.
-	INFO("DDR: Step31 is skipped because ECC is unused\n.");
 #if (DDR_ECC_ENABLE == 1)
 	printf("NOTICE:  BL2: ECC MODE: ");
 #if(DDR_ECC_DETECT_CORRECT == 1)
@@ -230,7 +216,6 @@ void ddr_setup(void)
 	mdelay(10);
 
 	// Step32
-	INFO("DDR: Step32\n");
 	// let the auto_exit_en to be value|0x8
 	// recommended value for "value" is 0x0
 	tmp = read_mc_reg(DENALI_CTL_60);
@@ -240,7 +225,7 @@ void ddr_setup(void)
 	printf("DONE\n");
 #endif
 
-	rmw_mc_reg(DDRMC_R006, 0xFFFFFFF0, lp_auto_entry_en & 0xF);
+	rmw_mc_reg(DDRMC_R006(rzcmn_board_id), 0xFFFFFFF0, lp_auto_entry_en & 0xF);
 
 #if (DDR_ECC_ENABLE == 1)
 	// Extra step, test ECC CE function
@@ -638,63 +623,106 @@ static void program_mc1(uint8_t *lp_auto_entry_en)
 	int offset;
 
 	// Step1
-	for (i = 0; i < ARRAY_SIZE(mc_init_tbl); i++) {
-		offset = mc_init_tbl[i][0];
-		if (offset == DDRMC_R006) {
-			*lp_auto_entry_en = mc_init_tbl[i][1] & 0xF;
-			write_mc_reg(DDRMC_R006, mc_init_tbl[i][1] & 0xFFFFFFF0);
-		} else if (offset == DENALI_CTL_30) {
-			INFO("DENALI_CTL_30: %x\n", g_ddr_fconf_cfg->ddrdenali_30);
-			write_mc_reg(DENALI_CTL_30, g_ddr_fconf_cfg->ddrdenali_30);
-		} else if (offset == DENALI_CTL_34) {
-			INFO("DENALI_CTL_34: %x\n", g_ddr_fconf_cfg->ddrdenali_34);
-			write_mc_reg(DENALI_CTL_34, g_ddr_fconf_cfg->ddrdenali_34);
-		} else if (offset == DENALI_CTL_35) {
-			INFO("DENALI_CTL_35: %x\n", g_ddr_fconf_cfg->ddrdenali_35);
-			write_mc_reg(DENALI_CTL_35, g_ddr_fconf_cfg->ddrdenali_35);
-		} else if (offset == DENALI_CTL_122) {
-			INFO("DENALI_CTL_122: %x\n", g_ddr_fconf_cfg->ddrdenali_122);
-			write_mc_reg(DENALI_CTL_122, g_ddr_fconf_cfg->ddrdenali_122);
-		} else if (offset == DENALI_CTL_123) {
-			INFO("DENALI_CTL_123: %x\n", g_ddr_fconf_cfg->ddrdenali_123);
-			write_mc_reg(DENALI_CTL_123, g_ddr_fconf_cfg->ddrdenali_123);
-		} else if (offset == DENALI_CTL_124) {
-			INFO("DENALI_CTL_124: %x\n", g_ddr_fconf_cfg->ddrdenali_124);
-			write_mc_reg(DENALI_CTL_124, g_ddr_fconf_cfg->ddrdenali_124);
-		} else if (offset == DENALI_CTL_125) {
-			INFO("DENALI_CTL_125: %x\n", g_ddr_fconf_cfg->ddrdenali_125);
-			write_mc_reg(DENALI_CTL_125, g_ddr_fconf_cfg->ddrdenali_125);
-		} else {
-			write_mc_reg(mc_init_tbl[i][0], mc_init_tbl[i][1]);
+	if (BOARD_ID_RZG2L_EVK == rzcmn_board_id ||
+		BOARD_ID_RZG2L_SBC == rzcmn_board_id) {
+		for (i = 0; i < ARRAY_SIZE(mc_init_tbl_g2l); i++) {
+			offset = mc_init_tbl_g2l[i][0];
+			switch (offset)
+			{
+				case DENALI_CTL_60:
+					*lp_auto_entry_en = mc_init_tbl_g2l[i][1] & 0xF;
+					write_mc_reg(DENALI_CTL_60, mc_init_tbl_g2l[i][1] & 0xFFFFFFF0);
+					break;
+
+				case DENALI_CTL_30:
+					INFO("DENALI_CTL_30: 0x%x\n", g_ddr_fconf_cfg->ddrdenali_30);
+					write_mc_reg(DENALI_CTL_30, g_ddr_fconf_cfg->ddrdenali_30);
+					break;
+
+				case DENALI_CTL_34:
+					INFO("DENALI_CTL_34: 0x%x\n", g_ddr_fconf_cfg->ddrdenali_34);
+					write_mc_reg(DENALI_CTL_34, g_ddr_fconf_cfg->ddrdenali_34);
+					break;
+
+				case DENALI_CTL_35:
+					INFO("DENALI_CTL_35: 0x%x\n", g_ddr_fconf_cfg->ddrdenali_35);
+					write_mc_reg(DENALI_CTL_35, g_ddr_fconf_cfg->ddrdenali_35);
+					break;
+
+				case DENALI_CTL_122:
+					INFO("DENALI_CTL_122: 0x%x\n", g_ddr_fconf_cfg->ddrdenali_122);
+					write_mc_reg(DENALI_CTL_122, g_ddr_fconf_cfg->ddrdenali_122);
+					break;
+
+				case DENALI_CTL_123:
+					INFO("DENALI_CTL_123: 0x%x\n", g_ddr_fconf_cfg->ddrdenali_123);
+					write_mc_reg(DENALI_CTL_123, g_ddr_fconf_cfg->ddrdenali_123);
+					break;
+
+				case DENALI_CTL_124:
+					INFO("DENALI_CTL_124: 0x%x\n", g_ddr_fconf_cfg->ddrdenali_124);
+					write_mc_reg(DENALI_CTL_124, g_ddr_fconf_cfg->ddrdenali_124);
+					break;
+
+				case DENALI_CTL_125:
+					INFO("DENALI_CTL_125: 0x%x\n", g_ddr_fconf_cfg->ddrdenali_125);
+					write_mc_reg(DENALI_CTL_125, g_ddr_fconf_cfg->ddrdenali_125);
+					break;
+
+				default:
+					write_mc_reg(mc_init_tbl_g2l[i][0], mc_init_tbl_g2l[i][1]);
+					break;
+			}
 		}
+	} else if (BOARD_ID_RZV2L_EVK == rzcmn_board_id) {
+		for (i = 0; i < ARRAY_SIZE(mc_init_tbl_v2l); i++) {
+			if (mc_init_tbl_v2l[i][0] == DDRMC_R006(rzcmn_board_id)) {
+				*lp_auto_entry_en = mc_init_tbl_v2l[i][1] & 0xF;
+				write_mc_reg(DDRMC_R006(rzcmn_board_id), mc_init_tbl_v2l[i][1] & 0xFFFFFFF0);
+			} else {
+				write_mc_reg(mc_init_tbl_v2l[i][0], mc_init_tbl_v2l[i][1]);
+			}
+		}
+	} else if (BOARD_ID_RZV2H_EVK == rzcmn_board_id) {
+		// TODO: Implement for RZ/V2H
 	}
 
 	// Step2
-	rmw_mc_reg(DDRMC_R025, 0xFCFFFFFF, mc_odt_pins_tbl[0] << 24);
-	rmw_mc_reg(DDRMC_R026, 0xFFFFFCFF, mc_odt_pins_tbl[1] << 8);
-	rmw_mc_reg(DDRMC_R025, 0xFFFCFFFF, mc_odt_pins_tbl[2] << 16);
-	rmw_mc_reg(DDRMC_R026, 0xFFFFFFFC, mc_odt_pins_tbl[3] << 0);
+	rmw_mc_reg(DDRMC_R025(rzcmn_board_id), 0xFCFFFFFF, mc_odt_pins_tbl[0] << 24);
+	rmw_mc_reg(DDRMC_R026(rzcmn_board_id), 0xFFFFFCFF, mc_odt_pins_tbl[1] << 8);
+	rmw_mc_reg(DDRMC_R025(rzcmn_board_id), 0xFFFCFFFF, mc_odt_pins_tbl[2] << 16);
+	rmw_mc_reg(DDRMC_R026(rzcmn_board_id), 0xFFFFFFFC, mc_odt_pins_tbl[3] << 0);
 
 	// Step3
-	rmw_mc_reg(DDRMC_R009, ~(mc_mr1_tbl[0]), mc_mr1_tbl[1]);
-	rmw_mc_reg(DDRMC_R011, ~(mc_mr1_tbl[0]), mc_mr1_tbl[1]);
+	rmw_mc_reg(DDRMC_R009(rzcmn_board_id), ~(mc_mr1_tbl[0]), mc_mr1_tbl[1]);
+	rmw_mc_reg(DDRMC_R011(rzcmn_board_id), ~(mc_mr1_tbl[0]), mc_mr1_tbl[1]);
 
 	// Step4
-	rmw_mc_reg(DDRMC_R010, ~(mc_mr2_tbl[0]), mc_mr2_tbl[1]);
-	rmw_mc_reg(DDRMC_R012, ~(mc_mr2_tbl[0]), mc_mr2_tbl[1]);
+	rmw_mc_reg(DDRMC_R010(rzcmn_board_id), ~(mc_mr2_tbl[0]), mc_mr2_tbl[1]);
+	rmw_mc_reg(DDRMC_R012(rzcmn_board_id), ~(mc_mr2_tbl[0]), mc_mr2_tbl[1]);
 
 	// Step5
-	rmw_mc_reg(DDRMC_R015, ~(mc_mr5_tbl[0]), mc_mr5_tbl[1]);
-	rmw_mc_reg(DDRMC_R016, ~(mc_mr5_tbl[0]), mc_mr5_tbl[1]);
+	rmw_mc_reg(DDRMC_R015(rzcmn_board_id), ~(mc_mr5_tbl[0]), mc_mr5_tbl[1]);
+	rmw_mc_reg(DDRMC_R016(rzcmn_board_id), ~(mc_mr5_tbl[0]), mc_mr5_tbl[1]);
 
 	// Step6
-	rmw_mc_reg(DDRMC_R017, ~(mc_mr6_tbl[0]), mc_mr6_tbl[1]);
-	rmw_mc_reg(DDRMC_R018, ~(mc_mr6_tbl[0]), mc_mr6_tbl[1]);
+	rmw_mc_reg(DDRMC_R017(rzcmn_board_id), ~(mc_mr6_tbl[0]), mc_mr6_tbl[1]);
+	rmw_mc_reg(DDRMC_R018(rzcmn_board_id), ~(mc_mr6_tbl[0]), mc_mr6_tbl[1]);
 
 	// Step7
-	for (i = 0; i < ARRAY_SIZE(mc_phy_settings_tbl); i++) {
-		write_mc_reg(mc_phy_settings_tbl[i][0], mc_phy_settings_tbl[i][1]);
+	if (BOARD_ID_RZG2L_EVK == rzcmn_board_id ||
+		BOARD_ID_RZG2L_SBC == rzcmn_board_id) {
+		for (i = 0; i < ARRAY_SIZE(mc_phy_settings_tbl_g2l); i++) {
+			write_mc_reg(mc_phy_settings_tbl_g2l[i][0], mc_phy_settings_tbl_g2l[i][1]);
+		}
+	} else if (BOARD_ID_RZV2L_EVK == rzcmn_board_id) {
+		for (i = 0; i < ARRAY_SIZE(mc_phy_settings_tbl_v2l); i++) {
+			write_mc_reg(mc_phy_settings_tbl_v2l[i][0], mc_phy_settings_tbl_v2l[i][1]);
+		}
+	} else if (BOARD_ID_RZV2H_EVK == rzcmn_board_id) {
+		// TODO: Implement for RZ/V2H
 	}
+
 
 	// Step8 is skipped because ECC is unused.
 #if (DDR_ECC_ENABLE == 1)
@@ -716,20 +744,20 @@ static void program_phy1(uint32_t sl_lanes, uint32_t byte_lanes)
 	int i;
 
 	// Step1
-	tmp = read_mc_reg(DDRMC_R039);
+	tmp = read_mc_reg(DDRMC_R039(rzcmn_board_id));
 	dram_clk_period = tmp & 0xFFFF;
 	dram = (tmp >> 16) & 0xF;
 
-	tmp = read_mc_reg(DDRMC_R025);
+	tmp = read_mc_reg(DDRMC_R025(rzcmn_board_id));
 	odt_wr_map_cs0 = (tmp >> 24) & 0x3;
 	odt_rd_map_cs0 = (tmp >> 16) & 0x3;
 
 	// Step2
-	tmp = read_mc_reg(DDRMC_R002);
+	tmp = read_mc_reg(DDRMC_R002(rzcmn_board_id));
 	CL = (tmp >> 17) & 0x1F;
 	CWL = (tmp >> 24) & 0x1F;
 
-	tmp = read_mc_reg(DDRMC_R003);
+	tmp = read_mc_reg(DDRMC_R003(rzcmn_board_id));
 	AL = tmp & 0x1F;
 	PL = (tmp >> 8) & 0xF;
 
@@ -737,8 +765,8 @@ static void program_phy1(uint32_t sl_lanes, uint32_t byte_lanes)
 	WL = CWL + AL + PL;
 
 	// Step3
-	mr1 = read_mc_reg(DDRMC_R009) & 0xFFFF;
-	mr2 = read_mc_reg(DDRMC_R010) & 0xFFFF;
+	mr1 = read_mc_reg(DDRMC_R009(rzcmn_board_id)) & 0xFFFF;
+	mr2 = read_mc_reg(DDRMC_R010(rzcmn_board_id)) & 0xFFFF;
 	if (dram == 2) {
 		// DDR4
 		mr1_wl_mask = (0x7 << 8) | (0x1 << 7);	// 0x78
@@ -783,7 +811,7 @@ static void program_phy1(uint32_t sl_lanes, uint32_t byte_lanes)
 	mr2_wl = (mr2 & (0xFFFF ^ mr2_wl_mask)) | (0x0 << 9);
 
 	// Step4
-	tmp = read_mc_reg(DDRMC_R040);
+	tmp = read_mc_reg(DDRMC_R040(rzcmn_board_id));
 	clk_drive = tmp & 0xF;
 	dq_dqs_drive = (tmp >> 4) & 0xF;
 	dq_dqs_term = (tmp >> 8) & 0xF;
@@ -1018,8 +1046,8 @@ static void exec_trainingVREF(uint32_t sl_lanes, uint32_t byte_lanes)
 		rmw_phy_reg(DDRPHY_R07, 0xFFFFFFCF, 0x00000010);
 	}
 	// Step3
-	vref_mid_level_code = (read_mc_reg(DDRMC_R040) >> 16) & 0xFF;
-	sweep_range = read_mc_reg(DDRMC_R043) & 0xFF;
+	vref_mid_level_code = (read_mc_reg(DDRMC_R040(rzcmn_board_id)) >> 16) & 0xFF;
+	sweep_range = read_mc_reg(DDRMC_R043(rzcmn_board_id)) & 0xFF;
 
 	// Step4
 	for (i = 0; i < byte_lanes; i++) {
@@ -1118,8 +1146,8 @@ static void exec_trainingVREF(uint32_t sl_lanes, uint32_t byte_lanes)
 	rmw_phy_reg(DDRPHY_R54, 0xFFFFFF7F, 0x00000080);
 
 	// Step11
-	vref_mid_level_code = (read_mc_reg(DDRMC_R043) >> 8) & 0xFF;
-	sweep_range = (read_mc_reg(DDRMC_R043) >> 16) & 0xFF;
+	vref_mid_level_code = (read_mc_reg(DDRMC_R043(rzcmn_board_id)) >> 8) & 0xFF;
+	sweep_range = (read_mc_reg(DDRMC_R043(rzcmn_board_id)) >> 16) & 0xFF;
 
 	// Step12
 	orig_cs_config = read_phy_reg(DDRPHY_R25) & 0x3;
@@ -1208,7 +1236,7 @@ static void exec_trainingVREF(uint32_t sl_lanes, uint32_t byte_lanes)
 	setup_vref_training_registers(current_vref, sl_lanes, 0);
 
 	// Step19
-	rmw_mc_reg(DDRMC_R044, 0xFFFFFF00, current_vref);
+	rmw_mc_reg(DDRMC_R044(rzcmn_board_id), 0xFFFFFF00, current_vref);
 
 	// Step20
 	rmw_phy_reg(DDRPHY_R66, 0xFFFFFFFE, 0x00000000);
@@ -1239,7 +1267,7 @@ static void setup_vref_training_registers(uint8_t vref_value, uint8_t cs, uint8_
 	}
 
 	// Step2
-	mr = read_mc_reg(DDRMC_R017) & 0xFF00;
+	mr = read_mc_reg(DDRMC_R017(rzcmn_board_id)) & 0xFF00;
 	write_mr(cs, 6,
 		mr | (((turn_on_off_vref_training == 2) ? 0 : 1) << 7) | vref_op_code);
 
@@ -1255,25 +1283,25 @@ static void write_mr(uint8_t cs, uint8_t mrw_sel, uint16_t mrw_data)
 	// Step1
 	mrw_cs = 0;
 	if (cs & 0x1) {
-		rmw_mc_reg(DDRMC_R013, 0xFFFF0000, mrw_data);
+		rmw_mc_reg(DDRMC_R013(rzcmn_board_id), 0xFFFF0000, mrw_data);
 		mrw_cs = 0;
 	}
 	if (cs & 0x2) {
-		rmw_mc_reg(DDRMC_R014, 0xFFFF0000, mrw_data);
+		rmw_mc_reg(DDRMC_R014(rzcmn_board_id), 0xFFFF0000, mrw_data);
 		mrw_cs = 1;
 	}
 	mrw_allcs = ((cs & 0x3) == 0x3) ? 1 : 0;
 
 	// Step2
-	rmw_mc_reg(DDRMC_R008, 0xFC000000,
+	rmw_mc_reg(DDRMC_R008(rzcmn_board_id), 0xFC000000,
 		0x02800000 | (mrw_allcs << 24) | (mrw_cs << 8) | mrw_sel);
 
 	// Step3
-	while ((read_mc_reg(DDRMC_R022) & (1 << 3)) != (1 << 3))
+	while ((read_mc_reg(DDRMC_R022(rzcmn_board_id)) & (1 << 3)) != (1 << 3))
 		;
 
 	// Step4
-	rmw_mc_reg(DDRMC_R024, 0xFFFFFFF7, 0x00000008);
+	rmw_mc_reg(DDRMC_R024(rzcmn_board_id), 0xFFFFFFF7, 0x00000008);
 }
 
 static void exec_trainingBITLVL(uint32_t sl_lanes)
@@ -1354,8 +1382,8 @@ static void opt_delay(uint32_t sl_lanes, uint32_t byte_lanes)
 	rmw_phy_reg(DDRPHY_R27, 0xFBFFFFFF, 0x04000000);
 
 	// Step3
-	rmw_mc_reg(DDRMC_R004, ~(0x7F << LP_CMD_OFFSET), (0x00000011 << LP_CMD_OFFSET));
-	while (((read_mc_reg(DDRMC_R005) >> 24) & 0x7F) != 0x48)
+	rmw_mc_reg(DDRMC_R004(rzcmn_board_id), ~(0x7F << LP_CMD_OFFSET(rzcmn_board_id)), (0x00000011 << LP_CMD_OFFSET(rzcmn_board_id)));
+	while (((read_mc_reg(DDRMC_R005(rzcmn_board_id)) >> 24) & 0x7F) != 0x48)
 		;
 
 	// Step4
@@ -1398,8 +1426,8 @@ static void opt_delay(uint32_t sl_lanes, uint32_t byte_lanes)
 	}
 
 	// Step6
-	rmw_mc_reg(DDRMC_R004, ~(0x7F << LP_CMD_OFFSET), (0x00000002 << LP_CMD_OFFSET));
-	while (((read_mc_reg(DDRMC_R005) >> 24) & 0x7F) != 0x40)
+	rmw_mc_reg(DDRMC_R004(rzcmn_board_id), ~(0x7F << LP_CMD_OFFSET(rzcmn_board_id)), (0x00000002 << LP_CMD_OFFSET(rzcmn_board_id)));
+	while (((read_mc_reg(DDRMC_R005(rzcmn_board_id)) >> 24) & 0x7F) != 0x40)
 		;
 
 	// Step6
@@ -1456,7 +1484,7 @@ static void program_phy2(void)
 	uint32_t tmp, b21, b22, b23;
 
 	// Step1
-	tmp = read_mc_reg(DDRMC_R039);
+	tmp = read_mc_reg(DDRMC_R039(rzcmn_board_id));
 	dram_clk_period = tmp & 0xFFFF;
 	b21 = (tmp >> 21) & 0x1;
 	b22 = (tmp >> 22) & 0x1;
@@ -1483,9 +1511,9 @@ static void program_mc2(void)
 
 	// Step1
 	main_clk_dly = (read_phy_reg(DDRPHY_R21) >> 4) & 0xF;
-	tmp = (read_mc_reg(DDRMC_R028) >> 24) & 0x7F;
+	tmp = (read_mc_reg(DDRMC_R028(rzcmn_board_id)) >> 24) & 0x7F;
 	tphy_rdlat = ((main_clk_dly + 1 + 1) * 2) + 2 + ((tmp == 1) ? 2 : 0);
 
 	// Step2
-	rmw_mc_reg(DDRMC_R027, 0xFFFFFF80, tphy_rdlat & 0x7F);
+	rmw_mc_reg(DDRMC_R027(rzcmn_board_id), 0xFFFFFF80, tphy_rdlat & 0x7F);
 }

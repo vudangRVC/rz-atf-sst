@@ -128,46 +128,46 @@ int spi_multi_setup( void )
 	/* Device-specific settings */
 	spi_multi_setup_device();
 	/* SDR mode serial flash settings */
-	INFO("g_spi_fconf_cfg->phycnt: %d\n", g_spi_fconf_cfg->phycnt);
+	INFO("g_spi_fconf_cfg->phycnt: 0x%x\n", g_spi_fconf_cfg->phycnt);
 	mmio_write_32(SPIM_PHYCNT, g_spi_fconf_cfg->phycnt);
 
 	/* Read timing setting */
-	INFO("g_spi_fconf_cfg->phyoffset1: %d\n", g_spi_fconf_cfg->phyoffset1);
+	INFO("g_spi_fconf_cfg->phyoffset1: 0x%x\n", g_spi_fconf_cfg->phyoffset1);
 	mmio_write_32(SPIM_PHYOFFSET1, g_spi_fconf_cfg->phyoffset1);
-	INFO("g_spi_fconf_cfg->phyoffset2: %d\n", g_spi_fconf_cfg->phyoffset2);
+	INFO("g_spi_fconf_cfg->phyoffset2: 0x%x\n", g_spi_fconf_cfg->phyoffset2);
 	mmio_write_32(SPIM_PHYOFFSET2, g_spi_fconf_cfg->phyoffset2);
 
 	/* Set the QSPIn_SSL setting value */
-	INFO("g_spi_fconf_cfg->cmncr: %d\n", g_spi_fconf_cfg->cmncr);
+	INFO("g_spi_fconf_cfg->cmncr: 0x%x\n", g_spi_fconf_cfg->cmncr);
 	mmio_write_32(SPIM_CMNCR, g_spi_fconf_cfg->cmncr);
 	/* Set SSL delay setting value */
-	INFO("g_spi_fconf_cfg->ssldr: %d\n", g_spi_fconf_cfg->ssldr);
+	INFO("g_spi_fconf_cfg->ssldr: 0x%x\n", g_spi_fconf_cfg->ssldr);
 	mmio_write_32(SPIM_SSLDR, g_spi_fconf_cfg->ssldr);
 
 	/* Clear the RBE bit */
-	INFO("g_spi_fconf_cfg->drcr: %d\n", g_spi_fconf_cfg->drcr);
+	INFO("g_spi_fconf_cfg->drcr: 0x%x\n", g_spi_fconf_cfg->drcr);
 	mmio_write_32(SPIM_DRCR, g_spi_fconf_cfg->drcr);
 	mmio_read_32(SPIM_DRCR);
 
 	/* Set the data read command */
-	INFO("g_spi_fconf_cfg->drcmr: %d\n", g_spi_fconf_cfg->drcmr);
+	INFO("g_spi_fconf_cfg->drcmr: 0x%x\n", g_spi_fconf_cfg->drcmr);
 	mmio_write_32(SPIM_DRCMR, g_spi_fconf_cfg->drcmr);
 
 	/* Extended external address setting */
-	INFO("g_spi_fconf_cfg->drear: %d\n", g_spi_fconf_cfg->drear);
+	INFO("g_spi_fconf_cfg->drear: 0x%x\n", g_spi_fconf_cfg->drear);
 	mmio_write_32(SPIM_DREAR, g_spi_fconf_cfg->drear);
 
 	/* Set the bit width of command and address output to 1 bit and	*/
 	/* the address size to 4 byte									*/
-	INFO("g_spi_fconf_cfg->drenr: %d\n", g_spi_fconf_cfg->drenr);
+	INFO("g_spi_fconf_cfg->drenr: 0x%x\n", g_spi_fconf_cfg->drenr);
 	mmio_write_32(SPIM_DRENR, g_spi_fconf_cfg->drenr);
 
 	/* Dummy cycle setting */
-	INFO("g_spi_fconf_cfg->drdmcr: %d\n", g_spi_fconf_cfg->drdmcr);
+	INFO("g_spi_fconf_cfg->drdmcr: 0x%x\n", g_spi_fconf_cfg->drdmcr);
 	mmio_write_32(SPIM_DRDMCR, g_spi_fconf_cfg->drdmcr);
 
 	/* Change to SPI flash mode */
-	INFO("g_spi_fconf_cfg->drdrenr: %d\n", g_spi_fconf_cfg->drdrenr);
+	INFO("g_spi_fconf_cfg->drdrenr: 0x%x\n", g_spi_fconf_cfg->drdrenr);
 	mmio_write_32(SPIM_DRDRENR, g_spi_fconf_cfg->drdrenr);
 
 	/* Timing adjustment register setting */
