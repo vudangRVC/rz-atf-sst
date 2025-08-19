@@ -8,14 +8,10 @@
 #include <plat/common/platform.h>
 #include <platform_def.h>
 
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
-#include <rzg2l_def.h>
-#endif
+#include <rzcmn_def.h>
+#include <rzv2h_def.h>
 
-
-#if (RZG2L_BL33_EXECUTION_EL == 0)
+#if (RZCMN_BL33_EXECUTION_EL == 0)
 #define BL33_MODE MODE_EL1
 #else
 #define BL33_MODE MODE_EL2

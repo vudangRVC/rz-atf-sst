@@ -10,12 +10,12 @@
 #include <common/debug.h>
 #include <smccc_helpers.h>
 #include <arch_helpers.h>
-#include <rzg2l_def.h>
+#include <rzcmn_def.h>
 #include <rz_sip_svc.h>
 
-#define RZ_SYS_BASE_DEVID	(RZG2L_SYSC_BASE + 0x0A04)
-#define RZ_OTP_BASE_DEVID	(RZG2L_OTP_BASE + 0x1178)
-#define RZ_OTP_BASE_CHIPID	(RZG2L_OTP_BASE + 0x1140)
+#define RZ_SYS_BASE_DEVID	(RZCMN_SYSC_BASE + 0x0A04)
+#define RZ_OTP_BASE_DEVID	(RZCMN_OTP_BASE + 0x1178)
+#define RZ_OTP_BASE_CHIPID	(RZCMN_OTP_BASE + 0x1140)
 
 static uintptr_t rz_otp_handler_devid(void *handle, u_register_t x1)
 {

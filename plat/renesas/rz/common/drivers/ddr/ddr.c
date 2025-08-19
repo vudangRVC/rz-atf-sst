@@ -137,18 +137,18 @@ void ddr_setup(void)
 	program_mc1(&lp_auto_entry_en);
 
 	// Step20
-	if (rzcmn_board_id == BOARD_ID_RZG2L_EVK ||
-	    rzcmn_board_id == BOARD_ID_RZG2L_SBC) {
+	if (BOARD_ID_RZG2L_EVK == rzcmn_board_id ||
+	    BOARD_ID_RZG2L_SBC == rzcmn_board_id) {
 		for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl_g2l); i++) {
 			INFO("swizzle_mc_tbl_g2l[%d]: 0x%x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
 			write_mc_reg(swizzle_mc_tbl_g2l[i][0], g_ddr_fconf_cfg->ddrmc[i]);
 		}
-	} else if (rzcmn_board_id == BOARD_ID_RZV2L_EVK) {
+	} else if (BOARD_ID_RZV2L_EVK == rzcmn_board_id) {
 		for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl_v2l); i++) {
 			INFO("swizzle_mc_tbl_v2l[%d]: 0x%x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
 			write_mc_reg(swizzle_mc_tbl_v2l[i][0], g_ddr_fconf_cfg->ddrmc[i]);
 		}
-	} else if (rzcmn_board_id == BOARD_ID_RZV2H_EVK) {
+	} else if (BOARD_ID_RZV2H_EVK == rzcmn_board_id) {
 		// Todo: Add RZV2H specific swizzle table
 	}
 

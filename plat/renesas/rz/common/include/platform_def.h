@@ -15,11 +15,8 @@
 
 #include <common/tbbr/tbbr_img_def.h>
 
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
-#include <rzg2l_def.h>
-#endif
+#include <rzcmn_def.h>
+#include <rzv2h_def.h>
 
 
 /*******************************************************************************
@@ -120,12 +117,6 @@
  ******************************************************************************/
 #define BL33_BASE				(0x50000000)
 #define BL33_LIMIT				(BL33_BASE + 0x08000000)
-
-/*******************************************************************************
- * DTB specific defines.
- ******************************************************************************/
-#define DTB_BASE			RZG2L_DTB_BASE
-#define DTB_LIMIT			(RZG2L_DTB_BASE + RZG2L_DTB_SIZE)
 
 /*******************************************************************************
  * Platform specific page table and MMU setup constants

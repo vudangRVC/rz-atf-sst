@@ -20,7 +20,7 @@
 #include <rz_soc_def.h>
 #else
 #include <spi_multi.h>
-#include <rzg2l_def.h>
+#include <rzcmn_def.h>
 #include <esdif.h>
 #include <io_sddrv.h>
 #include <platform_def.h>
@@ -54,18 +54,18 @@ static const io_drv_spec_t sd_block_spec = {
 };
 #else
 static const io_block_spec_t spirom_block_spec = {
-	.offset = RZG2L_SPIROM_FIP_BASE,
-	.length = RZG2L_SPIROM_FIP_SIZE,
+	.offset = RZCMN_SPIROM_FIP_BASE,
+	.length = RZCMN_SPIROM_FIP_SIZE,
 };
 
 static const io_drv_spec_t emmc_block_spec = {
-	.offset = RZG2L_EMMC_FIP_BASE,
-	.length = RZG2L_EMMC_FIP_SIZE,
+	.offset = RZCMN_EMMC_FIP_BASE,
+	.length = RZCMN_EMMC_FIP_SIZE,
 };
 
 static const io_drv_spec_t sd_block_spec = {
-	.offset = RZG2L_SD_FIP_BASE,
-	.length = RZG2L_SD_FIP_SIZE,
+	.offset = RZCMN_SD_FIP_BASE,
+	.length = RZCMN_SD_FIP_SIZE,
 };
 #endif
 
@@ -308,11 +308,11 @@ void rz_io_setup(void)
 
 	if (boot_mode == SYS_BOOT_MODE_SPI_1_8 ||
 		boot_mode == SYS_BOOT_MODE_SPI_3_3) {
-#if PLAT_SOC_RZG2L
+#if PLAT_SOC_CMN
 		spi_multi_setup();
 #else
 		xspi_setup();
-#endif /* PLAT_SOC_RZG2L */
+#endif /* PLAT_SOC_RZCMN */
 		register_io_dev_memmap(&memmap);
 		io_dev_open(memmap, 0, &memdrv_dev_handle);
 	} else if  (boot_mode == SYS_BOOT_MODE_EMMC_1_8 ||

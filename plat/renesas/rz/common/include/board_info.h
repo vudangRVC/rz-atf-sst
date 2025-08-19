@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <rzcmn_def.h>
 
 /* Offset range of board information within the QSPI flash region */
 #define BOARD_INFO_QSPI_OFFSET U(0x1C700)
@@ -51,8 +52,29 @@ uint32_t get_board_info_u32(uintptr_t flash_map_base, uintptr_t flash_size, size
  *
  * Example:
  *   char model_string[MAX_STRING_LEN];
- *   get_board_info_string(RZG2L_SPIROM_BASE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_STRING, model_string, sizeof(model_string));
+ *   get_board_info_string(RZCMN_SPIROM_BASE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_STRING, model_string, sizeof(model_string));
  */
 void get_board_info_string(uintptr_t flash_base, size_t board_info_offset, size_t field_offset, char *buf, size_t len);
+
+/**
+ * read_chipid - Read the 128-bit Chip ID from OTP registers
+ *
+ * @otp_base:   Base address of the OTP register space where Chip ID is stored.
+ * @chipid:     Pointer to an array of at least 4 x uint32_t elements.
+ *
+ * Reads four consecutive 32-bit values from the given OTP base address.
+ * The values are stored in the provided @chipid buffer in order
+ * (word0 → word3).
+ *
+ * This function does not perform validation; it only retrieves the raw
+ * Chip ID values from the specified base address. The caller is responsible
+ * for selecting the correct OTP base depending on the SoC.
+ * 
+ * Example:
+ *   uint32_t chipid[4];
+ *   get_chipid(RZV2H_OTP_BASE_CHIPID, chipid);
+ *
+ */
+void get_chipid(uintptr_t otp_base, uint32_t *chipid);
 
 #endif /* BOARD_INFO_H */

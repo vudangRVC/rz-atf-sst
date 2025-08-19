@@ -98,3 +98,27 @@ void get_board_info_string(uintptr_t flash_base, size_t board_info_offset, size_
 
 	buf[bytes_read] = '\0';
 }
+
+/**
+ * read_chipid - Read the 128-bit Chip ID from OTP registers
+ *
+ * @otp_base:   Base address of the OTP register space where Chip ID is stored.
+ * @chipid:     Pointer to an array of at least 4 x uint32_t elements.
+ *
+ * Reads four consecutive 32-bit values from the given OTP base address.
+ * The values are stored in the provided @chipid buffer in order
+ * (word0 → word3).
+ *
+ * This function does not perform validation; it only retrieves the raw
+ * Chip ID values from the specified base address. The caller is responsible
+ * for selecting the correct OTP base depending on the SoC.
+ *
+ */
+void get_chipid(uintptr_t otp_base, uint32_t *chipid)
+{
+    chipid[0] = mmio_read_32(otp_base + 0x0);
+    chipid[1] = mmio_read_32(otp_base + 0x4);
+    chipid[2] = mmio_read_32(otp_base + 0x8);
+    chipid[3] = mmio_read_32(otp_base + 0xC);
+}
+

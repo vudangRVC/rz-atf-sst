@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-PLAT_SOC_RZG2L					:= 1
+PLAT_SOC_CMN					:= 1
 BL2_AT_EL3						:= 1
 RESET_TO_BL2					:= 1
 COLD_BOOT_SINGLE_CPU			:= 1
@@ -18,12 +18,12 @@ PROTECTED_CHIPID				:= 1
 DEBUG_FPGA						:= 0
 PLAT_EMMC_WRITE_ENABLE			:= 0
 
-$(eval $(call add_define,PLAT_SOC_RZG2L))
+$(eval $(call add_define,PLAT_SOC_CMN))
 $(eval $(call add_define,PROTECTED_CHIPID))
 $(eval $(call add_define,DEBUG_FPGA))
 
-WA_RZG2L_GIC64BIT				:= 1
-$(eval $(call add_define,WA_RZG2L_GIC64BIT))
+WA_RZCMN_GIC64BIT				:= 1
+$(eval $(call add_define,WA_RZCMN_GIC64BIT))
 
 # This option gets enabled automatically if the TRUSTED_BOARD_BOOT
 # is set via root Makefile, but Renesas support Trusted-Boot without
@@ -107,6 +107,7 @@ BL2_SOURCES				+=	common/desc_image_load.c								\
 							plat/renesas/rz/common/plat_image_load.c				\
 							plat/renesas/rz/common/plat_storage.c					\
 							plat/renesas/rz/common/drivers/pfc.c					\
+							plat/renesas/rz/common/board_info.c						\
 							${RZ_TIMER_SOURCES}										\
 							${EMMC_SOURCES}											\
 							${SPI_MULTI_SOURCE}										\

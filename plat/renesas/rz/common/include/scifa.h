@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <drivers/console.h>
 
-int console_rzg2l_register(uintptr_t baseaddr, uint32_t clock,
+int console_rzcmn_register(uintptr_t baseaddr, uint32_t clock,
 		uint32_t baud, console_t *console);
 
 #endif /* __ASSEMBLER__ */

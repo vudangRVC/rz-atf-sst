@@ -22,32 +22,34 @@
 #include <ddr.h>
 #include <sys_regs.h>
 #include <plat_tzc_def.h>
-#include <rzg2l_def.h>
+#include <rzcmn_def.h>
+#include <rzv2h_def.h>
 #include <rz_private.h>
 #include <drivers/delay_timer.h>
 #include <lib/fconf/fconf.h>
 #include <rz_dt.h>
 #include <rz_fconf.h>
+#include <board_info.h>
 
-static const mmap_region_t rzg2l_mmap[] = {
+static const mmap_region_t rzcmn_mmap[] = {
 #if TRUSTED_BOARD_BOOT
-	MAP_REGION_FLAT(RZG2L_BOOT_ROM_BASE, RZG2L_BOOT_ROM_SIZE,
+	MAP_REGION_FLAT(RZCMN_BOOT_ROM_BASE, RZCMN_BOOT_ROM_SIZE,
 			MT_MEMORY | MT_RO | MT_SECURE),
 #endif
-	MAP_REGION_FLAT(RZG2L_SRAM_BASE, RZG2L_SRAM_SIZE,
+	MAP_REGION_FLAT(RZCMN_SRAM_BASE, RZCMN_SRAM_SIZE,
 			MT_MEMORY | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(PARAMS_BASE, PARAMS_SIZE,
 			MT_DEVICE | MT_RW | MT_SECURE),
-	MAP_REGION_FLAT(RZG2L_DEVICE_BASE, RZG2L_DEVICE_SIZE,
+	MAP_REGION_FLAT(RZCMN_DEVICE_BASE, RZCMN_DEVICE_SIZE,
 			MT_DEVICE | MT_RW | MT_SECURE),
-	MAP_REGION_FLAT(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE,
+	MAP_REGION_FLAT(RZCMN_SPIROM_BASE, RZCMN_SPIROM_SIZE,
 			MT_MEMORY | MT_RO | MT_SECURE),
-	MAP_REGION_FLAT(RZG2L_DDR1_BASE, RZG2L_DDR1_SIZE,
+	MAP_REGION_FLAT(RZCMN_DDR1_BASE, RZCMN_DDR1_SIZE,
 			MT_MEMORY | MT_RW | MT_SECURE),
 	{0}
 };
 
-static console_t rzg2l_bl31_console;
+static console_t rzcmn_bl31_console;
 
 int bl2_plat_handle_pre_image_load(unsigned int image_id)
 {
@@ -88,21 +90,29 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 								u_register_t arg3, u_register_t arg4)
 {
 	int ret;
+	int dtb_base = RZCMN_DTB_BASE;
+	// uint32_t chipid[4];
+
+	// get_chipid(RZV2H_OTP_BASE_CHIPID, chipid);
+	// if (chipid[0] == RZV2H_CHIPID_WORD0 && chipid[1] == RZV2H_CHIPID_WORD1 &&
+	// 	chipid[2] == RZV2H_CHIPID_WORD2 && chipid[3] == RZV2H_CHIPID_WORD3) {
+	// 	dtb_base = RZV2H_DTB_BASE;
+	// }
 
 	/* Validate DTB is valid */
-	if (dt_validation(RZG2L_DTB_BASE) < 0) {
+	if (dt_validation(dtb_base) < 0) {
 		panic();
 	}
 
 	/* Populate HW_CONFIG device tree with the mapped address */
-	fconf_populate("HW_CONFIG", RZG2L_DTB_BASE);
+	fconf_populate("HW_CONFIG", dtb_base);
 
 	/* early setup Clock and Reset */
 	cpg_early_setup();
 
 	/* initialize SYC */
-	uint32_t rzg2l_syc_inck_hz = FCONF_GET_PROPERTY(hw_config, sysc_config, syc_inck_hz);
-	syc_init(rzg2l_syc_inck_hz);
+	uint32_t rzcmn_syc_inck_hz = FCONF_GET_PROPERTY(hw_config, sysc_config, syc_inck_hz);
+	syc_init(rzcmn_syc_inck_hz);
 
 	/* initialize Timer */
 	generic_delay_timer_init();
@@ -114,15 +124,15 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	cpg_setup();
 
 	/* initialize console driver */
-	ret = console_rzg2l_register(
-							RZG2L_SCIF0_BASE,
-							RZG2L_UART_INCK_HZ,
-							RZG2L_UART_BARDRATE,
-							&rzg2l_bl31_console);
+	ret = console_rzcmn_register(
+							RZCMN_SCIF0_BASE,
+							RZCMN_UART_INCK_HZ,
+							RZCMN_UART_BARDRATE,
+							&rzcmn_bl31_console);
 	if (!ret)
 		panic();
 
-	console_set_scope(&rzg2l_bl31_console,
+	console_set_scope(&rzcmn_bl31_console,
 			CONSOLE_FLAG_BOOT | CONSOLE_FLAG_CRASH);
 }
 
@@ -138,7 +148,7 @@ void bl2_el3_plat_arch_setup(void)
 		{0}
 	};
 
-	setup_page_tables(bl2_regions, rzg2l_mmap);
+	setup_page_tables(bl2_regions, rzcmn_mmap);
 	enable_mmu_el3(0);
 }
 
@@ -147,7 +157,7 @@ void bl2_platform_setup(void)
 	/* Setup TZC-400, Access Control */
 	plat_security_setup();
 
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_RZCMN_FPGA
 	/* initialize DDR */
 	ddr_setup();
 #endif /* DEBUG_FPGA */

@@ -7,9 +7,9 @@
 #ifndef __DDR_MC_REGS_H__
 #define __DDR_MC_REGS_H__
 
-#include <rzg2l_def.h>
+#include <rzcmn_def.h>
 
-#define DDR_MC_BASE			RZG2L_DDR_MEMC_BASE
+#define DDR_MC_BASE			RZCMN_DDR_MEMC_BASE
 #define MC_INIT_NUM_G2L			(436)
 #define MC_INIT_NUM_V2L			(507)
 

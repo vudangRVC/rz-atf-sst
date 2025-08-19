@@ -7,9 +7,9 @@
 #ifndef __DDR_PHY_REGS_H__
 #define __DDR_PHY_REGS_H__
 
-#include <rzg2l_def.h>
+#include <rzcmn_def.h>
 
-#define DDR_PHY_BASE		RZG2L_DDR_PHY_BASE
+#define DDR_PHY_BASE		RZCMN_DDR_PHY_BASE
 
 #define	DDRPHY_R00			(0x040)
 #define	DDRPHY_R01			(0x044)

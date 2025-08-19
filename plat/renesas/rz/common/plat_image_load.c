@@ -7,11 +7,8 @@
 #include <common/desc_image_load.h>
 #include <arch_helpers.h>
 #include <platform_def.h>
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
-#include <rzg2l_def.h>
-#endif
+#include <rzcmn_def.h>
+#include <rzv2h_def.h>
 
 
 bl_load_info_t *plat_get_bl_image_load_info(void)

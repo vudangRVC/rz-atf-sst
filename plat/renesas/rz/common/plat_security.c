@@ -8,11 +8,8 @@
 #include <lib/mmio.h>
 #include <common/debug.h>
 
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
-#include <rzg2l_def.h>
-#endif
+#include <rzcmn_def.h>
+#include <rzv2h_def.h>
 #include "sys_regs.h"
 #include "plat_tzc_def.h"
 
@@ -128,8 +125,8 @@ static void bl2_security_setup(void)
 	};
 
 	/* initialize TZC-400 */
-	plat_tzc400_setup(RZG2L_TZC_DDR_BASE, &ddr_tzc_regions[0]);
-	plat_tzc400_setup(RZG2L_TZC_SPI_BASE, NULL);
+	plat_tzc400_setup(RZCMN_TZC_DDR_BASE, &ddr_tzc_regions[0]);
+	plat_tzc400_setup(RZCMN_TZC_SPI_BASE, NULL);
 
 	/* setup Master/Slave Access Control */
 	plat_access_control_setup();
@@ -156,8 +153,8 @@ static void bl31_security_setup(void)
 	};
 
 	/* Additional settings for TZC-400 SRAM */
-	plat_tzc400_setup(RZG2L_TZC_MSRAM_BASE, &msram_tzc_regions[0]);
-	plat_tzc400_setup(RZG2L_TZC_ASRAM_BASE, &asram_tzc_regions[0]);
+	plat_tzc400_setup(RZCMN_TZC_MSRAM_BASE, &msram_tzc_regions[0]);
+	plat_tzc400_setup(RZCMN_TZC_ASRAM_BASE, &asram_tzc_regions[0]);
 }
 #endif
 
