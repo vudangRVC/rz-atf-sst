@@ -1,7 +1,9 @@
 #include <common/debug.h>
 #include <lib/fconf/fconf.h>
 #include <lib/libfdt/libfdt.h>
+#include <platform_def.h>
 #include <rz_fconf.h>
+#include <rz_dt.h>
 
 struct common_config_t common_config;
 struct cpg_config_t cpg_config;
@@ -9,6 +11,8 @@ struct sysc_config_t sysc_config;
 struct pfc_config_t pfc_config;
 struct ddr_config_t ddr_config;
 struct spi_config_t spi_config;
+
+extern u_register_t bootrom_param0;
 
 /**********************************************************************
  * Common helper function
@@ -64,33 +68,30 @@ const struct common_config_t *common_config_getter(void)
  **********************************************************************/
 int fconf_populate_cpg_config(uintptr_t config)
 {
-	const void *fdt = (const void *)config;
+	void *fdt = (void *)config;
 
 	int soc_node = fdt_path_offset(fdt, "/soc");
-	int cpg_node = fdt_subnode_offset(fdt, soc_node, "clock-controller@11010000");
+	const char *cpg_path = NULL;
+
+	if (bootrom_param0 == RZCMN_BL2_BASE) {
+		cpg_path = "clock-controller@11010000";
+	} else if (bootrom_param0 == RZV2H_BL2_BASE) {
+		cpg_path = "clock-controller@10420000";
+	}
+
+	int cpg_node = fdt_subnode_offset(fdt, soc_node, cpg_path);
 
 	const char *cpg_props[] = {
-		"divpl1_set",
-		"divpl1_set_wen",
-		"cpg_pll4_clk1",
-		"cpg_pll4_clk2",
-		"cpg_pll4_stby",
-		"cpg_pll6_clk1",
-		"cpg_pll6_clk2",
-		"cpg_pll6_stby"
+		"cpg_early_setup",
+		"cpg_mstop_setup",
 	};
 
 	uint32_t *cpg_targets[] = {
-		&cpg_config.divpl1_set,
-		&cpg_config.divpl1_set_wen,
-		&cpg_config.pll4_clk1,
-		&cpg_config.pll4_clk2,
-		&cpg_config.pll4_stby,
-		&cpg_config.pll6_clk1,
-		&cpg_config.pll6_clk2,
-		&cpg_config.pll6_stby
+		&cpg_config.cpg_early_setup,
+		&cpg_config.cpg_mstop_setup,
 	};
 
+	read_prop_from_subnode(fdt, "/soc", cpg_path, "reg", 1, &cpg_config.cpg_base);
 	fconf_read_u32_props(fdt, cpg_node, cpg_props, (uint32_t **)cpg_targets, ARRAY_SIZE(cpg_props));
 
 	return 0;
@@ -109,7 +110,15 @@ int fconf_populate_sysc_config(uintptr_t config)
 	const void *fdt = (const void *)config;
 
 	int soc_node = fdt_path_offset(fdt, "/soc");
-	int sysc_node = fdt_subnode_offset(fdt, soc_node, "system-controller@11020000");
+	const char *sysc_path = NULL;
+
+	if (bootrom_param0 == RZCMN_BL2_BASE) {
+		sysc_path = "system-controller@11020000";
+	} else if (bootrom_param0 == RZV2H_BL2_BASE) {
+		sysc_path = "system-controller@10430000";
+	}
+
+	int sysc_node = fdt_subnode_offset(fdt, soc_node, sysc_path);
 
 	const char *sysc_props[] = { "syc_inck_hz" };
 	uint32_t *targets[] = { &sysc_config.syc_inck_hz };
@@ -132,7 +141,15 @@ int fconf_populate_pfc_config(uintptr_t config)
 	const void *fdt = (const void *)config;
 
 	int soc_node = fdt_path_offset(fdt, "/soc");
-	int pfc_node = fdt_subnode_offset(fdt, soc_node, "pinctrl@11030000");
+	const char *pfc_path = NULL;
+
+	if (bootrom_param0 == RZCMN_BL2_BASE) {
+		pfc_path = "system-controller@11020000";
+	} else if (bootrom_param0 == RZV2H_BL2_BASE) {
+		pfc_path = "system-controller@10430000";
+	}
+
+	int pfc_node = fdt_subnode_offset(fdt, soc_node, pfc_path);
 
 	const char *pfc_props[] = {
 		"pfc_qspi0_iolh0a",

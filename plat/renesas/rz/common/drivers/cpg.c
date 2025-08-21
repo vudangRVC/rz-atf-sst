@@ -5,12 +5,14 @@
  */
 
 #include <stdint.h>
-#include <cpg_regs.h>
+#include <cpg_regs_offset.h>
 #include <cpg.h>
 #include <lib/mmio.h>
 #include <drivers/delay_timer.h>
 #include <cpg_opt.h>
 #include <rz_fconf.h>
+#include <lib/fconf/fconf.h>
+#include <board_info.h>
 
 #define	CPG_OFF			(0)
 #define	CPG_ON			(1)
@@ -46,17 +48,27 @@ typedef struct {
 } CPG_PLL_SETDATA_235;
 
 const struct cpg_config_t *g_cpg_fconf_cfg;
+#define CPG_REG_ADDR(offset)  ((uintptr_t)(g_cpg_fconf_cfg->cpg_base + (offset)))
+#define CPG_REG_WRITE(reg, value)	mmio_write_32(CPG_REG_ADDR(reg), value)
+#define CPG_REG_READ(reg)			mmio_read_32(CPG_REG_ADDR(reg))
 
 static CPG_PLL_SETDATA_146 cpg_pll4_setdata = {
-	{ CPG_PLL4_CLK1 },
-	{ CPG_PLL4_CLK2 },
-	{ CPG_PLL4_STBY }
+#if (DDR_PLL4 ==1600)
+	{ CPG_PLL4_CLK1, 0xFAE13203 },
+	{ CPG_PLL4_CLK2, 0x00081000 },
+#elif (DDR_PLL4 == 1333)
+	{ CPG_PLL4_CLK1, 0xA66629C3 },
+	{ CPG_PLL4_CLK2, 0x00080D00 },
+#else
+#error "Unknown Board Type."
+#endif
+	{ CPG_PLL4_STBY, 0x00010001 }
 };
 
 static CPG_PLL_SETDATA_146 cpg_pll6_setdata = {
-	{ CPG_PLL6_CLK1 },
-	{ CPG_PLL6_CLK2 },
-	{ CPG_PLL6_STBY }, /* SSC OFF */
+	{ CPG_PLL6_CLK1, 0x00003e83 },
+	{ CPG_PLL6_CLK2, 0x00082D02 },
+	{ CPG_PLL6_STBY, 0x00010001 }, /* SSC OFF */
 };
 
 #define	CPG_PLL2_INDEX					(0)
@@ -654,14 +666,14 @@ static void cpg_ctrl_clkrst(CPG_SETUP_DATA const *array, uint32_t num)
 	uint32_t cmp;
 
 	for (i = 0; i < num; i++, array++) {
-		mmio_write_32(array->reg, array->val);
+		CPG_REG_WRITE((array->reg), array->val);
 
 		mask = (array->val >> 16) & 0xFFFF;
 		cmp = array->val & 0xFFFF;
 		if (array->type == CPG_T_RST) {
 			cmp = ~(cmp);
 		}
-		while ((mmio_read_32(array->mon) & mask) != (cmp & mask))
+		while ((CPG_REG_READ(array->mon) & mask) != (cmp & mask))
 			;
 	}
 }
@@ -731,9 +743,9 @@ static void cpg_selector_on_off(uint32_t sel, uint8_t flag)
 
 	for (cnt = 0; cnt < tbl_num; cnt++) {
 		if (flag == CPG_ON) {
-			mmio_write_32(ptr[cnt].reg, (mmio_read_32(ptr[cnt].reg) | ptr[cnt].val));
+			CPG_REG_WRITE(ptr[cnt].reg, (CPG_REG_READ(ptr[cnt].reg) | ptr[cnt].val));
 		} else {
-			mmio_write_32(ptr[cnt].reg, (mmio_read_32(ptr[cnt].reg) | (ptr[cnt].val & 0xFFFF0000)));
+			CPG_REG_WRITE(ptr[cnt].reg, (CPG_REG_READ(ptr[cnt].reg) | (ptr[cnt].val & 0xFFFF0000)));
 		}
 	}
 
@@ -741,9 +753,9 @@ static void cpg_selector_on_off(uint32_t sel, uint8_t flag)
 
 static void cpg_pll_start_146(CPG_PLL_SETDATA_146 *pdata)
 {
-	mmio_write_32(pdata->clk1_dat.reg, pdata->clk1_dat.val);
-	mmio_write_32(pdata->clk2_dat.reg, pdata->clk2_dat.val);
-	mmio_write_32(pdata->stby_dat.reg, pdata->stby_dat.val);
+	CPG_REG_WRITE(pdata->clk1_dat.reg, pdata->clk1_dat.val);
+	CPG_REG_WRITE(pdata->clk2_dat.reg, pdata->clk2_dat.val);
+	CPG_REG_WRITE(pdata->stby_dat.reg, pdata->stby_dat.val);
 }
 
 /* It is assumed that the PLL has stopped by the time this function is executed. */
@@ -755,25 +767,15 @@ static void cpg_pll_setup(void)
 	/* PLL4 startup */
 	/* PLL4 standby mode transition confirmation */
 	do {
-		val = mmio_read_32(CPG_PLL4_MON);
+		val = CPG_REG_READ(CPG_PLL4_MON);
 	} while ((val & (PLL4_MON_PLL4_RESETB | PLL4_MON_PLL4_LOCK)) != 0);
 
 	/* PLL6 startup */
 	/* PLL6 standby mode transition confirmation */
 	do {
-		val = mmio_read_32(CPG_PLL6_MON);
+		val = CPG_REG_READ(CPG_PLL6_MON);
 	} while ((val & (PLL6_MON_PLL6_RESETB | PLL6_MON_PLL6_LOCK)) != 0);
 #endif /* DEBUG_FPGA */
-
-	/* Initialize pll4 struct. */
-	cpg_pll4_setdata.clk1_dat.val = g_cpg_fconf_cfg->pll4_clk1;
-	cpg_pll4_setdata.clk2_dat.val = g_cpg_fconf_cfg->pll4_clk2;
-	cpg_pll4_setdata.stby_dat.val = g_cpg_fconf_cfg->pll4_stby;
-
-	/* Initialize pll6 struct. */
-	cpg_pll6_setdata.clk1_dat.val = g_cpg_fconf_cfg->pll6_clk1;
-	cpg_pll6_setdata.clk2_dat.val = g_cpg_fconf_cfg->pll6_clk2;
-	cpg_pll6_setdata.stby_dat.val = g_cpg_fconf_cfg->pll6_stby;
 
 	/* Set PLL4 to normal mode */
 	cpg_pll_start_146(&cpg_pll4_setdata);
@@ -783,12 +785,12 @@ static void cpg_pll_setup(void)
 #if !DEBUG_FPGA
 	/* PLL4 normal mode transition confirmation */
 	do {
-		val = mmio_read_32(CPG_PLL4_MON);
+		val = CPG_REG_READ(CPG_PLL4_MON);
 	} while ((val & (PLL4_MON_PLL4_RESETB | PLL4_MON_PLL4_LOCK)) == 0);
 
 	/* PLL6 normal mode transition confirmation */
 	do {
-		val = mmio_read_32(CPG_PLL6_MON);
+		val = CPG_REG_READ(CPG_PLL6_MON);
 	} while ((val & (PLL6_MON_PLL6_RESETB | PLL6_MON_PLL6_LOCK)) == 0);
 #endif /* DEBUG_FPGA */
 }
@@ -798,12 +800,12 @@ static void cpg_div_sel_setup(CPG_REG_SETTING *tbl, uint32_t size)
 	int cnt;
 
 	for (cnt = 0; cnt < size; cnt++, tbl++) {
-		mmio_write_32(tbl->reg, tbl->val);
+		CPG_REG_WRITE(tbl->reg, tbl->val);
 	}
 
 #if !DEBUG_FPGA
 	/* Wait for completion of settings */
-	while (mmio_read_32(CPG_CLKSTATUS) != 0)
+	while (CPG_REG_READ(CPG_CLKSTATUS) != 0)
 		;
 #endif
 }
@@ -831,26 +833,26 @@ static void cpg_reset_setup(void)
 void cpg_active_ddr(void (*disable_phy)(void))
 {
 	/* Assert the reset of DDRTOP */
-	mmio_write_32(CPG_RST_DDR, 0x005F0000 | (CPG_RST_DDR_OPT_VALUE << 16));
-	mmio_write_32(CPG_OTHERFUNC2_REG, 0x00010000);
-	while ((mmio_read_32(CPG_RSTMON_DDR) & 0x0000005F) != 0x0000005F)
+	CPG_REG_WRITE(CPG_RST_DDR, 0x005F0000 | (CPG_RST_DDR_OPT_VALUE << 16));
+	CPG_REG_WRITE(CPG_OTHERFUNC2_REG, 0x00010000);
+	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x0000005F) != 0x0000005F)
 		;
 
 	/* Start the clocks of DDRTOP */
-	mmio_write_32(CPG_CLKON_DDR, 0x00030003);
-	while ((mmio_read_32(CPG_CLKMON_DDR) & 0x00000003) != 0x00000003)
+	CPG_REG_WRITE(CPG_CLKON_DDR, 0x00030003);
+	while ((CPG_REG_READ(CPG_CLKMON_DDR) & 0x00000003) != 0x00000003)
 		;
 
 	udelay(1);
 
 	/* De-assert rst_n */
-	mmio_write_32(CPG_OTHERFUNC2_REG, 0x00010001);
+	CPG_REG_WRITE(CPG_OTHERFUNC2_REG, 0x00010001);
 
 	udelay(1);
 
 	/* De-assert PRESETN */
-	mmio_write_32(CPG_RST_DDR, 0x00020002);
-	while ((mmio_read_32(CPG_RSTMON_DDR) & 0x00000002) != 0x00000000)
+	CPG_REG_WRITE(CPG_RST_DDR, 0x00020002);
+	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x00000002) != 0x00000000)
 		;
 
 	udelay(1);
@@ -858,8 +860,8 @@ void cpg_active_ddr(void (*disable_phy)(void))
 	disable_phy();
 
 	/* De-assert axiY_ARESETn, regARESETn, reset_n */
-	mmio_write_32(CPG_RST_DDR, 0x005D005D | (CPG_RST_DDR_OPT_VALUE << 16) | CPG_RST_DDR_OPT_VALUE);
-	while ((mmio_read_32(CPG_RSTMON_DDR) & 0x0000005D) != 0x00000000)
+	CPG_REG_WRITE(CPG_RST_DDR, 0x005D005D | (CPG_RST_DDR_OPT_VALUE << 16) | CPG_RST_DDR_OPT_VALUE);
+	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x0000005D) != 0x00000000)
 		;
 
 	udelay(1);
@@ -868,65 +870,75 @@ void cpg_active_ddr(void (*disable_phy)(void))
 void cpg_reset_ddr_mc(void)
 {
 	/* Assert rst_n, axiY_ARESETn, regARESETn */
-	mmio_write_32(CPG_RST_DDR, 0x005C0000 | (CPG_RST_DDR_OPT_VALUE << 16));
-	mmio_write_32(CPG_OTHERFUNC2_REG, 0x00010000);
-	while ((mmio_read_32(CPG_RSTMON_DDR) & 0x0000005C) != 0x0000005C)
+	CPG_REG_WRITE(CPG_RST_DDR, 0x005C0000 | (CPG_RST_DDR_OPT_VALUE << 16));
+	CPG_REG_WRITE(CPG_OTHERFUNC2_REG, 0x00010000);
+	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x0000005C) != 0x0000005C)
 		;
 
 	udelay(1);
 
 	/* De-assert rst_n */
-	mmio_write_32(CPG_OTHERFUNC2_REG, 0x00010001);
+	CPG_REG_WRITE(CPG_OTHERFUNC2_REG, 0x00010001);
 
 	udelay(1);
 
 	/* De-assert axiY_ARESETn, regARESETn */
-	mmio_write_32(CPG_RST_DDR, 0x005C005C | (CPG_RST_DDR_OPT_VALUE << 16) | CPG_RST_DDR_OPT_VALUE);
-	while ((mmio_read_32(CPG_RSTMON_DDR) & 0x0000005C) != 0x00000000)
+	CPG_REG_WRITE(CPG_RST_DDR, 0x005C005C | (CPG_RST_DDR_OPT_VALUE << 16) | CPG_RST_DDR_OPT_VALUE);
+	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x0000005C) != 0x00000000)
 		;
 
 	udelay(1);
+}
+
+static void cpg_mstop_setup(void)
+{
+	// TODO: Implement the function to set up the CPG MSTOP configuration.
 }
 
 static void cpu_cpg_setup(void)
 {
 
-	while ((mmio_read_32(CPG_CLKSTATUS) & CLKSTATUS_DIVPL1_STS) != 0x00000000)
+	while ((CPG_REG_READ(CPG_CLKSTATUS) & CLKSTATUS_DIVPL1_STS) != 0x00000000)
 		;
-	mmio_write_32(CPG_PL1_DDIV, g_cpg_fconf_cfg->divpl1_set | g_cpg_fconf_cfg->divpl1_set_wen);
-	while ((mmio_read_32(CPG_CLKSTATUS) & CLKSTATUS_DIVPL1_STS) != 0x00000000)
+	CPG_REG_WRITE(CPG_PL1_DDIV, PL1_DDIV_DIVPL1_SET_WEN | PL1_DDIV_DIVPL1_SET_1_1);
+	while ((CPG_REG_READ(CPG_CLKSTATUS) & CLKSTATUS_DIVPL1_STS) != 0x00000000)
 		;
 }
 
 void cpg_early_setup(void)
 {
-	cpu_cpg_setup();
-	cpg_ctrl_clkrst(&early_setup_tbl[0], ARRAY_SIZE(early_setup_tbl));
+	/* Initialize global CPG config from DTB.  */
+	g_cpg_fconf_cfg = cpg_config_getter();
+
+	if (g_cpg_fconf_cfg->cpg_early_setup) {
+		cpu_cpg_setup();
+		cpg_ctrl_clkrst(&early_setup_tbl[0], ARRAY_SIZE(early_setup_tbl));
+	}
 }
 
 void cpg_wdtrst_sel_setup(void)
 {
 	uint32_t reg;
 
-	reg = mmio_read_32(CPG_WDTRST_SEL);
+	reg = CPG_REG_READ(CPG_WDTRST_SEL);
 	reg |=
 		WDTRST_SEL_WDTRSTSEL0 | WDTRST_SEL_WDTRSTSEL0_WEN |
 		WDTRST_SEL_WDTRSTSEL1 | WDTRST_SEL_WDTRSTSEL1_WEN |
 		WDTRST_SEL_WDTRSTSEL2 | WDTRST_SEL_WDTRSTSEL2_WEN;
-	mmio_write_32(CPG_WDTRST_SEL, reg);
+	CPG_REG_WRITE(CPG_WDTRST_SEL, reg);
 }
 
 void cpg_setup(void)
 {
-	/* Initialize global CPG config from DTB.  */
-	g_cpg_fconf_cfg = cpg_config_getter();
-
 	cpg_selector_on_off(CPG_SEL_PLL3_3_ON_OFF, CPG_OFF);
 	cpg_div_sel_static_setup();
 	cpg_selector_on_off(CPG_SEL_PLL3_3_ON_OFF, CPG_ON);
 	cpg_pll_setup();
 	cpg_clk_on_setup();
 	cpg_reset_setup();
+	if (g_cpg_fconf_cfg->cpg_mstop_setup) {
+		cpg_mstop_setup();
+	}
 	cpg_div_sel_dynamic_setup();
 	cpg_wdtrst_sel_setup();
 }

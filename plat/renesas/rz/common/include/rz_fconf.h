@@ -13,14 +13,9 @@ struct common_config_t {
 };
 
 struct cpg_config_t {
-    uint32_t divpl1_set;
-    uint32_t divpl1_set_wen;
-    uint32_t pll4_clk1;
-    uint32_t pll4_clk2;
-    uint32_t pll4_stby;
-    uint32_t pll6_clk1;
-    uint32_t pll6_clk2;
-    uint32_t pll6_stby;
+    uint32_t cpg_base;
+    uint32_t cpg_early_setup;
+    uint32_t cpg_mstop_setup;
 };
 
 struct sysc_config_t {

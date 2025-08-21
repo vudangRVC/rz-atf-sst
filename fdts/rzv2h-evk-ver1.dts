@@ -84,6 +84,8 @@
 			#reset-cells = <1>;
 			#power-domain-cells = <0>;
 
+			cpg_early_setup = <0>;
+			cpg_mstop_setup = <1>;
 		};
 
 		icu: interrupt-unit@10400000 {

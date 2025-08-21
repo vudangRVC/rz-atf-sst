@@ -70,14 +70,8 @@
 			#reset-cells = <1>;
 			#power-domain-cells = <0>;
 
-			divpl1_set = <0x00>;
-			divpl1_set_wen = <0x01>;
-			cpg_pll4_clk1 = <0xfae13203>;
-			cpg_pll4_clk2 = <0x81000>;
-			cpg_pll4_stby = <0x10001>;
-			cpg_pll6_clk1 = <0x3e83>;
-			cpg_pll6_clk2 = <0x82d02>;
-			cpg_pll6_stby = <0x10001>;
+			cpg_early_setup = <1>;
+			cpg_mstop_setup = <0>;
 		};
 
 		sysc: system-controller@11020000 {

@@ -32,9 +32,9 @@ BL2_OUTPUT := ${BUILD_PLAT}/bl2_with_dtb-${BOARD_NAME}.bin
 BL2_FINAL  := ${BUILD_PLAT}/bl2.bin
 
 ifeq (${TRUSTED_BOARD_BOOT}, 0)
-BL2_BASE := 0x12000
+RZCMN_BL2_BASE := 0x12000
 else
-BL2_BASE := 0x13000
+RZCMN_BL2_BASE := 0x13000
 endif
 
 SRAM_LIMIT := $(shell printf "%d" 0x1D000)
@@ -62,7 +62,7 @@ bl2_with_dtb: ${BL2_IMAGE} ${BL2_DTB}
 		exit 1; \
 	fi; \
 	BL2_BINARY_LIMIT_SIZE=$$(($$BL2_SIZE + $$PADDING)); \
-	DTB_BASE=$$(( $(BL2_BASE) + $$BL2_BINARY_LIMIT_SIZE )); \
+	DTB_BASE=$$(( $(RZCMN_BL2_BASE) + $$BL2_BINARY_LIMIT_SIZE )); \
 	echo "INFO: Created merged binary: ${BL2_OUTPUT}"; \
 	echo "INFO: BL2 size           : $$BL2_SIZE bytes"; \
 	echo "INFO: DTB size           : $$DTB_SIZE bytes"; \

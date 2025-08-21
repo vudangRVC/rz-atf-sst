@@ -60,7 +60,7 @@
 #define RZCMN_UART_BARDRATE         (115200)
 
 #define RZCMN_DTB_LIMIT             (0x0001A000)
-#define RZCMN_DTB_BASE              (BL2_BASE + RZCMN_DTB_LIMIT)
+#define RZCMN_DTB_BASE              (RZCMN_BL2_BASE + RZCMN_DTB_LIMIT)
 
 /* Boot Info base address */
 #define RZCMN_BOOTINFO_BASE         (RZCMN_SRAM_BASE)

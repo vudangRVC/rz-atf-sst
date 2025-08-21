@@ -49,6 +49,8 @@ static const mmap_region_t rzcmn_mmap[] = {
 	{0}
 };
 
+/* Global variable where runtime BL2 base is stored */
+u_register_t bootrom_param0;
 static console_t rzcmn_bl31_console;
 
 int bl2_plat_handle_pre_image_load(unsigned int image_id)
@@ -90,14 +92,15 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 								u_register_t arg3, u_register_t arg4)
 {
 	int ret;
-	int dtb_base = RZCMN_DTB_BASE;
-	// uint32_t chipid[4];
+	u_register_t dtb_base = 0U;
 
-	// get_chipid(RZV2H_OTP_BASE_CHIPID, chipid);
-	// if (chipid[0] == RZV2H_CHIPID_WORD0 && chipid[1] == RZV2H_CHIPID_WORD1 &&
-	// 	chipid[2] == RZV2H_CHIPID_WORD2 && chipid[3] == RZV2H_CHIPID_WORD3) {
-	// 	dtb_base = RZV2H_DTB_BASE;
-	// }
+	bootrom_param0 = arg1;
+
+	if (bootrom_param0 == RZCMN_BL2_BASE) {
+		dtb_base = RZCMN_DTB_BASE;
+	} else if (bootrom_param0 == RZV2H_BL2_BASE) {
+		dtb_base = RZV2H_DTB_BASE;
+	}
 
 	/* Validate DTB is valid */
 	if (dt_validation(dtb_base) < 0) {
@@ -111,8 +114,8 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	cpg_early_setup();
 
 	/* initialize SYC */
-	uint32_t rzcmn_syc_inck_hz = FCONF_GET_PROPERTY(hw_config, sysc_config, syc_inck_hz);
-	syc_init(rzcmn_syc_inck_hz);
+	uint32_t syc_inck_hz = FCONF_GET_PROPERTY(hw_config, sysc_config, syc_inck_hz);
+	syc_init(syc_inck_hz);
 
 	/* initialize Timer */
 	generic_delay_timer_init();
@@ -139,7 +142,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 void bl2_el3_plat_arch_setup(void)
 {
 	const mmap_region_t bl2_regions[] = {
-		MAP_REGION_FLAT(BL2_BASE, BL2_END - BL2_BASE,
+		MAP_REGION_FLAT(RZCMN_BL2_BASE, BL2_END - RZCMN_BL2_BASE,
 			MT_MEMORY | MT_RW | MT_SECURE),
 		MAP_REGION_FLAT(BL_CODE_BASE, BL_CODE_END - BL_CODE_BASE,
 			MT_CODE | MT_SECURE),
