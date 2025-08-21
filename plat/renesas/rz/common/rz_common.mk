@@ -17,10 +17,12 @@ TRUSTED_BOARD_BOOT				:= 0
 PROTECTED_CHIPID				:= 1
 DEBUG_FPGA						:= 0
 PLAT_EMMC_WRITE_ENABLE			:= 0
+ENABLE_PIE						:= 1
 
 $(eval $(call add_define,PLAT_SOC_CMN))
 $(eval $(call add_define,PROTECTED_CHIPID))
 $(eval $(call add_define,DEBUG_FPGA))
+$(eval $(call add_define,ENABLE_PIE))
 
 WA_RZCMN_GIC64BIT				:= 1
 $(eval $(call add_define,WA_RZCMN_GIC64BIT))
@@ -40,6 +42,17 @@ ifndef SPI_FLASH
 	else
 		SPI_FLASH = MT25QU512ABB
 	endif
+endif
+
+ifeq (${ENABLE_PIE},1)
+	include lib/cpus/cpu-ops.mk
+
+	BL2_CPPFLAGS += -DENABLE_PIE=1
+	BL2_CFLAGS   += -fpie -fno-plt
+	BL2_LDFLAGS  += -pie --no-dynamic-linker --emit-relocs
+
+	PLAT_BL_COMMON_SOURCES += lib/cpus/aarch64/cpu_helpers.S \
+							lib/cpus/errata_report.c
 endif
 
 PLAT_INCLUDES			:=	-Iplat/renesas/rz/common/include						\

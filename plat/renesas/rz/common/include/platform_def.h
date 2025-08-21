@@ -51,12 +51,17 @@
  * BL2 specific defines.
  ******************************************************************************/
 #if !TRUSTED_BOARD_BOOT
-#define BL2_BASE				(0x00012000)
-#define BL2_LIMIT				(0x0002F000)
+#define RZCMN_BL2_BASE				(0x00012000)
+#define RZCMN_BL2_LIMIT				(0x0002F000)
 #else
-#define BL2_BASE				(0x00013000)
-#define BL2_LIMIT				(0x0002F000)
+#define RZCMN_BL2_BASE				(0x00013000)
+#define RZCMN_BL2_LIMIT				(0x0002F000)
 #endif
+
+#define RZV2H_BL2_BASE				UL(0x08103000)
+#define RZV2H_BL2_LIMIT				UL(0x08160000)
+
+#define RZCMN_RAM_MAX_SIZE			UL(0x0005D000)
 
 /*******************************************************************************
  * BL31 specific defines.
