@@ -96,6 +96,13 @@
 		pfc: pinctrl@10410000 {
 			compatible = "renesas,r9a09g057-pfc";
 			reg = <0 0x10410000 0 0x10000>;
+
+			pfc_mux_setup		= <0>;
+			pfc_qspi_setup		= <1>;
+			pfc_sd_setup		= <1>;
+			pfc_scif_setup		= <1>;
+			pfc_drive_setup		= <1>;
+			pfc_riic_pmic_setup	= <1>;
 		};
 
 		scif0: serial@11c01400 {
@@ -103,6 +110,22 @@
 			reg = <0 0x11c01400 0 0x400>;
 			uart_inck_hz = <100000000>;
 			uart_bardrate = <115200>;
+		};
+
+		xspi: spi@11030000 {
+			compatible = "renesas,r9a09g057-rpc-if", "renesas,rzv2h-rpc-if";
+			reg = <0x00 0x11030000 0x00 0x10000>;
+			reg-names = "regs", "dirmap", "wbuf";
+			power-domains = <&cpg>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+
+			/* SPI type
+			 * [0] = SPI Multi IO
+			 * [1] = XSPI
+			 */
+			spi_type = <1>;
 		};
 
 		ddr0: memory-0@40000000 {

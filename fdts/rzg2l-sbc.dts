@@ -36,6 +36,9 @@
 			dma-names = "tx", "rx";
 			power-domains = <&cpg>;
 			status = "disabled";
+
+			uart_inck_hz = <100000000>;
+			uart_baudrate = <115200>;
 		};
 
 		spi0: spi@10060000 {
@@ -48,6 +51,14 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
+
+			/* SPI type
+			 * [0] = SPI Multi IO
+			 * [1] = XSPI
+			 */
+			spi_type = <0>;
+
+			/* SPI Multi IO specific settings */
 			spim_phycnt = <0x260>;
 			spim_phyoffset1 = <0x31511144>;
 			spim_phyoffset2 = <0x31>;
@@ -77,6 +88,11 @@
 		sysc: system-controller@11020000 {
 			compatible = "renesas,r9a07g044-sysc";
 			reg = <0 0x11020000 0 0x10000>;
+		};
+
+		syc: system-counter@11000000 {
+			compatible = "renesas,r9a07g044-syc";
+			reg = <0 0x11000000 0 0x10000>;
 
 			syc_inck_hz = <24000000>;
 		};
@@ -85,15 +101,12 @@
 			compatible = "renesas,r9a07g044-pinctrl";
 			reg = <0 0x11030000 0 0x10000>, <0 0x110a0020 0 0x30>;
 
-			pfc_qspi0_iolh0a = 	<0x2020202>;
-			pfc_qspi0_pupd0a = 	<0x0000000>;
-			pfc_qspi0_sr0a 	 = 	<0x1010101>;
-			pfc_qspi1_iolh0b = 	<0x2020202>;
-			pfc_qspi1_pupd0b = 	<0x0000000>;
-			pfc_qspi1_sr0b 	 = 	<0x1010101>;
-			pfc_qspin_iolh0c = 	<0x0000002>;
-			pfc_qspin_pupd0c = 	<0x0000000>;
-			pfc_qspin_sr0c 	 = 	<0x0000001>;
+			pfc_mux_setup		= <1>;
+			pfc_qspi_setup		= <1>;
+			pfc_sd_setup		= <1>;
+			pfc_scif_setup		= <0>;
+			pfc_drive_setup		= <0>;
+			pfc_riic_pmic_setup	= <0>;
 		};
 
 		ddr: memory@40000000 {

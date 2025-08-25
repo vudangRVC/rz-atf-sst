@@ -78,6 +78,9 @@ EMMC_SOURCES			:=	plat/renesas/rz/common/drivers/emmc/emmc_interrupt.c	\
 SPI_MULTI_SOURCE 		:=	plat/renesas/rz/common/drivers/spi_multi/spi_multi.c	\
 							plat/renesas/rz/common/drivers/spi_multi/${SPI_FLASH}/spi_multi_device.c
 
+XSPI_SOURCES			:=	plat/renesas/rz/common/drivers/xspi.c	\
+							plat/renesas/rz/common/drivers/io/io_xspidrv.c
+
 SD_SOURCES				:=	plat/renesas/rz/common/drivers/sd/sd_init.c				\
 							plat/renesas/rz/common/drivers/sd/sd_mount.c			\
 							plat/renesas/rz/common/drivers/sd/sd_util.c				\
@@ -124,6 +127,7 @@ BL2_SOURCES				+=	common/desc_image_load.c								\
 							${RZ_TIMER_SOURCES}										\
 							${EMMC_SOURCES}											\
 							${SPI_MULTI_SOURCE}										\
+							${XSPI_SOURCES}											\
 							${DDR_SOURCES}											\
 							${FDT_WRAPPERS_SOURCES}									\
 							${FCONF_SOURCES}										\

@@ -114,7 +114,7 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	cpg_early_setup();
 
 	/* initialize SYC */
-	uint32_t syc_inck_hz = FCONF_GET_PROPERTY(hw_config, sysc_config, syc_inck_hz);
+	uint32_t syc_inck_hz = FCONF_GET_PROPERTY(hw_config, syc_config, syc_inck_hz);
 	syc_init(syc_inck_hz);
 
 	/* initialize Timer */
@@ -127,10 +127,11 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	cpg_setup();
 
 	/* initialize console driver */
+	const struct scif_config_t * g_scif_fconf_cfg = scif_config_getter();
 	ret = console_rzcmn_register(
-							RZCMN_SCIF0_BASE,
-							RZCMN_UART_INCK_HZ,
-							RZCMN_UART_BARDRATE,
+							g_scif_fconf_cfg->scif_base,
+							g_scif_fconf_cfg->uart_inck_hz,
+							g_scif_fconf_cfg->uart_baudrate,
 							&rzcmn_bl31_console);
 	if (!ret)
 		panic();

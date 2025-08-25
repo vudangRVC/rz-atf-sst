@@ -47,8 +47,8 @@ typedef struct {
 	CPG_REG_SETTING		stby_dat;
 } CPG_PLL_SETDATA_235;
 
-const struct cpg_config_t *g_cpg_fconf_cfg;
-#define CPG_REG_ADDR(offset)  ((uintptr_t)(g_cpg_fconf_cfg->cpg_base + (offset)))
+const struct cpg_config_t * g_cpg_fconf_cfg;
+#define CPG_REG_ADDR(offset)  		((uintptr_t)(g_cpg_fconf_cfg->cpg_base + (offset)))
 #define CPG_REG_WRITE(reg, value)	mmio_write_32(CPG_REG_ADDR(reg), value)
 #define CPG_REG_READ(reg)			mmio_read_32(CPG_REG_ADDR(reg))
 

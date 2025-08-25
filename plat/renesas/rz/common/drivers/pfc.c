@@ -6,11 +6,17 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <pfc_regs.h>
+#include <pfc_regs_offset.h>
 #include <lib/mmio.h>
 #include <rz_fconf.h>
 
 const struct pfc_config_t *g_pfc_fconf_cfg;
+
+#define PFC_REG_ADDR(offset)  			((uintptr_t)(g_pfc_fconf_cfg->pfc_base + (offset)))
+#define PFC_REG_WRITE_8(reg, value)		mmio_write_8(PFC_REG_ADDR(reg), value)
+#define PFC_REG_WRITE_32(reg, value)	mmio_write_32(PFC_REG_ADDR(reg), value)
+#define PFC_REG_WRITE_64(reg, value)	mmio_write_64(PFC_REG_ADDR(reg), value)
+#define PFC_REG_READ(reg)				mmio_read_32(PFC_REG_ADDR(reg))
 
 static PFC_REGS pfc_mux_reg_tbl[PFC_MUX_TBL_NUM] = {
 #if RZG2UL
@@ -90,30 +96,30 @@ static PFC_REGS pfc_mux_reg_tbl[PFC_MUX_TBL_NUM] = {
 static PFC_REGS  pfc_qspi_reg_tbl[PFC_QSPI_TBL_NUM] = {
 	/* QSPI0 */
 	{
-		{ PFC_OFF, (uintptr_t)NULL        },		/* PMC */
-		{ PFC_OFF, (uintptr_t)NULL        },		/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH0A  },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD0A  },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR0A    },		/* SR */
-		{ PFC_OFF, (uintptr_t)NULL        } 		/* IEN */
+		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
+		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH0A, 0x0000020202020202 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD0A, 0x0000000000000000 },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR0A,   0x0000010101010101 },		/* SR */
+		{ PFC_OFF, (uintptr_t)NULL,       0 }						/* IEN */
 	},
 	/* QSPI1 */
 	{
-		{ PFC_OFF, (uintptr_t)NULL        },		/* PMC */
-		{ PFC_OFF, (uintptr_t)NULL        },		/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH0B  },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD0B  },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR0B    },		/* SR */
-		{ PFC_OFF, (uintptr_t)NULL        } 		/* IEN */
+		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
+		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH0B, 0x0000020202020202 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD0B, 0x0000000000000000 },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR0B,   0x0000010101010101 },		/* SR */
+		{ PFC_OFF, (uintptr_t)NULL,       0 }						/* IEN */
 	},
 	/* QSPIn */
 	{
-		{ PFC_OFF, (uintptr_t)NULL        },		/* PMC */
-		{ PFC_OFF, (uintptr_t)NULL        },		/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH0C  },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD0C  },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR0C    },		/* SR */
-		{ PFC_OFF, (uintptr_t)NULL        } 		/* IEN */
+		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
+		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
+		{ PFC_ON,  (uintptr_t)PFC_IOLH0C, 0x0000000000020202 },		/* IOLH */
+		{ PFC_ON,  (uintptr_t)PFC_PUPD0C, 0x0000000000000000 },		/* PUPD */
+		{ PFC_ON,  (uintptr_t)PFC_SR0C,   0x0000000000010000 },		/* SR */
+		{ PFC_OFF, (uintptr_t)NULL,       0 }						/* IEN */
 	}
 };
 
@@ -171,67 +177,52 @@ static void pfc_mux_setup(void)
 	int      cnt;
 
 	/* multiplexer terminal switching */
-	mmio_write_32(PFC_PWPR, 0x0);
-	mmio_write_32(PFC_PWPR, PWPR_PFCWE);
+	PFC_REG_WRITE_32(PFC_PWPR, 0x0);
+	PFC_REG_WRITE_32(PFC_PWPR, PWPR_PFCWE);
 
 	for (cnt = 0; cnt < PFC_MUX_TBL_NUM; cnt++) {
 		/* PMC */
 		if (pfc_mux_reg_tbl[cnt].pmc.flg == PFC_ON) {
-			mmio_write_8(pfc_mux_reg_tbl[cnt].pmc.reg, pfc_mux_reg_tbl[cnt].pmc.val);
+			PFC_REG_WRITE_8(pfc_mux_reg_tbl[cnt].pmc.reg, pfc_mux_reg_tbl[cnt].pmc.val);
 		}
 		/* PFC */
 		if (pfc_mux_reg_tbl[cnt].pfc.flg == PFC_ON) {
-			mmio_write_32(pfc_mux_reg_tbl[cnt].pfc.reg, pfc_mux_reg_tbl[cnt].pfc.val);
+			PFC_REG_WRITE_32(pfc_mux_reg_tbl[cnt].pfc.reg, pfc_mux_reg_tbl[cnt].pfc.val);
 		}
 		/* IOLH */
 		if (pfc_mux_reg_tbl[cnt].iolh.flg == PFC_ON) {
-			mmio_write_64(pfc_mux_reg_tbl[cnt].iolh.reg, pfc_mux_reg_tbl[cnt].iolh.val);
+			PFC_REG_WRITE_64(pfc_mux_reg_tbl[cnt].iolh.reg, pfc_mux_reg_tbl[cnt].iolh.val);
 		}
 		/* PUPD */
 		if (pfc_mux_reg_tbl[cnt].pupd.flg == PFC_ON) {
-			mmio_write_64(pfc_mux_reg_tbl[cnt].pupd.reg, pfc_mux_reg_tbl[cnt].pupd.val);
+			PFC_REG_WRITE_64(pfc_mux_reg_tbl[cnt].pupd.reg, pfc_mux_reg_tbl[cnt].pupd.val);
 		}
 		/* SR */
 		if (pfc_mux_reg_tbl[cnt].sr.flg == PFC_ON) {
-			mmio_write_64(pfc_mux_reg_tbl[cnt].sr.reg, pfc_mux_reg_tbl[cnt].sr.val);
+			PFC_REG_WRITE_64(pfc_mux_reg_tbl[cnt].sr.reg, pfc_mux_reg_tbl[cnt].sr.val);
 		}
 	}
 
-	mmio_write_32(PFC_PWPR, 0x0);
-	mmio_write_32(PFC_PWPR, PWPR_B0Wl);
+	PFC_REG_WRITE_32(PFC_PWPR, 0x0);
+	PFC_REG_WRITE_32(PFC_PWPR, PWPR_B0Wl);
 }
 
 static void pfc_qspi_setup(void)
 {
 	int      cnt;
-
-	/* QSPI0 */
-	pfc_qspi_reg_tbl[0].iolh.val = g_pfc_fconf_cfg->qspi0_iolh0a;
-	pfc_qspi_reg_tbl[0].pupd.val = g_pfc_fconf_cfg->qspi0_pupd0a;
-	pfc_qspi_reg_tbl[0].sr.val   = g_pfc_fconf_cfg->qspi0_sr0a;
-
-	/* QSPI1 */
-	pfc_qspi_reg_tbl[1].iolh.val = g_pfc_fconf_cfg->qspi1_iolh0b;
-	pfc_qspi_reg_tbl[1].pupd.val = g_pfc_fconf_cfg->qspi1_pupd0b;
-	pfc_qspi_reg_tbl[1].sr.val   = g_pfc_fconf_cfg->qspi1_sr0b;
-
-	/* QSPIn */
-	pfc_qspi_reg_tbl[2].iolh.val = g_pfc_fconf_cfg->qspin_iolh0c;
-	pfc_qspi_reg_tbl[2].pupd.val = g_pfc_fconf_cfg->qspin_pupd0c;
-	pfc_qspi_reg_tbl[2].sr.val   = g_pfc_fconf_cfg->qspin_sr0c;
 	
 	for (cnt = 0; cnt < PFC_QSPI_TBL_NUM; cnt++) {
 		/* IOLH */
 		if (pfc_qspi_reg_tbl[cnt].iolh.flg == PFC_ON) {
-			mmio_write_64(pfc_qspi_reg_tbl[cnt].iolh.reg, pfc_qspi_reg_tbl[cnt].iolh.val);
+			PFC_REG_WRITE_64(pfc_qspi_reg_tbl[cnt].iolh.reg, pfc_qspi_reg_tbl[cnt].iolh.val);
 		}
 		/* PUPD */
 		if (pfc_qspi_reg_tbl[cnt].pupd.flg == PFC_ON) {
-			mmio_write_64(pfc_qspi_reg_tbl[cnt].pupd.reg, pfc_qspi_reg_tbl[cnt].pupd.val);
+			PFC_REG_WRITE_64(pfc_qspi_reg_tbl[cnt].pupd.reg, pfc_qspi_reg_tbl[cnt].pupd.val);
 		}
 		/* SR */
 		if (pfc_qspi_reg_tbl[cnt].sr.flg == PFC_ON) {
-			mmio_write_64(pfc_qspi_reg_tbl[cnt].sr.reg, pfc_qspi_reg_tbl[cnt].sr.val);
+			PFC_REG_WRITE_64(pfc_qspi_reg_tbl[cnt].sr.reg, pfc_qspi_reg_tbl[cnt].sr.val);
 		}
 	}
 }
@@ -241,35 +232,50 @@ static void pfc_sd_setup(void)
 	int      cnt;
 
 	/* Since SDx is 3.3V, the initial value will be set. */
-	mmio_write_32(PFC_SD_ch0, 1);
-	mmio_write_32(PFC_SD_ch1, 0);
+	PFC_REG_WRITE_32(PFC_SD_ch0, 1);
+	PFC_REG_WRITE_32(PFC_SD_ch1, 0);
 
 	for (cnt = 0; cnt < PFC_SD_TBL_NUM; cnt++) {
 		/* PMC */
 		if (pfc_sd_reg_tbl[cnt].pmc.flg == PFC_ON) {
-			mmio_write_8(pfc_sd_reg_tbl[cnt].pmc.reg, pfc_sd_reg_tbl[cnt].pmc.val);
+			PFC_REG_WRITE_8(pfc_sd_reg_tbl[cnt].pmc.reg, pfc_sd_reg_tbl[cnt].pmc.val);
 		}
 		/* PFC */
 		if (pfc_sd_reg_tbl[cnt].pfc.flg == PFC_ON) {
-			mmio_write_32(pfc_sd_reg_tbl[cnt].pfc.reg, pfc_sd_reg_tbl[cnt].pfc.val);
+			PFC_REG_WRITE_32(pfc_sd_reg_tbl[cnt].pfc.reg, pfc_sd_reg_tbl[cnt].pfc.val);
 		}
 		/* IOLH */
 		if (pfc_sd_reg_tbl[cnt].iolh.flg == PFC_ON) {
-			mmio_write_64(pfc_sd_reg_tbl[cnt].iolh.reg, pfc_sd_reg_tbl[cnt].iolh.val);
+			PFC_REG_WRITE_64(pfc_sd_reg_tbl[cnt].iolh.reg, pfc_sd_reg_tbl[cnt].iolh.val);
 		}
 		/* PUPD */
 		if (pfc_sd_reg_tbl[cnt].pupd.flg == PFC_ON) {
-			mmio_write_64(pfc_sd_reg_tbl[cnt].pupd.reg, pfc_sd_reg_tbl[cnt].pupd.val);
+			PFC_REG_WRITE_64(pfc_sd_reg_tbl[cnt].pupd.reg, pfc_sd_reg_tbl[cnt].pupd.val);
 		}
 		/* SR */
 		if (pfc_sd_reg_tbl[cnt].sr.flg == PFC_ON) {
-			mmio_write_64(pfc_sd_reg_tbl[cnt].sr.reg, pfc_sd_reg_tbl[cnt].sr.val);
+			PFC_REG_WRITE_64(pfc_sd_reg_tbl[cnt].sr.reg, pfc_sd_reg_tbl[cnt].sr.val);
 		}
 		/* IEN */
 		if (pfc_sd_reg_tbl[cnt].ien.flg == PFC_ON) {
-			mmio_write_64(pfc_sd_reg_tbl[cnt].ien.reg, pfc_sd_reg_tbl[cnt].ien.val);
+			PFC_REG_WRITE_64(pfc_sd_reg_tbl[cnt].ien.reg, pfc_sd_reg_tbl[cnt].ien.val);
 		}
 	}
+}
+
+static void pfc_scif_setup(void)
+{
+	// TODO: Implement the setup for SCIF
+}
+
+static void pfc_drive_setup(void)
+{
+	// TODO: Implement the setup for drive strength
+}
+
+static void pfc_riic_pmic_setup(void)
+{
+	// TODO: Implement the setup for RIIC PMIC
 }
 
 void pfc_setup(void)
@@ -277,7 +283,10 @@ void pfc_setup(void)
 	/* Initialize global PFC config from DTB.  */
 	g_pfc_fconf_cfg = pfc_config_getter();
 
-	pfc_mux_setup();
-	pfc_qspi_setup();
-	pfc_sd_setup();
+	if (g_pfc_fconf_cfg->pfc_mux_setup) { pfc_mux_setup(); }
+	if (g_pfc_fconf_cfg->pfc_qspi_setup) { pfc_qspi_setup(); }
+	if (g_pfc_fconf_cfg->pfc_sd_setup) { pfc_sd_setup(); }
+	if (g_pfc_fconf_cfg->pfc_scif_setup) { pfc_scif_setup(); }
+	if (g_pfc_fconf_cfg->pfc_drive_setup) { pfc_drive_setup(); }
+	if (g_pfc_fconf_cfg->pfc_riic_pmic_setup) { pfc_riic_pmic_setup(); }
 }

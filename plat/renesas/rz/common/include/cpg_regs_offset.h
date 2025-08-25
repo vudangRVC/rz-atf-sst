@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef __CPG_REGS_H__
-#define __CPG_REGS_H__
+#ifndef __CPG_REGS_OFFSET_H__
+#define __CPG_REGS_OFFSET_H__
 
 #include <cpg_v2h_regs_offset.h>
 
@@ -706,4 +706,4 @@
 #define BIT30_ON									(1 << 30)
 #define BIT31_ON									(1 << 31)
 
-#endif	/* __CPG_REGS_H__ */
+#endif	/* __CPG_REGS_OFFSET_H__ */

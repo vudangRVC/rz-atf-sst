@@ -119,7 +119,6 @@ void ddr_setup(void)
 	rmw_mc_reg(DDRMC_R007(rzcmn_board_id), 0xFFFFFEFF, 0x00000000);
 	rmw_mc_reg(DDRMC_R001(rzcmn_board_id), 0xFEFFFFFF, 0x01000000);
 	rmw_mc_reg(DDRMC_R000(rzcmn_board_id), 0xFFFFFFFE, 0x00000001);
-	INFO("while ((read_mc_reg(DDRMC_R021(rzcmn_board_id)) & 0x02000000) != 0x02000000)\n");
 	while ((read_mc_reg(DDRMC_R021(rzcmn_board_id)) & 0x02000000) != 0x02000000)
 		;
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00080000);

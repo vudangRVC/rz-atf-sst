@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef __CPG_REGS_OFFSET_H__
-#define __CPG_REGS_OFFSET_H__
+#ifndef __CPG_V2H_REGS_OFFSET_H__
+#define __CPG_V2H_REGS_OFFSET_H__
 
 #define	CPG_PLLCM33_MON_OFFSET				(0x010)	/* PLLCM33 monitor register */
 #define	CPG_PLLCLN_STBY_OFFSET				(0x020)	/* PLLCLN standby control register */
@@ -194,4 +194,4 @@
 #define	CPG_RSV5_OFFSET					    (0xE10)	/* Booking register 5 */
 #define	CPG_RSV6_OFFSET					    (0xE14)	/* Booking register 6 */
 
-#endif	/* __CPG_REGS_OFFSET_H__ */
+#endif	/* __CPG_V2H_REGS_OFFSET_H__ */
