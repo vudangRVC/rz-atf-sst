@@ -127,6 +127,7 @@ int spi_multi_setup( void )
 
 	/* Device-specific settings */
 	spi_multi_setup_device();
+
 	/* SDR mode serial flash settings */
 	INFO("g_spi_fconf_cfg->phycnt: %d\n", g_spi_fconf_cfg->phycnt);
 	mmio_write_32(SPIM_PHYCNT, g_spi_fconf_cfg->phycnt);
@@ -140,6 +141,7 @@ int spi_multi_setup( void )
 	/* Set the QSPIn_SSL setting value */
 	INFO("g_spi_fconf_cfg->cmncr: %d\n", g_spi_fconf_cfg->cmncr);
 	mmio_write_32(SPIM_CMNCR, g_spi_fconf_cfg->cmncr);
+
 	/* Set SSL delay setting value */
 	INFO("g_spi_fconf_cfg->ssldr: %d\n", g_spi_fconf_cfg->ssldr);
 	mmio_write_32(SPIM_SSLDR, g_spi_fconf_cfg->ssldr);

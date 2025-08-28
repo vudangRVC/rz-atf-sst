@@ -34,13 +34,19 @@ override CRYPTO_SUPPORT			:= 0
 ERRATA_A55_1530923				:= 1
 
 # Support QSPI Flash
+$(info [DEBUG] BOARD=$(BOARD))
 ifndef SPI_FLASH
-	ifeq (${BOARD}, sbc_1)
-		SPI_FLASH := IS25WP256
-	else
-		SPI_FLASH = MT25QU512ABB
-	endif
+ifeq ($(BOARD),sbc_1)
+    SPI_FLASH := IS25WP256
+else
+ifeq ($(BOARD),rzg2l_100)
+    SPI_FLASH := AT25SF128A
+else
+    SPI_FLASH := MT25QU512ABB
 endif
+endif
+endif
+$(info [DEBUG] SPI_FLASH=$(SPI_FLASH))
 
 PLAT_INCLUDES			:=	-Iplat/renesas/rz/common/include						\
 							-Iplat/renesas/rz/common/drivers/emmc					\
