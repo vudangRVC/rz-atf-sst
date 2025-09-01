@@ -27,7 +27,7 @@ Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include <stdint.h>
 #include <stddef.h>
-#include "r_sdif.h"
+#include <esdif.h>
 #include "sd.h"
 #include "sdmmc_iodefine.h"
 
@@ -72,7 +72,7 @@ static int32_t _sd_single_write_error(st_sdhndl_t *p_hndl, int32_t mode);
  * Return Value : SD_OK : end of succeed.
  *              : SD_ERR: end of error
  *****************************************************************************/
-int32_t sd_write_sect(int32_t sd_port, uint8_t *buff, uint32_t psn, int32_t cnt, int32_t writemode)
+int32_t esd_write_sect(int32_t sd_port, uint8_t *buff, uint32_t psn, int32_t cnt, int32_t writemode)
 {
 	st_sdhndl_t *p_hndl;
 
@@ -280,7 +280,7 @@ int32_t _sd_write_sect(st_sdhndl_t *p_hndl, uint8_t *buff, uint32_t psn, int32_t
 			_sd_set_int_mask(p_hndl, SD_INFO1_MASK_DATA_TRNS, SD_INFO2_MASK_ERR);
 
 			/* ---- initialize DMAC ---- */
-			if (sddev_init_dma(p_hndl->sd_port, (uintptr_t)buff, SD_TRANS_WRITE) != SD_OK) {
+			if (esddev_init_dma(p_hndl->sd_port, (uintptr_t)buff, SD_TRANS_WRITE) != SD_OK) {
 				_sd_set_err(p_hndl, SD_ERR_CPU_IF);
 				return _sd_write_sect_error(p_hndl, mode);
 			}
@@ -290,7 +290,7 @@ int32_t _sd_write_sect(st_sdhndl_t *p_hndl, uint8_t *buff, uint32_t psn, int32_t
 		}
 
 		/* ---- wait All end interrupt ---- */
-		ret = sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP);
+		ret = esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP);
 
 		if (SD_MODE_DMA == mode) {
 			_sd_set_int_mask(p_hndl, info1_back, 0);
@@ -424,10 +424,10 @@ static int32_t _sd_write_sect_error(st_sdhndl_t *p_hndl, int32_t mode)
 
 	if (SD_MODE_DMA == mode) {
 		/* Cast to an appropriate type */
-		(void)sddev_disable_dma((int32_t)(p_hndl->sd_port));   /* disable DMA */
+		(void)esddev_disable_dma((int32_t)(p_hndl->sd_port));   /* disable DMA */
 
 		/* reset DMAC */
-		error = sddev_reset_dma((int32_t)(p_hndl->sd_port));
+		error = esddev_reset_dma((int32_t)(p_hndl->sd_port));
 		if (SD_OK != error) {
 			/* DO NOTHING */
 			;
@@ -451,7 +451,7 @@ static int32_t _sd_write_sect_error(st_sdhndl_t *p_hndl, int32_t mode)
 		SDMMC.SD_STOP.LONGLONG = (uint64_t)0x0001;
 
 		/* ---- wait All end ---- */
-		sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP);
+		esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP);
 
 		/* Cast to an appropriate type */
 		_sd_clear_info(p_hndl, SD_INFO1_MASK_TRNS_RESP, SD_INFO2_MASK_ALL);
@@ -459,7 +459,7 @@ static int32_t _sd_write_sect_error(st_sdhndl_t *p_hndl, int32_t mode)
 		/* Cast to an appropriate type */
 		_sd_clear_int_mask(p_hndl, SD_INFO1_MASK_DATA_TRNS, 0);
 
-		sddev_loc_cpu(p_hndl->sd_port);
+		esddev_loc_cpu(p_hndl->sd_port);
 
 		/* Cast to an appropriate type */
 		sd_option   = SDMMC.SD_OPTION.LONGLONG;
@@ -481,7 +481,7 @@ static int32_t _sd_write_sect_error(st_sdhndl_t *p_hndl, int32_t mode)
 
 		/* Cast to an appropriate type */
 		SDMMC.SD_CLK_CTRL.LONGLONG = sd_clk_ctrl;
-		sddev_unl_cpu(p_hndl->sd_port);
+		esddev_unl_cpu(p_hndl->sd_port);
 
 	}
 
@@ -565,7 +565,7 @@ static int32_t _sd_single_write(st_sdhndl_t *p_hndl, uint8_t *buff, uint32_t psn
 		_sd_set_int_mask(p_hndl, SD_INFO1_MASK_DATA_TRNS, SD_INFO2_MASK_ERR);
 
 		/* ---- initialize DMAC ---- */
-		if (sddev_init_dma(p_hndl->sd_port, (uintptr_t)buff, SD_TRANS_WRITE) != SD_OK) {
+		if (esddev_init_dma(p_hndl->sd_port, (uintptr_t)buff, SD_TRANS_WRITE) != SD_OK) {
 			_sd_set_err(p_hndl, SD_ERR_CPU_IF);
 			return _sd_single_write_error(p_hndl, mode);
 		}
@@ -575,7 +575,7 @@ static int32_t _sd_single_write(st_sdhndl_t *p_hndl, uint8_t *buff, uint32_t psn
 	}
 
 	/* ---- wait All end interrupt ---- */
-	ret = sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP);
+	ret = esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP);
 
 	if (SD_MODE_DMA == mode) {
 		_sd_set_int_mask(p_hndl, info1_back, 0);
@@ -649,10 +649,10 @@ static int32_t _sd_single_write_error(st_sdhndl_t *p_hndl, int32_t mode)
 
 	if (SD_MODE_DMA == mode) {
 		/* Cast to an appropriate type */
-		(void)sddev_disable_dma((int32_t)(p_hndl->sd_port));   /* disable DMA */
+		(void)esddev_disable_dma((int32_t)(p_hndl->sd_port));   /* disable DMA */
 
 		/* reset DMAC */
-		temp_error = sddev_reset_dma((int32_t)(p_hndl->sd_port));
+		temp_error = esddev_reset_dma((int32_t)(p_hndl->sd_port));
 		if (SD_OK != temp_error) {
 			/* DO NOTHING */
 			;
@@ -673,7 +673,7 @@ static int32_t _sd_single_write_error(st_sdhndl_t *p_hndl, int32_t mode)
 	SDMMC.SD_STOP.LONGLONG = (uint64_t)0x0001;
 
 	/* ---- wait All end ---- */
-	sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP);
+	esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP);
 
 	/* Cast to an appropriate type */
 	_sd_clear_info(p_hndl, SD_INFO1_MASK_TRNS_RESP, SD_INFO2_MASK_ALL);

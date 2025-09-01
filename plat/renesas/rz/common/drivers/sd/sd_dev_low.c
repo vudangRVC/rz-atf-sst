@@ -29,7 +29,7 @@ Includes   <System Includes> , "Project Includes"
 #include <stdint.h>
 #include <drivers/delay_timer.h>
 #include "sdmmc_iodefine.h"
-#include "r_sdif.h"
+#include <esdif.h>
 #include "r_sd_cfg.h"
 
 /******************************************************************************
@@ -58,7 +58,7 @@ Private global variables and functions
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_init(int32_t sd_port)
+int32_t esddev_init(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -72,7 +72,7 @@ int32_t sddev_init(int32_t sd_port)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_power_on(int32_t sd_port)
+int32_t esddev_power_on(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -87,7 +87,7 @@ int32_t sddev_power_on(int32_t sd_port)
 * Return Value : success : SD_OK
 *              : fail    : SD_ERR
 ******************************************************************************/
-int32_t sddev_power_off(int32_t sd_port)
+int32_t esddev_power_off(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -105,7 +105,7 @@ int32_t sddev_power_off(int32_t sd_port)
 * Return Value : success : SD_OK
 *              : fail    : SD_ERR
 ******************************************************************************/
-int32_t sddev_read_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num)
+int32_t esddev_read_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num)
 {
 	int32_t  i;
 	int32_t  cnt;
@@ -196,7 +196,7 @@ int32_t sddev_read_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32
 * Return Value : success : SD_OK
 *              : fail    : SD_ERR
 ******************************************************************************/
-int32_t sddev_write_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num)
+int32_t esddev_write_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num)
 {
 	int32_t  i;
 
@@ -271,7 +271,7 @@ int32_t sddev_write_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int3
 *              :   SD_DIV_256 : 1/256 clock
 *              :   SD_DIV_512 : 1/512 clock
 ******************************************************************************/
-uint32_t sddev_get_clockdiv(int32_t sd_port, int32_t clock)
+uint32_t esddev_get_clockdiv(int32_t sd_port, int32_t clock)
 {
 	uint32_t div;
 
@@ -315,7 +315,7 @@ uint32_t sddev_get_clockdiv(int32_t sd_port, int32_t clock)
 * Return Value : success : SD_OK
 *              : fail    : SD_ERR
 ******************************************************************************/
-int32_t sddev_set_port(int32_t sd_port, int32_t mode)
+int32_t esddev_set_port(int32_t sd_port, int32_t mode)
 {
 	return SD_OK;
 }
@@ -331,7 +331,7 @@ int32_t sddev_set_port(int32_t sd_port, int32_t mode)
 * Return Value : get interrupt : SD_OK
 *              : time out      : SD_ERR
 ******************************************************************************/
-int32_t sddev_int_wait(int32_t sd_port, int32_t time)
+int32_t esddev_int_wait(int32_t sd_port, int32_t time)
 {
 	int32_t  ret;
 	uint32_t waittime;
@@ -339,13 +339,13 @@ int32_t sddev_int_wait(int32_t sd_port, int32_t time)
 	waittime = (uint32_t)time;
 
 	/* interrupt generated? */
-	ret = sd_check_int(sd_port);
+	ret = esd_check_int(sd_port);
 	while ((SD_ERR == ret) && (waittime > 0uL)) {
 		mdelay(1);
 		waittime--;
 
 		/* interrupt generated? */
-		ret = sd_check_int(sd_port);
+		ret = esd_check_int(sd_port);
 	}
 
 	return ret;
@@ -364,7 +364,7 @@ int32_t sddev_int_wait(int32_t sd_port, int32_t time)
 *              :                 :   1 : buffer -> FIFO
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_init_dma(int32_t sd_port, uint32_t buff, int32_t dir)
+int32_t esddev_init_dma(int32_t sd_port, uint32_t buff, int32_t dir)
 {
 	return SD_OK;
 }
@@ -379,7 +379,7 @@ int32_t sddev_init_dma(int32_t sd_port, uint32_t buff, int32_t dir)
 *              : int32_t cnt     : counts to transfer(unit:byte)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_wait_dma_end(int32_t sd_port, int32_t cnt)
+int32_t esddev_wait_dma_end(int32_t sd_port, int32_t cnt)
 {
 	return SD_OK;
 }
@@ -393,7 +393,7 @@ int32_t sddev_wait_dma_end(int32_t sd_port, int32_t cnt)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_disable_dma(int32_t sd_port)
+int32_t esddev_disable_dma(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -407,7 +407,7 @@ int32_t sddev_disable_dma(int32_t sd_port)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_reset_dma(int32_t sd_port)
+int32_t esddev_reset_dma(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -421,7 +421,7 @@ int32_t sddev_reset_dma(int32_t sd_port)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_finalize_dma(int32_t sd_port)
+int32_t esddev_finalize_dma(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -435,7 +435,7 @@ int32_t sddev_finalize_dma(int32_t sd_port)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_loc_cpu(int32_t sd_port)
+int32_t esddev_loc_cpu(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -449,7 +449,7 @@ int32_t sddev_loc_cpu(int32_t sd_port)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_unl_cpu(int32_t sd_port)
+int32_t esddev_unl_cpu(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -463,7 +463,7 @@ int32_t sddev_unl_cpu(int32_t sd_port)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : success : SD_OK
 ******************************************************************************/
-int32_t sddev_finalize(int32_t sd_port)
+int32_t esddev_finalize(int32_t sd_port)
 {
 	return SD_OK;
 }
@@ -477,7 +477,7 @@ int32_t sddev_finalize(int32_t sd_port)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : Not Support : SD_ERR
 ******************************************************************************/
-int32_t sddev_cd_layout(int32_t sd_port)
+int32_t esddev_cd_layout(int32_t sd_port)
 {
 	return SD_ERR;
 }
@@ -491,7 +491,7 @@ int32_t sddev_cd_layout(int32_t sd_port)
 * Arguments    : int32_t sd_port : channel no (0 or 1)
 * Return Value : Not Support : SD_ERR
 ******************************************************************************/
-int32_t sddev_wp_layout(int32_t sd_port)
+int32_t esddev_wp_layout(int32_t sd_port)
 {
 	return SD_ERR;
 }

@@ -26,7 +26,7 @@
 Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include <stdint.h>
-#include "r_sdif.h"
+#include <esdif.h>
 #include "esdif.h"
 #include "sd.h"
 #include "sdmmc_iodefine.h"
@@ -66,7 +66,7 @@ Private global variables and functions
  *****************************************************************************/
 int32_t _sd_set_int_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
 {
-	sddev_loc_cpu(p_hndl->sd_port);
+	esddev_loc_cpu(p_hndl->sd_port);
 
 	/* ---- set int_info1_mask and int_info2_mask ---- */
 	p_hndl->int_info1_mask |= mask1;
@@ -78,7 +78,7 @@ int32_t _sd_set_int_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
 	/* Cast to an appropriate type */
 	SDMMC.SD_INFO2_MASK.LONGLONG = (uint64_t)~(p_hndl->int_info2_mask);
 
-	sddev_unl_cpu(p_hndl->sd_port);
+	esddev_unl_cpu(p_hndl->sd_port);
 
 	return SD_OK;
 }
@@ -99,7 +99,7 @@ int32_t _sd_set_int_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
  *****************************************************************************/
 int32_t _sd_clear_int_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
 {
-	sddev_loc_cpu(p_hndl->sd_port);
+	esddev_loc_cpu(p_hndl->sd_port);
 
 	/* ---- clear int_info1_mask and int_info2_mask ---- */
 	p_hndl->int_info1_mask &= (uint64_t)~mask1;
@@ -113,7 +113,7 @@ int32_t _sd_clear_int_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
 	/* Cast to an appropriate type */
 	SDMMC.SD_INFO2_MASK.LONGLONG = (uint64_t)~(p_hndl->int_info2_mask);
 
-	sddev_unl_cpu(p_hndl->sd_port);
+	esddev_unl_cpu(p_hndl->sd_port);
 
 	return SD_OK;
 }
@@ -134,7 +134,7 @@ int32_t _sd_clear_int_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
  *****************************************************************************/
 int32_t _sd_clear_info(st_sdhndl_t *p_hndl, uint64_t clear_info1, uint64_t clear_info2)
 {
-	sddev_loc_cpu(p_hndl->sd_port);
+	esddev_loc_cpu(p_hndl->sd_port);
 
 	/* ---- clear int_info1 and int_info2 ---- */
 	p_hndl->int_info1 &= (uint64_t)~clear_info1;
@@ -142,7 +142,7 @@ int32_t _sd_clear_info(st_sdhndl_t *p_hndl, uint64_t clear_info1, uint64_t clear
 	/* Cast to an appropriate type */
 	p_hndl->int_info2 &= (uint64_t)~clear_info2;
 
-	sddev_unl_cpu(p_hndl->sd_port);
+	esddev_unl_cpu(p_hndl->sd_port);
 
 	return SD_OK;
 }
@@ -200,7 +200,7 @@ int32_t _sd_get_int(st_sdhndl_t *p_hndl)
  * Return Value : SD_OK : end of succeed
  *              : SD_ERR: end of error
  *****************************************************************************/
-int32_t sd_check_int(int32_t sd_port)
+int32_t esd_check_int(int32_t sd_port)
 {
 	st_sdhndl_t *p_hndl;
 
@@ -324,7 +324,7 @@ int32_t sd_set_intcallback(int32_t sd_port, int32_t (*callback)(int32_t, int32_t
  *****************************************************************************/
 int32_t _sd_set_int_dm_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
 {
-	sddev_loc_cpu(p_hndl->sd_port);
+	esddev_loc_cpu(p_hndl->sd_port);
 
 	/* ---- set int_dm_info1_mask and int_dm_info2_mask ---- */
 	p_hndl->int_dm_info1_mask |= mask1;
@@ -336,7 +336,7 @@ int32_t _sd_set_int_dm_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
 	/* Cast to an appropriate type */
 	SDMMC.DM_CM_INFO2_MASK.LONGLONG = (uint64_t)~(p_hndl->int_dm_info2_mask);
 
-	sddev_unl_cpu(p_hndl->sd_port);
+	esddev_unl_cpu(p_hndl->sd_port);
 
 	return SD_OK;
 }
@@ -357,7 +357,7 @@ int32_t _sd_set_int_dm_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
  *****************************************************************************/
 int32_t _sd_clear_int_dm_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask2)
 {
-	sddev_loc_cpu(p_hndl->sd_port);
+	esddev_loc_cpu(p_hndl->sd_port);
 
 	/* ---- clear int_dm_info1_mask and int_dm_info2_mask ---- */
 	p_hndl->int_dm_info1_mask &= (uint64_t)~mask1;
@@ -371,7 +371,7 @@ int32_t _sd_clear_int_dm_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask
 	/* Cast to an appropriate type */
 	SDMMC.DM_CM_INFO2_MASK.LONGLONG = (uint64_t)~(p_hndl->int_dm_info2_mask);
 
-	sddev_unl_cpu(p_hndl->sd_port);
+	esddev_unl_cpu(p_hndl->sd_port);
 
 
 	return SD_OK;
@@ -392,7 +392,7 @@ int32_t _sd_clear_int_dm_mask(st_sdhndl_t *p_hndl, uint64_t mask1, uint64_t mask
  *****************************************************************************/
 int32_t _sd_clear_dm_info(st_sdhndl_t *p_hndl, uint64_t clear_info1, uint64_t clear_info2)
 {
-	sddev_loc_cpu(p_hndl->sd_port);
+	esddev_loc_cpu(p_hndl->sd_port);
 
 	/* ---- clear int_dm_info1 and int_dm_info2 ---- */
 	p_hndl->int_dm_info1 &= (uint64_t)~clear_info1;
@@ -400,7 +400,7 @@ int32_t _sd_clear_dm_info(st_sdhndl_t *p_hndl, uint64_t clear_info1, uint64_t cl
 	/* Cast to an appropriate type */
 	p_hndl->int_dm_info2 &= (uint64_t)~clear_info2;
 
-	sddev_unl_cpu(p_hndl->sd_port);
+	esddev_unl_cpu(p_hndl->sd_port);
 
 	return SD_OK;
 }
@@ -458,7 +458,7 @@ int32_t _sd_get_int_dm(st_sdhndl_t *p_hndl)
  * Return Value : SD_OK : any interrupt occured
  *              : SD_ERR: no interrupt occured
  *****************************************************************************/
-int32_t sd_check_int_dm(int32_t sd_port)
+int32_t esd_check_int_dm(int32_t sd_port)
 {
 	st_sdhndl_t *p_hndl;
 

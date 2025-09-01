@@ -25,7 +25,7 @@
 Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include "sys_sel.h"
-#include "r_sdif.h"
+#include <esdif.h>
 
 #ifndef SD_H
 #define SD_H
@@ -391,6 +391,9 @@ Macro definitions
 
 /* ==== macro functions ==== */
 #define SD_GET_HNDLS(a)             (gp_sdhandle[(a)])
+#define _sd_set_hndl(sd_port, hndl)          (gp_sdhandle[sd_port] = (hndl))
+#define _sd_get_hndl(sd_port)              (gp_sdhandle[sd_port])
+#define _sd_get_hndls(a)            (gp_sdhandle[a])
 
 /* ==== command type ==== */
 /* ---- eSD commands ---- */

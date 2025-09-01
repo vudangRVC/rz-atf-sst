@@ -29,7 +29,7 @@ Includes   <System Includes> , "Project Includes"
 #include <rzcmn_def.h>
 #include <rzv2h_def.h>
 #include "r_sd_cfg.h"
-#include "r_sdif.h"
+#include <esdif.h>
 #include "sd.h"
 #include "sdmmc_iodefine.h"
 #include "esdif.h"
@@ -76,7 +76,7 @@ static int32_t _sd_init_error(int32_t sd_port, int32_t ret);
  *              : SD_ERR: end of error
  *              : SD_ERR_CPU_IF : CPU-IF function error
  *****************************************************************************/
-int32_t sd_init(int32_t sd_port, uint32_t base, void *workarea, int32_t cd_port)
+int32_t esd_init(int32_t sd_port, uint32_t base, void *workarea, int32_t cd_port)
 {
 	int32_t     i;
 	uint64_t    info1;
@@ -114,13 +114,13 @@ int32_t sd_init(int32_t sd_port, uint32_t base, void *workarea, int32_t cd_port)
 	cd_port = SD_CD_SOCKET;
 
 	/* ==== initialize peripheral module ==== */
-	if (sddev_init(sd_port) != SD_OK) {
+	if (esddev_init(sd_port) != SD_OK) {
 		ret = SD_ERR_CPU_IF;
 		return _sd_init_error(sd_port, ret);
 	}
 
 	/* disable all interrupts */
-	sddev_loc_cpu(sd_port);
+	esddev_loc_cpu(sd_port);
 
 	/* Cast to an appropriate type */
 	p_hndl = (st_sdhndl_t *)workarea;
@@ -194,7 +194,7 @@ int32_t sd_init(int32_t sd_port, uint32_t base, void *workarea, int32_t cd_port)
 	SDMMC.DM_CM_INFO2.LONGLONG = (uint64_t)0;
 
 	/* initialize DMAC */
-	ret = sddev_reset_dma(sd_port);
+	ret = esddev_reset_dma(sd_port);
 	if (SD_OK != ret) {
 		return ret;
 	}
@@ -206,7 +206,7 @@ int32_t sd_init(int32_t sd_port, uint32_t base, void *workarea, int32_t cd_port)
 	SDMMC.SD_OPTION.LONGLONG = SD_OPTION_INIT;
 
 	/* enable all interrupts */
-	sddev_unl_cpu(sd_port);
+	esddev_unl_cpu(sd_port);
 
 	return SD_OK;
 }
@@ -289,7 +289,7 @@ int32_t sd_finalize(int32_t sd_port)
 	SDMMC.SDIO_INFO1.LONGLONG = 0x0000;
 
 	/* reset DMAC */
-	ret = sddev_finalize_dma(sd_port);
+	ret = esddev_finalize_dma(sd_port);
 	if (SD_OK != ret) {
 		return ret;
 	}
@@ -307,7 +307,7 @@ int32_t sd_finalize(int32_t sd_port)
 	SDMMC.DM_CM_INFO2.LONGLONG = (uint64_t)0;
 
 	/* ==== finish peripheral module ==== */
-	ret = sddev_finalize(sd_port);
+	ret = esddev_finalize(sd_port);
 
 	gp_sdhandle[sd_port] = 0;  /* destruct SD Handle */
 

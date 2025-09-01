@@ -26,7 +26,7 @@
 Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include <stdint.h>
-#include "r_sdif.h"
+#include <esdif.h>
 #include "sd.h"
 #include "sdmmc_iodefine.h"
 
@@ -162,7 +162,7 @@ int32_t _sd_send_cmd(st_sdhndl_t *p_hndl, uint16_t cmd)
 	SDMMC.SD_CMD.LONGLONG = (uint64_t)cmd;
 
 	/* ---- wait resp end ---- */
-	if (sddev_int_wait(p_hndl->sd_port, time) != SD_OK) {
+	if (esddev_int_wait(p_hndl->sd_port, time) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
 
 		/* Cast to an appropriate type */
@@ -262,7 +262,7 @@ int32_t _sd_send_mcmd(st_sdhndl_t *p_hndl, uint16_t cmd, uint32_t startaddr)
 	SDMMC.SD_CMD.LONGLONG = (uint64_t)cmd;
 
 	/* ---- wait resp end ---- */
-	if (sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_CMD) != SD_OK) {
+	if (esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_CMD) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
 		return p_hndl->error;
 	}
@@ -328,7 +328,7 @@ int32_t _sd_send_iocmd(st_sdhndl_t *p_hndl, uint16_t cmd, uint32_t arg)
 	SDMMC.SD_CMD.LONGLONG = (uint64_t)cmd;
 
 	/* ---- wait resp end ---- */
-	if (sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_CMD) != SD_OK) {
+	if (esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_CMD) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
 		return p_hndl->error;
 	}
@@ -481,7 +481,7 @@ int32_t _sd_card_send_ocr(st_sdhndl_t *p_hndl, int32_t type)
 				break;
 			} else {
 				ret = SD_ERR;   /* busy */
-				sddev_int_wait(p_hndl->sd_port, 5);   /* add wait function because retry interval is too short */
+				esddev_int_wait(p_hndl->sd_port, 5);   /* add wait function because retry interval is too short */
 			}
 		}
 

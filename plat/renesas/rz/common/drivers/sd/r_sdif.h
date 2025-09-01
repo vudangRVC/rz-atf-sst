@@ -777,40 +777,40 @@ int32_t sd_lock_unlock(int32_t sd_port, uint8_t code, uint8_t *pwd, uint8_t len)
 /* ---- target CPU I/F ---- */
 /* Function Name: sddev_init */
 /**************************************************************************//**
- * @fn            int32_t sddev_init(int32_t sd_port)
+ * @fn            int32_t esddev_init(int32_t sd_port)
  * @brief         Initialize H/W to use SDHI
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_init(int32_t sd_port);
+int32_t esddev_init(int32_t sd_port);
 
 /* Function Name: sddev_power_on */
 /**************************************************************************//**
- * @fn            int32_t sddev_power_on(int32_t sd_port)
+ * @fn            int32_t esddev_power_on(int32_t sd_port)
  * @brief         Power-on H/W to use SDHI
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_power_on(int32_t sd_port);
+int32_t esddev_power_on(int32_t sd_port);
 
 /* Function Name: sddev_power_off */
 /**************************************************************************//**
- * @fn            int32_t sddev_power_off(int32_t sd_port)
+ * @fn            int32_t esddev_power_off(int32_t sd_port)
  * @brief         Power-off H/W to use SDHI
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_power_off(int32_t sd_port);
+int32_t esddev_power_off(int32_t sd_port);
 
 /* Function Name: sddev_read_data */
 /**************************************************************************//**
- * @fn            int32_t sddev_read_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num)
+ * @fn            int32_t esddev_read_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num)
  * @brief         read from SDHI buffer FIFO
  * @warning       .
  * @param [in]    int32_t sd_port   : channel no (0 or 1)
@@ -820,11 +820,11 @@ int32_t sddev_power_off(int32_t sd_port);
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_read_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num);
+int32_t esddev_read_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num);
 
 /* Function Name: sddev_write_data */
 /**************************************************************************//**
- * @fn            int32_t sddev_write_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num)
+ * @fn            int32_t esddev_write_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num)
  * @brief         write to SDHI buffer FIFO
  * @warning       .
  * @param [in]    int32_t sd_port   : channel no (0 or 1)
@@ -834,11 +834,11 @@ int32_t sddev_read_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_write_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num);
+int32_t esddev_write_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num);
 
 /* Function Name: sddev_get_clockdiv */
 /**************************************************************************//**
- * @fn            uint32_t sddev_get_clockdiv(int32_t sd_port, int32_t clock)
+ * @fn            uint32_t esddev_get_clockdiv(int32_t sd_port, int32_t clock)
  * @brief         Get clock div value.
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
@@ -858,11 +858,11 @@ int32_t sddev_write_data(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int3
  *                  SD_DIV_256 : 1/256 clock <br>
  *                  SD_DIV_512 : 1/512 clock
  *****************************************************************************/
-uint32_t sddev_get_clockdiv(int32_t sd_port, int32_t clock);
+uint32_t esddev_get_clockdiv(int32_t sd_port, int32_t clock);
 
 /* Function Name: sddev_set_port */
 /**************************************************************************//**
- * @fn            int32_t sddev_set_port(int32_t sd_port, int32_t mode)
+ * @fn            int32_t esddev_set_port(int32_t sd_port, int32_t mode)
  * @brief         setting ports to use SDHI
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
@@ -871,11 +871,11 @@ uint32_t sddev_get_clockdiv(int32_t sd_port, int32_t clock);
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_set_port(int32_t sd_port, int32_t mode);
+int32_t esddev_set_port(int32_t sd_port, int32_t mode);
 
 /* Function Name: sddev_int_wait */
 /**************************************************************************//**
- * @fn            int32_t sddev_int_wait(int32_t sd_port, int32_t time)
+ * @fn            int32_t esddev_int_wait(int32_t sd_port, int32_t time)
  * @brief         Waitting for SDHI Interrupt
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
@@ -883,11 +883,11 @@ int32_t sddev_set_port(int32_t sd_port, int32_t mode);
  * @retval        get interrupt : SD_OK
  * @retval        time out      : SD_ERR
  *****************************************************************************/
-int32_t sddev_int_wait(int32_t sd_port, int32_t time);
+int32_t esddev_int_wait(int32_t sd_port, int32_t time);
 
 /* Function Name: sddev_init_dma */
 /**************************************************************************//**
- * @fn            int32_t sddev_init_dma(int32_t sd_port, uint32_t buff, int32_t dir)
+ * @fn            int32_t esddev_init_dma(int32_t sd_port, uint32_t buff, int32_t dir)
  * @brief         Initialize DMAC to transfer data from SDHI FIFO
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
@@ -898,11 +898,11 @@ int32_t sddev_int_wait(int32_t sd_port, int32_t time);
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_init_dma(int32_t sd_port, uint32_t buff, int32_t dir);
+int32_t esddev_init_dma(int32_t sd_port, uint32_t buff, int32_t dir);
 
 /* Function Name: sddev_wait_dma_end */
 /**************************************************************************//**
- * @fn            int32_t sddev_wait_dma_end(int32_t sd_port, int32_t cnt)
+ * @fn            int32_t esddev_wait_dma_end(int32_t sd_port, int32_t cnt)
  * @brief         Wait to complete DMAC transfer
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
@@ -910,95 +910,95 @@ int32_t sddev_init_dma(int32_t sd_port, uint32_t buff, int32_t dir);
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_wait_dma_end(int32_t sd_port, int32_t cnt);
+int32_t esddev_wait_dma_end(int32_t sd_port, int32_t cnt);
 
 /* Function Name: sddev_disable_dma */
 /**************************************************************************//**
- * @fn            int32_t sddev_disable_dma(int32_t sd_port)
+ * @fn            int32_t esddev_disable_dma(int32_t sd_port)
  * @brief         Disable DMAC transfer
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_disable_dma(int32_t sd_port);
+int32_t esddev_disable_dma(int32_t sd_port);
 
 /* Function Name: sddev_reset_dma */
 /**************************************************************************//**
- * @fn            int32_t sddev_reset_dma(int32_t sd_port)
+ * @fn            int32_t esddev_reset_dma(int32_t sd_port)
  * @brief         Reset of the SDHI module built-in DMAC.
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_reset_dma(int32_t sd_port);
+int32_t esddev_reset_dma(int32_t sd_port);
 
 /* Function Name: sddev_finalize_dma */
 /**************************************************************************//**
- * @fn            int32_t sddev_finalize_dma(int32_t sd_port)
+ * @fn            int32_t esddev_finalize_dma(int32_t sd_port)
  * @brief         Finalize of the SDHI module built-in DMAC.
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_finalize_dma(int32_t sd_port);
+int32_t esddev_finalize_dma(int32_t sd_port);
 
 /* Function Name: sddev_finalize */
 /**************************************************************************//**
- * @fn            int32_t sddev_finalize(int32_t sd_port)
+ * @fn            int32_t esddev_finalize(int32_t sd_port)
  * @brief         finalize SDHI
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_finalize(int32_t sd_port);
+int32_t esddev_finalize(int32_t sd_port);
 
 /* Function Name: sddev_loc_cpu */
 /**************************************************************************//**
- * @fn            int32_t sddev_loc_cpu(int32_t sd_port)
+ * @fn            int32_t esddev_loc_cpu(int32_t sd_port)
  * @brief         lock cpu to disable interrupt
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_loc_cpu(int32_t sd_port);
+int32_t esddev_loc_cpu(int32_t sd_port);
 
 /* Function Name: sddev_unl_cpu */
 /**************************************************************************//**
- * @fn            int32_t sddev_unl_cpu(int32_t sd_port)
+ * @fn            int32_t esddev_unl_cpu(int32_t sd_port)
  * @brief         unlock cpu to enable interrupt
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        success : SD_OK
  * @retval        fail    : SD_ERR
  *****************************************************************************/
-int32_t sddev_unl_cpu(int32_t sd_port);
+int32_t esddev_unl_cpu(int32_t sd_port);
 
 /* Function Name: sddev_cd_layout */
 /**************************************************************************//**
- * @fn            int32_t sddev_cd_layout(int32_t sd_port)
+ * @fn            int32_t esddev_cd_layout(int32_t sd_port)
  * @brief         CD Terminal Support Confirmation
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        Support     : SD_OK
  * @retval        Not Support : SD_ERR
  *****************************************************************************/
-int32_t sddev_cd_layout(int32_t sd_port);
+int32_t esddev_cd_layout(int32_t sd_port);
 
 /* Function Name: sddev_wp_layout */
 /**************************************************************************//**
- * @fn            int32_t sddev_wp_layout(int32_t sd_port)
+ * @fn            int32_t esddev_wp_layout(int32_t sd_port)
  * @brief         WP Terminal Support Confirmation
  * @warning       .
  * @param [in]    int32_t sd_port : channel no (0 or 1)
  * @retval        Support     : SD_OK
  * @retval        Not Support : SD_ERR
  *****************************************************************************/
-int32_t sddev_wp_layout(int32_t sd_port);
+int32_t esddev_wp_layout(int32_t sd_port);
 
 /******************************************************************************
 Exported global variables and functions (to be accessed by other files)

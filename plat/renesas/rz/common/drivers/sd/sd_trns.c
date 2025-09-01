@@ -26,7 +26,7 @@
 Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include <stdint.h>
-#include "r_sdif.h"
+#include <esdif.h>
 #include "sd.h"
 #include "sdmmc_iodefine.h"
 
@@ -72,14 +72,14 @@ int32_t _sd_software_trans(st_sdhndl_t *p_hndl, uint8_t *buff, int32_t cnt, int3
 	int32_t (*func)(int32_t sd_port, uint8_t *buff, uint32_t reg_addr, int32_t num);
 
 	if (SD_TRANS_READ == dir) {
-		func = sddev_read_data;
+		func = esddev_read_data;
 	} else {
-		func = sddev_write_data;
+		func = esddev_write_data;
 	}
 
 	for (j = cnt; j > 0 ; j--) {
 		/* ---- wait BWE/BRE interrupt ---- */
-		if (sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_MULTIPLE) != SD_OK) {
+		if (esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_MULTIPLE) != SD_OK) {
 			_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
 			break;
 		}
@@ -132,15 +132,15 @@ int32_t _sd_dma_trans(st_sdhndl_t *p_hndl, int32_t cnt)
 {
 	/* ---- check DMA transfer end  --- */
 	/* timeout value is depend on transfer size */
-	if (sddev_wait_dma_end((int32_t)(p_hndl->sd_port), cnt * 512) != SD_OK) {
+	if (esddev_wait_dma_end((int32_t)(p_hndl->sd_port), cnt * 512) != SD_OK) {
 		/* Cast to an appropriate type */
-		(void)sddev_disable_dma((int32_t)(p_hndl->sd_port));   /* disable DMAC */
+		(void)esddev_disable_dma((int32_t)(p_hndl->sd_port));   /* disable DMAC */
 		(void)_sd_set_err(p_hndl, SD_ERR_CPU_IF);
 		return p_hndl->error;
 	}
 
 	/* ---- disable DMAC ---- */
-	if (sddev_disable_dma((int32_t)(p_hndl->sd_port)) != SD_OK) {
+	if (esddev_disable_dma((int32_t)(p_hndl->sd_port)) != SD_OK) {
 		/* Cast to an appropriate type */
 		(void)_sd_set_err(p_hndl, SD_ERR_CPU_IF);
 		return p_hndl->error;

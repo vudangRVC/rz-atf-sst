@@ -26,7 +26,7 @@
 Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include <stdint.h>
-#include "r_sdif.h"
+#include <esdif.h>
 #include "sd.h"
 #include "sdmmc_iodefine.h"
 
@@ -87,7 +87,7 @@ static int32_t _esd_get_partition_id(st_sdhndl_t *p_hndl, int32_t *id);
  *              : other : end of error
  * Remark       : user area should be mounted
  *****************************************************************************/
-int32_t sd_mount(int32_t sd_port, uint32_t mode, uint32_t voltage)
+int32_t esd_mount(int32_t sd_port, uint32_t mode, uint32_t voltage)
 {
 	st_sdhndl_t *p_hndl;
 	uint64_t    info1_back;
@@ -120,7 +120,7 @@ int32_t sd_mount(int32_t sd_port, uint32_t mode, uint32_t voltage)
 
 	/* ==== power on sequence ==== */
 	/* ---- turn on voltage ---- */
-	if (sddev_power_on(sd_port) != SD_OK) {
+	if (esddev_power_on(sd_port) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_CPU_IF);
 		return _sd_mount_error(p_hndl);
 	}
@@ -133,9 +133,9 @@ int32_t sd_mount(int32_t sd_port, uint32_t mode, uint32_t voltage)
 		return p_hndl->error;     /* not inserted */
 	}
 
-	sddev_int_wait(sd_port, 2); /* add wait function  */
+	esddev_int_wait(sd_port, 2); /* add wait function  */
 
-	sddev_loc_cpu(sd_port);
+	esddev_loc_cpu(sd_port);
 
 	/* Cast to an appropriate type */
 	info1_back = SDMMC.SD_INFO1.LONGLONG;
@@ -152,7 +152,7 @@ int32_t sd_mount(int32_t sd_port, uint32_t mode, uint32_t voltage)
 	/* Clear DMA Enable because of CPU Transfer */
 	SDMMC.CC_EXT_MODE.LONGLONG = (uint64_t)(SDMMC.CC_EXT_MODE.LONGLONG & ~CC_EXT_MODE_DMASDRW); /* disable DMA  */
 
-	sddev_unl_cpu(sd_port);
+	esddev_unl_cpu(sd_port);
 
 	/* ==== initialize card and distinguish card type ==== */
 	if (_sd_card_init(p_hndl) != SD_OK) {
@@ -572,10 +572,10 @@ int32_t sd_unmount(int32_t sd_port)
 	_sd_set_clock(p_hndl, 0, SD_CLOCK_DISABLE);
 
 	/* ---- set single port ---- */
-	sddev_set_port(sd_port, SD_PORT_SERIAL);
+	esddev_set_port(sd_port, SD_PORT_SERIAL);
 
 	/* ---- turn off power ---- */
-	if (sddev_power_off(sd_port) != SD_OK) {
+	if (esddev_power_off(sd_port) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_CPU_IF);
 		return p_hndl->error;
 	}
@@ -716,7 +716,7 @@ int32_t _sd_read_byte(st_sdhndl_t *p_hndl, uint16_t cmd, uint16_t h_arg,
 	_sd_set_int_mask(p_hndl, SD_INFO1_MASK_DATA_TRNS, SD_INFO2_MASK_BRE);
 
 	/* ---- wait BRE interrupt ---- */
-	if (sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_MULTIPLE) != SD_OK) {
+	if (esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_MULTIPLE) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
 		return _sd_read_byte_error(p_hndl);
 	}
@@ -732,13 +732,13 @@ int32_t _sd_read_byte(st_sdhndl_t *p_hndl, uint16_t cmd, uint16_t h_arg,
 
 	/* transfer data */
 
-	if (sddev_read_data(p_hndl->sd_port, readbuff, (uintptr_t)(&SDMMC.SD_BUF0.LONGLONG), (int32_t)byte) != SD_OK) {
+	if (esddev_read_data(p_hndl->sd_port, readbuff, (uintptr_t)(&SDMMC.SD_BUF0.LONGLONG), (int32_t)byte) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_CPU_IF);
 		return _sd_read_byte_error(p_hndl);
 	}
 
 	/* wait All end interrupt */
-	if (sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP) != SD_OK) {
+	if (esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_RESP) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
 		return _sd_read_byte_error(p_hndl);
 	}
@@ -830,7 +830,7 @@ int32_t _sd_write_byte(st_sdhndl_t *p_hndl, uint16_t cmd, uint16_t h_arg,
 	_sd_set_int_mask(p_hndl, SD_INFO1_MASK_DATA_TRNS, SD_INFO2_MASK_BWE);
 
 	/* ---- wait BWE interrupt ---- */
-	if (sddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_MULTIPLE) != SD_OK) {
+	if (esddev_int_wait(p_hndl->sd_port, SD_TIMEOUT_MULTIPLE) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
 		return _sd_write_byte_error(p_hndl);
 	}
@@ -846,7 +846,7 @@ int32_t _sd_write_byte(st_sdhndl_t *p_hndl, uint16_t cmd, uint16_t h_arg,
 
 	/* transfer data */
 
-	if (sddev_write_data(p_hndl->sd_port, writebuff, (uintptr_t)(&SDMMC.SD_BUF0.LONGLONG), (int32_t)byte) != SD_OK) {
+	if (esddev_write_data(p_hndl->sd_port, writebuff, (uintptr_t)(&SDMMC.SD_BUF0.LONGLONG), (int32_t)byte) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_CPU_IF);
 		return _sd_write_byte_error(p_hndl);
 	}
@@ -859,7 +859,7 @@ int32_t _sd_write_byte(st_sdhndl_t *p_hndl, uint16_t cmd, uint16_t h_arg,
 		time_out = SD_TIMEOUT_RESP;
 	}
 
-	if (sddev_int_wait(p_hndl->sd_port, time_out) != SD_OK) {
+	if (esddev_int_wait(p_hndl->sd_port, time_out) != SD_OK) {
 		_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
 		return _sd_write_byte_error(p_hndl);
 	}
@@ -1054,5 +1054,35 @@ static int32_t _esd_get_partition_id(st_sdhndl_t *p_hndl, int32_t *id)
 /**********************************************************************************************************************
  * End of function _esd_get_partition_id
  *********************************************************************************************************************/
+
+ /**********************************************************************************************************************
+ * Function Name: esd_get_partition_id
+ * Description  : Get the currently selected partitionID from internal variables.
+ * Arguments    : int32_t *id       : Partition ID
+ * Return Value : SD_OK : end of succeed
+ *              : SD_ERR : not initialized
+ * Call functions : _sd_get_hndl
+ * Remark       : Get directly from device when partition is selected
+ *              : Therefore,it does not issue CMD45
+ *********************************************************************************************************************/
+int32_t esd_get_partition_id(int32_t sd_port, int32_t *id)
+{
+    st_sdhndl_t    *p_hndl;
+
+    p_hndl = _sd_get_hndl(sd_port);
+    if(p_hndl == 0)
+    {
+        return SD_ERR;    /* Not initialized */
+    }
+    if(id != 0)
+    {
+        *id = p_hndl->partition_id;
+    }
+    return SD_OK;
+}
+/**********************************************************************************************************************
+ * End of function esd_get_partition_id
+ *********************************************************************************************************************/
+
 
 /* End of File */

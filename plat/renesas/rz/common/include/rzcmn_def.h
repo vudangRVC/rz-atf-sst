@@ -52,7 +52,7 @@
 #define RZCMN_EMMC_FIP_BASE         (0x00020000)
 #define RZCMN_EMMC_FIP_SIZE         (0x001DFFFF)
 
-#define RZCMN_SD_FIP_BASE           (0x00010000)
+#define RZCMN_SD_FIP_BASE           (0x00020000)
 #define RZCMN_SD_FIP_SIZE           (0x001DFFFF)
 
 #define RZCMN_SYC_INCK_HZ           (24000000)

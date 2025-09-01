@@ -26,7 +26,7 @@
 Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include <stdint.h>
-#include "r_sdif.h"
+#include <esdif.h>
 #include "sd.h"
 #include "sdmmc_iodefine.h"
 
@@ -78,7 +78,7 @@ int32_t _sd_set_clock(st_sdhndl_t *p_hndl, int32_t clock, int32_t enable)
 
 	if (SD_CLOCK_ENABLE == enable) {
 		/* convert clock frequency to clock divide ratio */
-		div = sddev_get_clockdiv(p_hndl->sd_port, clock);
+		div = esddev_get_clockdiv(p_hndl->sd_port, clock);
 
 		if ((div > SD_DIV_512) && (SD_DIV_1 != div)) {
 			_sd_set_err(p_hndl, SD_ERR_CPU_IF);
@@ -161,7 +161,7 @@ int32_t _sd_set_port(st_sdhndl_t *p_hndl, int32_t port)
 
 	/* ==== change SDHI bus width ==== */
 	if (SD_PORT_SERIAL == port) {	/* 1bit */
-		sddev_set_port(p_hndl->sd_port, port);
+		esddev_set_port(p_hndl->sd_port, port);
 
 		/* Cast to an appropriate type */
 		reg = SDMMC.SD_OPTION.LONGLONG;
@@ -180,7 +180,7 @@ int32_t _sd_set_port(st_sdhndl_t *p_hndl, int32_t port)
 
 		/* Cast to an appropriate type */
 		SDMMC.SD_OPTION.LONGLONG = reg;
-		sddev_set_port(p_hndl->sd_port, port);
+		esddev_set_port(p_hndl->sd_port, port);
 	}
 
 	/* Cast to an appropriate type */
@@ -237,7 +237,7 @@ int32_t _sd_iswp(st_sdhndl_t *p_hndl)
 	int32_t layout;
 
 	/* Cast to an appropriate type */
-	layout = sddev_wp_layout((int32_t)(p_hndl->sd_port));
+	layout = esddev_wp_layout((int32_t)(p_hndl->sd_port));
 
 	if (SD_OK == layout) {
 		/* ===== check SD_INFO1 WP bit ==== */
@@ -353,7 +353,7 @@ void sd_stop(int32_t sd_port)
  * Remark       : if pointer has NULL ,the value isn't returned
  *              : only SD memory card, speed mode has meaning
  *****************************************************************************/
-int32_t sd_get_type(int32_t sd_port, uint16_t *type, uint16_t *speed, uint8_t *capa)
+int32_t esd_get_type(int32_t sd_port, uint16_t *type, uint16_t *speed, uint8_t *capa)
 {
 	st_sdhndl_t *p_hndl;
 
@@ -931,7 +931,7 @@ int32_t sd_set_responsetime(int32_t sd_port, uint16_t responsetime)
  *              : SD_ERR: end of error
  * Remark       : if applied to CPRM, allocating more than 8K bytes
  *****************************************************************************/
-int32_t sd_set_buffer(int32_t sd_port, void *buff, uint32_t size)
+int32_t esd_set_buffer(int32_t sd_port, void *buff, uint32_t size)
 {
 	st_sdhndl_t  *p_hndl;
 
@@ -1097,7 +1097,7 @@ int32_t _sd_active(st_sdhndl_t *p_hndl)
 	}
 
 	if (SD_PORT_SERIAL == p_hndl->if_mode) {	/* 1bit */
-		sddev_set_port(p_hndl->sd_port, SD_PORT_SERIAL);
+		esddev_set_port(p_hndl->sd_port, SD_PORT_SERIAL);
 
 		/* Cast to an appropriate type */
 		reg = SDMMC.SD_OPTION.LONGLONG;
@@ -1116,7 +1116,7 @@ int32_t _sd_active(st_sdhndl_t *p_hndl)
 
 		/* Cast to an appropriate type */
 		SDMMC.SD_OPTION.LONGLONG = reg;
-		sddev_set_port(p_hndl->sd_port, SD_PORT_PARALLEL);
+		esddev_set_port(p_hndl->sd_port, SD_PORT_PARALLEL);
 	}
 
 	/* ==== state transfer (stand-by to transfer) ==== */
@@ -1766,7 +1766,7 @@ int32_t _sd_wait_rbusy(st_sdhndl_t *p_hndl, int32_t time)
 			break;
 		}
 
-		sddev_int_wait(p_hndl->sd_port, 1);
+		esddev_int_wait(p_hndl->sd_port, 1);
 	}
 
 	_sd_set_err(p_hndl, SD_ERR_HOST_TOE);
