@@ -27,6 +27,8 @@ boot_mode_t sys_get_boot_mode(void)
 	uint32_t stat_md_boot = mmio_read_32(SYS_LSI_MODE) & MASK_BOOTM_DEVICE;
 	boot_mode_t boot_mode;
 
+	NOTICE("BL2: boot_mode=%d (0=ESD,1=EMMC_1V8,2=EMMC_3V3,3=SPI_1V8,4=SPI_3V3,5=SCIF)\n", stat_md_boot);
+
 	switch (stat_md_boot) {
 	case (BOOT_MODE_ESD):
 		boot_mode = SYS_BOOT_MODE_ESD;

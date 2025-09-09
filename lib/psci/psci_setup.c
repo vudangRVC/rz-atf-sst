@@ -203,80 +203,114 @@ int __init psci_setup(const psci_lib_args_t *lib_args)
 {
 	const unsigned char *topology_tree;
 
+	INFO("BL31: psci_setup: enter lib_args=%p\n", (void *)lib_args);
+
 	assert(VERIFY_PSCI_LIB_ARGS_V1(lib_args));
 
 	/* Do the Architectural initialization */
+	INFO("BL31: psci_setup: calling psci_arch_setup()\n");
 	psci_arch_setup();
+	INFO("BL31: psci_setup: psci_arch_setup done\n");
 
 	/* Query the topology map from the platform */
+	INFO("BL31: psci_setup: calling plat_get_power_domain_tree_desc()\n");
 	topology_tree = plat_get_power_domain_tree_desc();
+	INFO("BL31: psci_setup: topology_tree @%p\n", (void *)topology_tree);
 
 	/* Populate the power domain arrays using the platform topology map */
+	INFO("BL31: psci_setup: populate_power_domain_tree()\n");
 	psci_plat_core_count = populate_power_domain_tree(topology_tree);
+	INFO("BL31: psci_setup: core_count=%u\n", psci_plat_core_count);
 
 	/* Update the CPU limits for each node in psci_non_cpu_pd_nodes */
+	INFO("BL31: psci_setup: update_pwrlvl_limits()\n");
 	psci_update_pwrlvl_limits();
+	INFO("BL31: psci_setup: update_pwrlvl_limits done\n");
 
 	/* Populate the mpidr field of cpu node for this CPU */
-	psci_cpu_pd_nodes[plat_my_core_pos()].mpidr =
+	unsigned int my_pos = plat_my_core_pos();
+	INFO("BL31: psci_setup: my_core_pos=%u mpidr=0x%lx\n",
+		my_pos, (unsigned long)(read_mpidr() & MPIDR_AFFINITY_MASK));
+	psci_cpu_pd_nodes[my_pos].mpidr =
 		read_mpidr() & MPIDR_AFFINITY_MASK;
 
+	/* Initialize local power states */
+	INFO("BL31: psci_setup: init_req_local_pwr_states()\n");
 	psci_init_req_local_pwr_states();
+	INFO("BL31: psci_setup: init_req_local_pwr_states done\n");
 
 	/*
-	 * Set the requested and target state of this CPU and all the higher
-	 * power domain levels for this CPU to run.
-	 */
+	* Set the requested and target state of this CPU and all the higher
+	* power domain levels for this CPU to run.
+	*/
+	INFO("BL31: psci_setup: set_pwr_domains_to_run()\n");
 	psci_set_pwr_domains_to_run(PLAT_MAX_PWR_LVL);
+	INFO("BL31: psci_setup: set_pwr_domains_to_run done\n");
 
+	/* Platform specific PSCI ops setup */
+	INFO("BL31: psci_setup: calling plat_setup_psci_ops(ep=0x%lx)\n",
+		(unsigned long)lib_args->mailbox_ep);
 	(void) plat_setup_psci_ops((uintptr_t)lib_args->mailbox_ep,
-				   &psci_plat_pm_ops);
+							&psci_plat_pm_ops);
+	INFO("BL31: psci_setup: plat_setup_psci_ops done, psci_plat_pm_ops=%p\n",
+		(void *)psci_plat_pm_ops);
+
 	assert(psci_plat_pm_ops != NULL);
 
 	/*
-	 * Flush `psci_plat_pm_ops` as it will be accessed by secondary CPUs
-	 * during warm boot, possibly before data cache is enabled.
-	 */
+	* Flush `psci_plat_pm_ops` as it will be accessed by secondary CPUs
+	* during warm boot, possibly before data cache is enabled.
+	*/
 	psci_flush_dcache_range((uintptr_t)&psci_plat_pm_ops,
-					sizeof(psci_plat_pm_ops));
+							sizeof(psci_plat_pm_ops));
+	INFO("BL31: psci_setup: flushed psci_plat_pm_ops\n");
 
 	/* Initialize the psci capability */
 	psci_caps = PSCI_GENERIC_CAP;
 
 	if (psci_plat_pm_ops->pwr_domain_off != NULL)
-		psci_caps |=  define_psci_cap(PSCI_CPU_OFF);
+		psci_caps |= define_psci_cap(PSCI_CPU_OFF);
+
 	if ((psci_plat_pm_ops->pwr_domain_on != NULL) &&
-	    (psci_plat_pm_ops->pwr_domain_on_finish != NULL))
-		psci_caps |=  define_psci_cap(PSCI_CPU_ON_AARCH64);
+		(psci_plat_pm_ops->pwr_domain_on_finish != NULL))
+		psci_caps |= define_psci_cap(PSCI_CPU_ON_AARCH64);
+
 	if ((psci_plat_pm_ops->pwr_domain_suspend != NULL) &&
-	    (psci_plat_pm_ops->pwr_domain_suspend_finish != NULL)) {
+		(psci_plat_pm_ops->pwr_domain_suspend_finish != NULL)) {
 		if (psci_plat_pm_ops->validate_power_state != NULL)
-			psci_caps |=  define_psci_cap(PSCI_CPU_SUSPEND_AARCH64);
+			psci_caps |= define_psci_cap(PSCI_CPU_SUSPEND_AARCH64);
 		if (psci_plat_pm_ops->get_sys_suspend_power_state != NULL)
-			psci_caps |=  define_psci_cap(PSCI_SYSTEM_SUSPEND_AARCH64);
+			psci_caps |= define_psci_cap(PSCI_SYSTEM_SUSPEND_AARCH64);
 #if PSCI_OS_INIT_MODE
 		psci_caps |= define_psci_cap(PSCI_SET_SUSPEND_MODE);
 #endif
 	}
+
 	if (psci_plat_pm_ops->system_off != NULL)
-		psci_caps |=  define_psci_cap(PSCI_SYSTEM_OFF);
+		psci_caps |= define_psci_cap(PSCI_SYSTEM_OFF);
+
 	if (psci_plat_pm_ops->system_reset != NULL)
-		psci_caps |=  define_psci_cap(PSCI_SYSTEM_RESET);
+		psci_caps |= define_psci_cap(PSCI_SYSTEM_RESET);
+
 	if (psci_plat_pm_ops->get_node_hw_state != NULL)
 		psci_caps |= define_psci_cap(PSCI_NODE_HW_STATE_AARCH64);
+
 	if ((psci_plat_pm_ops->read_mem_protect != NULL) &&
-			(psci_plat_pm_ops->write_mem_protect != NULL))
+		(psci_plat_pm_ops->write_mem_protect != NULL))
 		psci_caps |= define_psci_cap(PSCI_MEM_PROTECT);
+
 	if (psci_plat_pm_ops->mem_protect_chk != NULL)
 		psci_caps |= define_psci_cap(PSCI_MEM_CHK_RANGE_AARCH64);
+
 	if (psci_plat_pm_ops->system_reset2 != NULL)
 		psci_caps |= define_psci_cap(PSCI_SYSTEM_RESET2_AARCH64);
 
 #if ENABLE_PSCI_STAT
-	psci_caps |=  define_psci_cap(PSCI_STAT_RESIDENCY_AARCH64);
-	psci_caps |=  define_psci_cap(PSCI_STAT_COUNT_AARCH64);
+	psci_caps |= define_psci_cap(PSCI_STAT_RESIDENCY_AARCH64);
+	psci_caps |= define_psci_cap(PSCI_STAT_COUNT_AARCH64);
 #endif
 
+	INFO("BL31: psci_setup: exit psci_caps=0x%x\n", psci_caps);
 	return 0;
 }
 
@@ -287,23 +321,32 @@ int __init psci_setup(const psci_lib_args_t *lib_args)
  ******************************************************************************/
 void psci_arch_setup(void)
 {
+	INFO("BL31: psci_arch_setup: enter\n");
+
 #if (ARM_ARCH_MAJOR > 7) || defined(ARMV7_SUPPORTS_GENERIC_TIMER)
-	/* Program the counter frequency */
-	write_cntfrq_el0(plat_get_syscnt_freq2());
+	unsigned long freq = 24000000U;
+	INFO("BL31: psci_arch_setup: syscnt_freq=%lu\n", freq);
+	write_cntfrq_el0(freq);
+	INFO("BL31: psci_arch_setup: wrote CNTFRQ_EL0\n");
 #endif
 
-	/* Initialize the cpu_ops pointer. */
+	INFO("BL31: psci_arch_setup: calling init_cpu_ops()\n");
 	init_cpu_ops();
+	INFO("BL31: psci_arch_setup: init_cpu_ops done\n");
 
-	/* Having initialized cpu_ops, we can now print errata status */
+	INFO("BL31: psci_arch_setup: calling print_errata_status()\n");
 	print_errata_status();
+	INFO("BL31: psci_arch_setup: print_errata_status done\n");
 
 #if ENABLE_PAUTH
-	/* Store APIAKey_EL1 key */
+	INFO("BL31: psci_arch_setup: saving pointer auth keys\n");
 	set_cpu_data(apiakey[0], read_apiakeylo_el1());
 	set_cpu_data(apiakey[1], read_apiakeyhi_el1());
-#endif /* ENABLE_PAUTH */
+#endif
+
+	INFO("BL31: psci_arch_setup: exit\n");
 }
+
 
 /******************************************************************************
  * PSCI Library interface to initialize the cpu context for the next non

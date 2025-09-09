@@ -41,51 +41,44 @@ static int32_t std_svc_setup(void)
 	uintptr_t svc_arg;
 	int ret = 0;
 
+	INFO("BL31: std_svc_setup: enter\n");
+
 	svc_arg = get_arm_std_svc_args(PSCI_FID_MASK);
+	INFO("BL31: std_svc_setup: get_arm_std_svc_args -> 0x%lx\n", (unsigned long)svc_arg);
 	assert(svc_arg);
 
-	/*
-	 * PSCI is one of the specifications implemented as a Standard Service.
-	 * The `psci_setup()` also does EL3 architectural setup.
-	 */
-	if (psci_setup((const psci_lib_args_t *)svc_arg) != PSCI_E_SUCCESS) {
+	INFO("BL31: std_svc_setup: psci_setup()...\n");
+	int rc = psci_setup((const psci_lib_args_t *)svc_arg);
+	INFO("BL31: std_svc_setup: psci_setup() rc=%d\n", rc);
+	if (rc != PSCI_E_SUCCESS)
 		ret = 1;
-	}
 
 #if SPM_MM
-	if (spm_mm_setup() != 0) {
-		ret = 1;
-	}
+	INFO("BL31: std_svc_setup: spm_mm_setup()...\n");
+	if (spm_mm_setup() != 0) ret = 1;
 #endif
-
 #if defined(SPD_spmd)
-	if (spmd_setup() != 0) {
-		ret = 1;
-	}
+	INFO("BL31: std_svc_setup: spmd_setup()...\n");
+	if (spmd_setup() != 0) ret = 1;
 #endif
-
 #if ENABLE_RME
-	if (rmmd_setup() != 0) {
-		ret = 1;
-	}
+	INFO("BL31: std_svc_setup: rmmd_setup()...\n");
+	if (rmmd_setup() != 0) ret = 1;
 #endif
-
 #if SDEI_SUPPORT
-	/* SDEI initialisation */
+	INFO("BL31: std_svc_setup: sdei_init()...\n");
 	sdei_init();
 #endif
-
 #if TRNG_SUPPORT
-	/* TRNG initialisation */
+	INFO("BL31: std_svc_setup: trng_setup()...\n");
 	trng_setup();
-#endif /* TRNG_SUPPORT */
-
+#endif
 #if DRTM_SUPPORT
-	if (drtm_setup() != 0) {
-		ret = 1;
-	}
-#endif /* DRTM_SUPPORT */
+	INFO("BL31: std_svc_setup: drtm_setup()...\n");
+	if (drtm_setup() != 0) ret = 1;
+#endif
 
+	INFO("BL31: std_svc_setup: exit ret=%d\n", ret);
 	return ret;
 }
 

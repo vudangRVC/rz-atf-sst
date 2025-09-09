@@ -90,65 +90,86 @@ static int32_t validate_rt_svc_desc(const rt_svc_desc_t *desc)
 void __init runtime_svc_init(void)
 {
 	int rc = 0;
-	uint8_t index, start_idx, end_idx;
+	unsigned int index;
+	uint8_t start_idx, end_idx;
 	rt_svc_desc_t *rt_svc_descs;
 
-	/* Assert the number of descriptors detected are less than maximum indices */
+	INFO("BL31: runtime_svc_init() enter\n");
+	INFO("BL31: RT_SVC_DESCS_START=0x%lx RT_SVC_DESCS_END=0x%lx NUM=%u MAX=%u\n",
+	     (unsigned long)RT_SVC_DESCS_START,
+	     (unsigned long)RT_SVC_DESCS_END,
+	     (unsigned int)RT_SVC_DECS_NUM,
+	     (unsigned int)MAX_RT_SVCS);
+
+	/* Sanity check */
 	assert((RT_SVC_DESCS_END >= RT_SVC_DESCS_START) &&
-			(RT_SVC_DECS_NUM < MAX_RT_SVCS));
+	       (RT_SVC_DECS_NUM < MAX_RT_SVCS));
 
 	/* If no runtime services are implemented then simply bail out */
-	if (RT_SVC_DECS_NUM == 0U)
+	if (RT_SVC_DECS_NUM == 0U) {
+		INFO("BL31: No runtime services found, return\n");
 		return;
+	}
 
 	/* Initialise internal variables to invalid state */
 	(void)memset(rt_svc_descs_indices, -1, sizeof(rt_svc_descs_indices));
+	INFO("BL31: rt_svc_descs_indices[] set to -1\n");
 
-	rt_svc_descs = (rt_svc_desc_t *) RT_SVC_DESCS_START;
+	rt_svc_descs = (rt_svc_desc_t *)RT_SVC_DESCS_START;
+
 	for (index = 0U; index < RT_SVC_DECS_NUM; index++) {
 		rt_svc_desc_t *service = &rt_svc_descs[index];
 
-		/*
-		 * An invalid descriptor is an error condition since it is
-		 * difficult to predict the system behaviour in the absence
-		 * of this service.
-		 */
+		INFO("BL31: validating service[%u] @%p name='%s' start_oen=%u end_oen=%u call_type=%u\n",
+		     index, (void *)service,
+		     (service->name ? service->name : "<null>"),
+		     service->start_oen, service->end_oen,
+		     service->call_type);
+
+		/* Validate descriptor */
 		rc = validate_rt_svc_desc(service);
 		if (rc != 0) {
-			ERROR("Invalid runtime service descriptor %p\n",
-				(void *) service);
+			ERROR("BL31: invalid runtime service descriptor @%p\n",
+			      (void *)service);
 			panic();
 		}
 
-		/*
-		 * The runtime service may have separate rt_svc_desc_t
-		 * for its fast smc and yielding smc. Since the service itself
-		 * need to be initialized only once, only one of them will have
-		 * an initialisation routine defined. Call the initialisation
-		 * routine for this runtime service, if it is defined.
-		 */
+		/* Init the service */
 		if (service->init != NULL) {
+			INFO("BL31: calling init() for service '%s'\n", service->name);
 			rc = service->init();
+			INFO("BL31: service '%s' init() rc=%d\n", service->name, rc);
 			if (rc != 0) {
-				ERROR("Error initializing runtime service %s\n",
-						service->name);
+				ERROR("BL31: service '%s' init failed rc=%d (skipping)\n",
+				      service->name, rc);
 				continue;
 			}
+		} else {
+			INFO("BL31: service '%s' has no init() (skipping)\n",
+			     service->name);
 		}
 
-		/*
-		 * Fill the indices corresponding to the start and end
-		 * owning entity numbers with the index of the
-		 * descriptor which will handle the SMCs for this owning
-		 * entity range.
-		 */
+		/* Fill OEN index mapping */
 		start_idx = (uint8_t)get_unique_oen(service->start_oen,
 						    service->call_type);
-		end_idx = (uint8_t)get_unique_oen(service->end_oen,
-						  service->call_type);
+		end_idx   = (uint8_t)get_unique_oen(service->end_oen,
+						    service->call_type);
+
 		assert(start_idx <= end_idx);
 		assert(end_idx < MAX_RT_SVCS);
-		for (; start_idx <= end_idx; start_idx++)
-			rt_svc_descs_indices[start_idx] = index;
+
+		INFO("BL31: map service '%s' index=%u to oen[%u..%u]\n",
+		     service->name, index, start_idx, end_idx);
+
+		for (uint8_t o = start_idx; o <= end_idx; o++) {
+			rt_svc_descs_indices[o] = index;
+			VERBOSE("BL31:   rt_svc_descs_indices[%u] = %u ('%s')\n",
+				o, index, service->name);
+		}
+
+		INFO("BL31: service '%s' initialization done\n", service->name);
 	}
+
+	INFO("BL31: runtime_svc_init() complete\n");
 }
+

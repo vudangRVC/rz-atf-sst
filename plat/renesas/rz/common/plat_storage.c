@@ -291,7 +291,6 @@ void rz_io_setup(void)
 	uint32_t sysc_base = FCONF_GET_PROPERTY(hw_config, common_config, sysc_base);
 	stat_md_boot = mmio_read_32(sysc_base + SYS_LSI_MODE) & MASK_BOOTM_DEVICE;
 	if (stat_md_boot == BOOT_MODE_ESD){
-		panic();
 		if (esd_main() != SD_OK) {
 			NOTICE("BL2: Failed to eSD driver initialize.\n");
 			panic();
@@ -304,6 +303,7 @@ void rz_io_setup(void)
 				(uintptr_t) &sd_block_spec,
 				&open_sddrv};
 		policies[FIP_IMAGE_ID] =  sd_fip_policy;
+		NOTICE("BL2: Register eSD Policy in plat storage.\n");
 	}
 	else if (stat_md_boot == BOOT_MODE_SPI_1_8 ||
 		stat_md_boot == BOOT_MODE_SPI_3_3) {

@@ -188,7 +188,7 @@ static int sddrv_block_len(io_entity_t *entity, size_t *length)
 {
 	*length = ((file_state_t *) entity->info)->size;
 
-	INFO("%s: len: 0x%08lx\n", __func__, *length);
+	NOTICE("%s: len: 0x%08lx\n", __func__, *length);
 
 	return IO_SUCCESS;
 }
@@ -210,7 +210,7 @@ static int sddrv_block_open(io_dev_info_t *dev_info,
 	current_file.in_use = 1;
 	current_file.partition = p_hndl->partition_id;
 
-	INFO("SD boot from partition %d\n", current_file.partition);
+	NOTICE("SD boot from partition %d\n", current_file.partition);
 
 	entity->info = (uintptr_t) &current_file;
 
@@ -288,6 +288,7 @@ static int sddrv_dev_open(const uintptr_t spec __attribute__ ((unused)),
 		panic();
 	}
 
+	NOTICE("sddr dev open successfully\n");
 	return IO_SUCCESS;
 }
 

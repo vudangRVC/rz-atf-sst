@@ -140,6 +140,7 @@ void bl31_main(void)
 	/* Initialize the runtime services e.g. psci. */
 	INFO("BL31: Initializing runtime services\n");
 	runtime_svc_init();
+	INFO("BL31: Initializing runtime services succeeded\n");
 
 	/*
 	 * All the cold boot actions on the primary cpu are done. We now need to
