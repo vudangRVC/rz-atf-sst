@@ -8,5 +8,5 @@
 
 unsigned int plat_get_syscnt_freq2(void)
 {
-	return syc_get_freq();
+	return 24000000U;
 }

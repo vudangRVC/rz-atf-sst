@@ -9,6 +9,11 @@
 #define BOARD_INFO_QSPI_OFFSET U(0x1C700)
 #define BOARD_INFO_QSPI_END    U(0x1CF0F)
 
+/* Offset range of board information within the eMMC flash region */
+#define BOARD_INFO_EMMC_SECTOR_START U(250)
+#define BOARD_INFO_EMMC_SECTOR_COUNT U(5)
+#define BOARD_INFO_EMMC_SECTOR_SIZE  U(512)
+
 #define MAX_STRING_LEN           256
 
 /* Offsets for various fields inside the board info region */
@@ -37,6 +42,17 @@
  *   uint32_t model_id = get_board_info_u32(RZV2H_XSPI_MEMORY_MAP_BASE, RZV2H_XSPI_SIZE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
  */
 uint32_t get_board_info_u32(uintptr_t flash_map_base, uintptr_t flash_size, size_t board_info_offset, size_t field_offset);
+
+/**
+ * get_board_info_u32_emmc - Read a 32-bitalue from eMMC
+ *
+ * @board_info_offset:  LBA (sector) index where the board info structure starts.
+ * @field_offset:       Index (in 32-bit words) of the desired field within the structure.
+ *
+ * Example:
+ *   uint32_t model = get_board_info_u32_emmc(BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
+ */
+uint32_t get_board_info_u32_emmc(size_t board_info_offset, size_t field_offset);
 
 /**
  * get_board_info_string - Read a string field from the board info region
