@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2025, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -59,8 +59,8 @@
 #define RZG2L_UART_INCK_HZ          (100000000)
 #define RZG2L_UART_BARDRATE         (115200)
 
-#define RZG2L_BINARY_LIMIT_SIZE     (0x0001A000)
-#define RZG2L_DTB_BASE              (BL2_BASE + RZG2L_BINARY_LIMIT_SIZE)
+#define RZG2L_DTB_LIMIT             (RZG2L_BL2_LIMIT)
+#define RZG2L_DTB_BASE              (0x2A000)
 
 /* Boot Info base address */
 #define RZG2L_BOOTINFO_BASE         (RZG2L_SRAM_BASE)

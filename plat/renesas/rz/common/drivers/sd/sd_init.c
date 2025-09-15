@@ -26,11 +26,8 @@
 Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 #include <stdint.h>
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
 #include <rzg2l_def.h>
-#endif
+#include <rzv2h_def.h>
 #include "r_sd_cfg.h"
 #include "r_sdif.h"
 #include "sd.h"

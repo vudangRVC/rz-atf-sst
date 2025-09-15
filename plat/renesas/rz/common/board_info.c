@@ -98,3 +98,18 @@ void get_board_info_string(uintptr_t flash_base, size_t board_info_offset, size_
 
 	buf[bytes_read] = '\0';
 }
+
+/*
+ * get_chipid - Retrieve the 128-bit Chip ID from OTP registers.
+ * 
+ * Reads four consecutive 32-bit words from @otp_base and stores them
+ * into @chipid[0..3] in order.
+ */
+void get_chipid(uintptr_t otp_base, uint32_t *chipid)
+{
+    chipid[0] = mmio_read_32(otp_base + 0x0);
+    chipid[1] = mmio_read_32(otp_base + 0x4);
+    chipid[2] = mmio_read_32(otp_base + 0x8);
+    chipid[3] = mmio_read_32(otp_base + 0xC);
+}
+

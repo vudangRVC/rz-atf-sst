@@ -8,11 +8,8 @@
 #include <lib/utils_def.h>
 #include <lib/mmio.h>
 #include <arch_helpers.h>
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
 #include <rzg2l_def.h>
-#endif
+#include <rzv2h_def.h>
 #include <xspi_puccini_regs.h>
 #include <xspi.h>
 #include <sys.h>

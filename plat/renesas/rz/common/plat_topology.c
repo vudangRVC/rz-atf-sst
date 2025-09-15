@@ -9,7 +9,7 @@
 #include <common/debug.h>
 #include <lib/psci/psci.h>
 
-static const unsigned char rzg2l_power_domain_tree_desc[] = {
+static const unsigned char rzcmn_power_domain_tree_desc[] = {
 	PLATFORM_SYSTEM_COUNT,
 	PLATFORM_CLUSTER_COUNT,
 	PLATFORM_CORE_COUNT
@@ -17,7 +17,7 @@ static const unsigned char rzg2l_power_domain_tree_desc[] = {
 
 const unsigned char *plat_get_power_domain_tree_desc(void)
 {
-	return rzg2l_power_domain_tree_desc;
+	return rzcmn_power_domain_tree_desc;
 }
 
 int plat_core_pos_by_mpidr(u_register_t mpidr)

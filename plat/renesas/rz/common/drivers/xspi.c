@@ -8,8 +8,15 @@
 #include <lib/utils_def.h>
 #include <lib/mmio.h>
 #include <arch_helpers.h>
-#include <xspi_regs.h>
+#include <xspi_regs_offset.h>
 #include <xspi.h>
+#include <rz_fconf.h>
+
+const struct spi_config_t * g_xspi_fconf_cfg;
+
+#define SPI_REG_ADDR(offset)  		((uintptr_t)(g_xspi_fconf_cfg->spi_base + (offset)))
+#define SPI_REG_WRITE(reg, value)	mmio_write_32(SPI_REG_ADDR(reg), value)
+#define SPI_REG_READ(reg)			mmio_read_32(SPI_REG_ADDR(reg))
 
 #define XSPI_BMCFG_SET_VALUE		(0x00010001UL)
 #define XSPI_CMCFG0CS0_SET_VALUE	(0x00000008UL)
@@ -68,32 +75,32 @@ static int xspi_single_command(const st_xspi_cmd_info_t * const p_cmd_info)
 {
 	uint32_t timeout;
 
-	mmio_write_32(XSPI_CDCTL0, mmio_read_32(XSPI_CDCTL0) & (~XSPI_CDCTL0_TRREQ_MSK));
+	SPI_REG_WRITE(XSPI_CDCTL0, SPI_REG_READ(XSPI_CDCTL0) & (~XSPI_CDCTL0_TRREQ_MSK));
 
-	mmio_write_32(XSPI_CDTBUF0,	  (((uint32_t)cmds[p_cmd_info->cmd_idx].instruction) << XSPI_CDTBUF_CMD_OFFSET)
+	SPI_REG_WRITE(XSPI_CDTBUF0,	  (((uint32_t)cmds[p_cmd_info->cmd_idx].instruction) << XSPI_CDTBUF_CMD_OFFSET)
 								| (((uint32_t)cmds[p_cmd_info->cmd_idx].direction)   << XSPI_CDTBUF_TRTYPE_OFFSET)
 								| (((uint32_t)cmds[p_cmd_info->cmd_idx].latency)	 << XSPI_CDTBUF_LATE_OFFSET)
 								| (((uint32_t)cmds[p_cmd_info->cmd_idx].data_size)   << XSPI_CDTBUF_DATASIZE_OFFSET)
 								| (((uint32_t)cmds[p_cmd_info->cmd_idx].addr_size)   << XSPI_CDTBUF_ADDSIZE_OFFSET)
 								| (((uint32_t)cmds[p_cmd_info->cmd_idx].inst_size)   << XSPI_CDTBUF_CMDSIZE_OFFSET));
 
-	mmio_write_32(XSPI_CDABUF0, p_cmd_info->addr);
+	SPI_REG_WRITE(XSPI_CDABUF0, p_cmd_info->addr);
 
 	if (cmds[p_cmd_info->cmd_idx].direction == XSPI_OUT) {
-		mmio_write_32(XSPI_CDD0BUF0, p_cmd_info->data);
+		SPI_REG_WRITE(XSPI_CDD0BUF0, p_cmd_info->data);
 	}
 
-	mmio_write_32(XSPI_CDCTL0, mmio_read_32(XSPI_CDCTL0) | XSPI_CDCTL0_TRREQ_MSK);
+	SPI_REG_WRITE(XSPI_CDCTL0, SPI_REG_READ(XSPI_CDCTL0) | XSPI_CDCTL0_TRREQ_MSK);
 
 	timeout = XSPI_COMMAND_TIMEOUT;
 	/* Wait for command to complete */
-	while ((0u == (mmio_read_32(XSPI_INTS) & XSPI_INTS_CMDCMP_MSK)) && (timeout > 0u)) {
+	while ((0u == (SPI_REG_READ(XSPI_INTS) & XSPI_INTS_CMDCMP_MSK)) && (timeout > 0u)) {
 		timeout--;
 		__asm__ ("nop");
 		dsb();
 	}
 
-	mmio_write_32(XSPI_INTC, mmio_read_32(XSPI_INTC) | XSPI_INTC_CMDCMPC_MSK);
+	SPI_REG_WRITE(XSPI_INTC, SPI_REG_READ(XSPI_INTC) | XSPI_INTC_CMDCMPC_MSK);
 
 	return (timeout == 0u) ? XSPI_ERROR : XSPI_SUCCESS;
 }
@@ -125,7 +132,7 @@ static int xspi_read_identification(void)
 	while (count > 0U) {
 		if (xspi_single_command(&cmd_rdid) == XSPI_SUCCESS) {
 			/* Command success */
-			id = mmio_read_32(XSPI_CDD0BUF0) & DEVID_ID_MASK;
+			id = SPI_REG_READ(XSPI_CDD0BUF0) & DEVID_ID_MASK;
 			if ((id != DEVICE_ID_BAD) && (id != DEVICE_ID_ERROR) && (prev_id == id)) {
 				/* Hardware ID is valid and has been repeated on two consecutive reads so exit the while loop and then function */
 				break;
@@ -148,7 +155,7 @@ static int xspi_read_status(void)
 
 	if (xspi_single_command(&cmd_rdsta) == XSPI_SUCCESS) {
 		/* Command success */
-		status = mmio_read_32(XSPI_CDD0BUF0);
+		status = SPI_REG_READ(XSPI_CDD0BUF0);
 	}
 
 	return status;
@@ -233,14 +240,16 @@ int xspi_write(const uintptr_t addr, uintptr_t data, uint32_t byte_count)
 int xspi_setup(void)
 {
 	int ret;
+	/* Initialize global SPI config from DTB.  */
+	g_xspi_fconf_cfg = spi_config_getter();
 
-	mmio_write_32(XSPI_BMCFG,		XSPI_BMCFG_SET_VALUE);
-	mmio_write_32(XSPI_CMCFG0CS0,	XSPI_CMCFG0CS0_SET_VALUE);
-	mmio_write_32(XSPI_CMCFG1CS0,	XSPI_CMCFG1CS0_SET_VALUE);
-	mmio_write_32(XSPI_CMCFG2CS0,	XSPI_CMCFG2CS0_SET_VALUE);
-	mmio_write_32(XSPI_LIOCFGCS0,	XSPI_LIOCFGCS0_SET_VALUE);
-	mmio_write_32(XSPI_BMCTL0,		XSPI_BMCTL0_SET_VALUE);
-	mmio_write_32(XSPI_INTC,		XSPI_INTC_SET_VALUE);
+	SPI_REG_WRITE(XSPI_BMCFG,		XSPI_BMCFG_SET_VALUE);
+	SPI_REG_WRITE(XSPI_CMCFG0CS0,	XSPI_CMCFG0CS0_SET_VALUE);
+	SPI_REG_WRITE(XSPI_CMCFG1CS0,	XSPI_CMCFG1CS0_SET_VALUE);
+	SPI_REG_WRITE(XSPI_CMCFG2CS0,	XSPI_CMCFG2CS0_SET_VALUE);
+	SPI_REG_WRITE(XSPI_LIOCFGCS0,	XSPI_LIOCFGCS0_SET_VALUE);
+	SPI_REG_WRITE(XSPI_BMCTL0,		XSPI_BMCTL0_SET_VALUE);
+	SPI_REG_WRITE(XSPI_INTC,		XSPI_INTC_SET_VALUE);
 
 	ret = xspi_reset();
 

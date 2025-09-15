@@ -15,11 +15,8 @@
 
 #include <common/tbbr/tbbr_img_def.h>
 
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
 #include <rzg2l_def.h>
-#endif
+#include <rzv2h_def.h>
 
 
 /*******************************************************************************
@@ -37,6 +34,11 @@
 #define PLATFORM_CLUSTER_COUNT	U(1)
 #define PLATFORM_CORE_COUNT		U(2)
 
+/* RZV2H */
+#define RZV2H_PLATFORM_SYSTEM_COUNT		U(1)
+#define RZV2H_PLATFORM_CLUSTER_COUNT	U(1)
+#define RZV2H_PLATFORM_CORE_COUNT		U(4)
+
 #define PLAT_MAX_PWR_LVL		MPIDR_AFFLVL2
 #define PLAT_NUM_PWR_DOMAINS	(PLATFORM_CORE_COUNT + \
 								 PLATFORM_CLUSTER_COUNT + \
@@ -53,19 +55,31 @@
 /*******************************************************************************
  * BL2 specific defines.
  ******************************************************************************/
+/* RZG2L/RZV2L */
 #if !TRUSTED_BOARD_BOOT
-#define BL2_BASE				(0x00012000)
-#define BL2_LIMIT				(0x0002F000)
+#define RZG2L_BL2_BASE				(0x00012000)
+#define RZG2L_BL2_LIMIT				(0x0002F000)
 #else
-#define BL2_BASE				(0x00013000)
-#define BL2_LIMIT				(0x0002F000)
+#define RZG2L_BL2_BASE				(0x00013000)
+#define RZG2L_BL2_LIMIT				(0x0002F000)
 #endif
+
+/* RZV2H */
+#define RZV2H_BL2_BASE				UL(0x08103000)
+#define RZV2H_BL2_LIMIT				UL(0x08160000)
+
+#define RZCMN_RAM_MAX_SIZE			UL(0x0005D000)
 
 /*******************************************************************************
  * BL31 specific defines.
  ******************************************************************************/
 #define BL31_BASE				(0x44000000)
 #define BL31_LIMIT				(0x44040000)
+
+#define PLAT_TRUSTED_MAILBOX_BASE		BL31_LIMIT
+
+#define BL31_SRAM_BASE			UL(0x08078000)
+#define BL31_SRAM_LIMIT			UL(0x0807F000)
 
 /*******************************************************************************
  * BL32 specific defines.
@@ -122,12 +136,6 @@
 #define BL33_LIMIT				(BL33_BASE + 0x08000000)
 
 /*******************************************************************************
- * DTB specific defines.
- ******************************************************************************/
-#define DTB_BASE			RZG2L_DTB_BASE
-#define DTB_LIMIT			(RZG2L_DTB_BASE + RZG2L_DTB_SIZE)
-
-/*******************************************************************************
  * Platform specific page table and MMU setup constants
  ******************************************************************************/
 #if IMAGE_BL2
@@ -138,8 +146,8 @@
 #define MAX_MMAP_REGIONS		U(9)
 #endif
 
-#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ULL << 32)
-#define PLAT_PHY_ADDR_SPACE_SIZE	(1ULL << 32)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ULL << 36)
+#define PLAT_PHY_ADDR_SPACE_SIZE	(1ULL << 36)		/* Max Physical Address is 0xF_FFFF_FFFF */
 
 /*******************************************************************************
  * Declarations and constants to access the mailboxes safely. Each mailbox is

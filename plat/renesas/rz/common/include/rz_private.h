@@ -22,12 +22,9 @@ void plat_gic_pcpu_init(void);
 void plat_gic_save(void);
 void plat_gic_resume(void);
 
-/* plat_security.c */
-void plat_tzc400_setup(uintptr_t tzc_base);
-
 /* plat_storage.c */
 void rz_io_setup(void);
-void rzg2l_io_setup(void);
+void rzcmn_io_setup(void);
 /* plat_ddr_setup.c  */
 void plat_ddr_setup(void);
 
@@ -41,8 +38,35 @@ typedef enum boot_kind {
 
 typedef struct bl2_to_bl31_params_mem {
 	boot_kind_t boot_kind;
+	uint32_t soc_id;
 	entry_point_info_t bl32_ep_info;
 	entry_point_info_t bl33_ep_info;
 } bl2_to_bl31_params_mem_t;
+
+typedef struct {
+	/* Device specific info. */
+	const char *soc_name;
+	uint32_t    scif0_base;
+	uint32_t    sram_base;
+	uint32_t    tzc_msram_base;
+	uint32_t    tzc_asram_base;
+	uint32_t    syc_timer_base;
+	uint32_t    sysc_base;
+	uint32_t    cpg_base;
+	uint32_t    gicd_base;
+	uint32_t    gicr_base;
+	uint32_t    platform_core_count;
+	uint32_t    otp_base;
+	uint32_t    otp_base_chipid;
+	uint32_t    device_area_size;
+	uint64_t    ddr_area_size;
+	uint32_t    board_info_qspi_offset;
+	uint32_t    board_info_emmc_offset;
+	uint32_t    board_info_esd_offset;
+
+	/* Platform specific function control. */
+	bool enable_tzc_setup;
+	bool enable_pwrc_setup;
+} bl31_board_cfg_t;
 
 #endif	/* __RZ_PRIVATE_H__ */
