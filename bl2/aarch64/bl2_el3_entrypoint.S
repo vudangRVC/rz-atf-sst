@@ -19,7 +19,11 @@
 #elif ENABLE_PIE
 #define FIXUP_SIZE	(RZCMN_RAM_MAX_SIZE)
 #else
+ #if ENABLE_PIE
+#define FIXUP_SIZE	(RZCMN_RAM_MAX_SIZE)
+ #else
 #define FIXUP_SIZE	((BL2_LIMIT) - (BL2_BASE))
+ #endif
 #endif
 
 func bl2_entrypoint
