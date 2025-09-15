@@ -7,6 +7,8 @@
 #ifndef __SYS_H__
 #define __SYS_H__
 
+#include <stdbool.h>
+
 #define MASK_BOOTM_DEVICE		(0x0F)
 #define MASK_BOOTM_SECURE		(0x10)
 
@@ -22,5 +24,6 @@ typedef enum {
 
 
 boot_mode_t sys_get_boot_mode(void);
+bool sys_is_resume_reboot(void);
 
 #endif	/* __SYS_H__ */

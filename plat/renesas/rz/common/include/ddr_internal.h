@@ -8,7 +8,7 @@
 #define __DDR_INTERNAL_H__
 
 #include <lib/mmio.h>
-#include <ddr_mc_if.h>
+#include <ddr_mc_regs.h>
 #include <ddr_phy_regs.h>
 
 #define MC_PHYSET_NUM       (4)
@@ -45,7 +45,7 @@ static inline void rmw_phy_reg(uint32_t offset, uint32_t mask, uint32_t val)
 	write_phy_reg(offset, (read_phy_reg(offset) & mask) | val);
 }
 
-void ddr_ctrl_reten_en_n(uint8_t val);
+void ddr_ctrl_reten_en_n(uint8_t val, uint8_t soc_id);
 
 
 #endif	/* __DDR_INTERNAL_H__ */

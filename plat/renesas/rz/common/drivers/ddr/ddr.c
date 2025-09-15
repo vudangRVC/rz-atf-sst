@@ -10,6 +10,9 @@
 
 #include <ddr_internal.h>
 #include <cpg.h>
+#include <lib/fconf/fconf.h>
+#include <lib/libfdt/libfdt.h>
+#include <lpddr.h>
 #include <rz_fconf.h>
 
 #define	CEIL(a, div)	(((a) + ((div) - 1)) / (div))
@@ -20,17 +23,13 @@
 #define	MAX_BEST_VREF_SAVED	(30U)
 #define	VREF_SETP			(1U)
 
-extern const uint32_t mc_init_tbl[MC_INIT_NUM][2];
-extern const uint32_t mc_odt_pins_tbl[4];
-extern const uint32_t mc_mr1_tbl[2];
-extern const uint32_t mc_mr2_tbl[2];
-extern const uint32_t mc_mr5_tbl[2];
-extern const uint32_t mc_mr6_tbl[2];
-extern const uint32_t mc_phy_settings_tbl[MC_PHYSET_NUM][2];
-extern const uint32_t swizzle_mc_tbl[SWIZZLE_MC_NUM][2];
-extern const uint32_t swizzle_phy_tbl[SIZZLE_PHY_NUM][2];
-extern const char ddr_an_version[];
+#define DDR_TYPE_DDR4		(0U)
+#define DDR_TYPE_LPDDR4		(1U)
+
 const struct ddr_config_t *g_ddr_fconf_cfg;
+extern u_register_t dtb_base;
+
+const char ddr_an_version[] = "v1.0.00";
 
 // prototypes
 void ddr_setup(void);
@@ -69,8 +68,7 @@ char data_synd[] = {
 #endif
 #endif
 
-// main
-void ddr_setup(void)
+void ddr4_setup(void)
 {
 	uint32_t	sl_lanes, byte_lanes;
 	uint8_t		runBITLVL, runSL, runVREF;
@@ -78,8 +76,8 @@ void ddr_setup(void)
 	uint32_t	tmp;
 	int i;
 
-	/* Initialize global DDR config from DTB.  */
-	g_ddr_fconf_cfg = ddr_config_getter();
+	uint32_t rzcmn_soc_id = FCONF_GET_PROPERTY(hw_config, common_config, soc_id);
+	INFO("BL2: DDR setup for board ID: 0x%x\n", rzcmn_soc_id);
 
 	INFO("BL2: setup DDR (Rev. %s)\n", ddr_an_version);
 	// Step2 - Step11
@@ -89,10 +87,10 @@ void ddr_setup(void)
 	program_mc1(&lp_auto_entry_en);
 
 	// Step13
-	tmp = read_mc_reg(DDRMC_R019);
+	tmp = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r019);
 	sl_lanes	= ((tmp & 0x1) == 0) ? 3 : 1;
 	byte_lanes	= ((tmp & 0x1) == 0) ? 2 : 1;
-	tmp = read_mc_reg(DDRMC_R039);
+	tmp = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r039);
 	runBITLVL	= (tmp >> 20) & 0x1;
 	runSL		= (tmp >> 21) & 0x1;
 	runVREF		= (tmp >> 25) & 0x1;
@@ -105,45 +103,49 @@ void ddr_setup(void)
 		;
 
 	// Step16
-	ddr_ctrl_reten_en_n(0);
-	rmw_mc_reg(DDRMC_R007, 0xFFFFFEFF, 0x00000000);
-	rmw_mc_reg(DDRMC_R001, 0xFEFFFFFF, 0x01000000);
-	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
-	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
+	ddr_ctrl_reten_en_n(0, rzcmn_soc_id);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r007, 0xFFFFFEFF, 0x00000000);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r001, 0xFEFFFFFF, 0x01000000);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r000, 0xFFFFFFFE, 0x00000001);
+	while ((read_mc_reg(g_ddr_fconf_cfg->ddrmc_r021) & 0x02000000) != 0x02000000)
 		;
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00080000);
-	rmw_mc_reg(DDRMC_R029, 0xFF0000FF, 64 << 8);
-	rmw_mc_reg(DDRMC_R027, 0xE00000FF, 111 << 8);
-	rmw_mc_reg(DDRMC_R020, 0xFFFFFEFF, 0x00000100);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r029, 0xFF0000FF, 64 << 8);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r027, 0xE00000FF, 111 << 8);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r020, 0xFFFFFEFF, 0x00000100);
 	udelay(1);
 	rmw_phy_reg(DDRPHY_R74, 0xFFF7FFFF, 0x00000000);
 
 	// Step17
 	cpg_reset_ddr_mc();
-	ddr_ctrl_reten_en_n(1);
+	ddr_ctrl_reten_en_n(1, rzcmn_soc_id);
 
 	// Step18-19
 	program_mc1(&lp_auto_entry_en);
 
 	// Step20
-	for (i = 0; i < ARRAY_SIZE(swizzle_mc_tbl); i++) {
-		INFO("swizzle_mc_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrmc[i]);
-		write_mc_reg(swizzle_mc_tbl[i][0], g_ddr_fconf_cfg->ddrmc[i]);
+	for (i = 0; i < ARRAY_SIZE(g_ddr_fconf_cfg->swizzle_mc_tbl); i += 2) {
+		uint32_t addr = g_ddr_fconf_cfg->swizzle_mc_tbl[i];
+		uint32_t val  = g_ddr_fconf_cfg->swizzle_mc_tbl[i + 1];
+
+		write_mc_reg(addr, val);
 	}
-	for (i = 0; i < ARRAY_SIZE(swizzle_phy_tbl); i++) {
-		INFO("swizzle_phy_tbl[%d]: %x\n", i, g_ddr_fconf_cfg->ddrphy[i]);
-		write_phy_reg(swizzle_phy_tbl[i][0], g_ddr_fconf_cfg->ddrphy[i]);
+
+	for (i = 0; i < ARRAY_SIZE(g_ddr_fconf_cfg->swizzle_phy_tbl); i += 2) {
+		uint32_t addr = g_ddr_fconf_cfg->swizzle_phy_tbl[i];
+		uint32_t val  = g_ddr_fconf_cfg->swizzle_phy_tbl[i + 1];
+
+		write_phy_reg(addr, val);
 	}
 
 	// Step21
-	rmw_mc_reg(DDRMC_R000, 0xFFFFFFFE, 0x00000001);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r000, 0xFFFFFFFE, 0x00000001);
 
 	// Step22
-	while ((read_mc_reg(DDRMC_R021) & 0x02000000) != 0x02000000)
-		;
+	udelay(1);
 
 	// Step23
-	rmw_mc_reg(DDRMC_R023, 0xFDFFFFFF, 0x02000000);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r023, 0xFDFFFFFF, 0x02000000);
 
 	// Step24
 	exec_trainingWRLVL(sl_lanes);
@@ -204,7 +206,7 @@ void ddr_setup(void)
 	printf("DONE\n");
 #endif
 
-	rmw_mc_reg(DDRMC_R006, 0xFFFFFFF0, lp_auto_entry_en & 0xF);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r006, 0xFFFFFFF0, lp_auto_entry_en & 0xF);
 
 #if (DDR_ECC_ENABLE == 1)
 	// Extra step, test ECC CE function
@@ -214,6 +216,20 @@ void ddr_setup(void)
 	else
 		printf("OK\n");
 #endif
+}
+
+// main
+void ddr_setup(void)
+{
+	/* Initialize global DDR config from DTB.  */
+	g_ddr_fconf_cfg = ddr_config_getter();
+
+	if (g_ddr_fconf_cfg->ddr_type == DDR_TYPE_DDR4) {
+		ddr4_setup();
+	}
+	else if (g_ddr_fconf_cfg->ddr_type == DDR_TYPE_LPDDR4) {
+		lpddr4_setup();
+	}
 }
 
 #if (DDR_ECC_ENABLE == 1)
@@ -598,66 +614,44 @@ static void disable_phy_clk(void)
 
 static void program_mc1(uint8_t *lp_auto_entry_en)
 {
-	int i;
-	int offset;
+	int i, j = 0;
 
 	// Step1
-	for (i = 0; i < ARRAY_SIZE(mc_init_tbl); i++) {
-		offset = mc_init_tbl[i][0];
-		if (offset == DDRMC_R006) {
-			*lp_auto_entry_en = mc_init_tbl[i][1] & 0xF;
-			write_mc_reg(DDRMC_R006, mc_init_tbl[i][1] & 0xFFFFFFF0);
-		} else if (offset == DENALI_CTL_30) {
-			INFO("DENALI_CTL_30: %x\n", g_ddr_fconf_cfg->ddrdenali_30);
-			write_mc_reg(DENALI_CTL_30, g_ddr_fconf_cfg->ddrdenali_30);
-		} else if (offset == DENALI_CTL_34) {
-			INFO("DENALI_CTL_34: %x\n", g_ddr_fconf_cfg->ddrdenali_34);
-			write_mc_reg(DENALI_CTL_34, g_ddr_fconf_cfg->ddrdenali_34);
-		} else if (offset == DENALI_CTL_35) {
-			INFO("DENALI_CTL_35: %x\n", g_ddr_fconf_cfg->ddrdenali_35);
-			write_mc_reg(DENALI_CTL_35, g_ddr_fconf_cfg->ddrdenali_35);
-		} else if (offset == DENALI_CTL_122) {
-			INFO("DENALI_CTL_122: %x\n", g_ddr_fconf_cfg->ddrdenali_122);
-			write_mc_reg(DENALI_CTL_122, g_ddr_fconf_cfg->ddrdenali_122);
-		} else if (offset == DENALI_CTL_123) {
-			INFO("DENALI_CTL_123: %x\n", g_ddr_fconf_cfg->ddrdenali_123);
-			write_mc_reg(DENALI_CTL_123, g_ddr_fconf_cfg->ddrdenali_123);
-		} else if (offset == DENALI_CTL_124) {
-			INFO("DENALI_CTL_124: %x\n", g_ddr_fconf_cfg->ddrdenali_124);
-			write_mc_reg(DENALI_CTL_124, g_ddr_fconf_cfg->ddrdenali_124);
-		} else if (offset == DENALI_CTL_125) {
-			INFO("DENALI_CTL_125: %x\n", g_ddr_fconf_cfg->ddrdenali_125);
-			write_mc_reg(DENALI_CTL_125, g_ddr_fconf_cfg->ddrdenali_125);
-		} else {
-			write_mc_reg(mc_init_tbl[i][0], mc_init_tbl[i][1]);
-		}
+	for (i = 0; i < g_ddr_fconf_cfg->mc_init_num; i++, j += 2) {
+		uint32_t addr = g_ddr_fconf_cfg->mc_init_tbl[j];
+		uint32_t val  = g_ddr_fconf_cfg->mc_init_tbl[j + 1];
+
+		write_mc_reg(addr, val);
 	}
 
 	// Step2
-	rmw_mc_reg(DDRMC_R025, 0xFCFFFFFF, mc_odt_pins_tbl[0] << 24);
-	rmw_mc_reg(DDRMC_R026, 0xFFFFFCFF, mc_odt_pins_tbl[1] << 8);
-	rmw_mc_reg(DDRMC_R025, 0xFFFCFFFF, mc_odt_pins_tbl[2] << 16);
-	rmw_mc_reg(DDRMC_R026, 0xFFFFFFFC, mc_odt_pins_tbl[3] << 0);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r025, 0xFCFFFFFF, g_ddr_fconf_cfg->mc_odt_pins_tbl[0] << 24);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r026, 0xFFFFFCFF, g_ddr_fconf_cfg->mc_odt_pins_tbl[1] << 8);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r025, 0xFFFCFFFF, g_ddr_fconf_cfg->mc_odt_pins_tbl[2] << 16);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r026, 0xFFFFFFFC, g_ddr_fconf_cfg->mc_odt_pins_tbl[3] << 0);
 
 	// Step3
-	rmw_mc_reg(DDRMC_R009, ~(mc_mr1_tbl[0]), mc_mr1_tbl[1]);
-	rmw_mc_reg(DDRMC_R011, ~(mc_mr1_tbl[0]), mc_mr1_tbl[1]);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r009, ~(g_ddr_fconf_cfg->mc_mr1_tbl[0]), g_ddr_fconf_cfg->mc_mr1_tbl[1]);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r011, ~(g_ddr_fconf_cfg->mc_mr1_tbl[0]), g_ddr_fconf_cfg->mc_mr1_tbl[1]);
 
 	// Step4
-	rmw_mc_reg(DDRMC_R010, ~(mc_mr2_tbl[0]), mc_mr2_tbl[1]);
-	rmw_mc_reg(DDRMC_R012, ~(mc_mr2_tbl[0]), mc_mr2_tbl[1]);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r010, ~(g_ddr_fconf_cfg->mc_mr2_tbl[0]), g_ddr_fconf_cfg->mc_mr2_tbl[1]);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r012, ~(g_ddr_fconf_cfg->mc_mr2_tbl[0]), g_ddr_fconf_cfg->mc_mr2_tbl[1]);
 
 	// Step5
-	rmw_mc_reg(DDRMC_R015, ~(mc_mr5_tbl[0]), mc_mr5_tbl[1]);
-	rmw_mc_reg(DDRMC_R016, ~(mc_mr5_tbl[0]), mc_mr5_tbl[1]);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r015, ~(g_ddr_fconf_cfg->mc_mr5_tbl[0]), g_ddr_fconf_cfg->mc_mr5_tbl[1]);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r016, ~(g_ddr_fconf_cfg->mc_mr5_tbl[0]), g_ddr_fconf_cfg->mc_mr5_tbl[1]);
 
 	// Step6
-	rmw_mc_reg(DDRMC_R017, ~(mc_mr6_tbl[0]), mc_mr6_tbl[1]);
-	rmw_mc_reg(DDRMC_R018, ~(mc_mr6_tbl[0]), mc_mr6_tbl[1]);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r017, ~(g_ddr_fconf_cfg->mc_mr6_tbl[0]), g_ddr_fconf_cfg->mc_mr6_tbl[1]);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r018, ~(g_ddr_fconf_cfg->mc_mr6_tbl[0]), g_ddr_fconf_cfg->mc_mr6_tbl[1]);
 
 	// Step7
-	for (i = 0; i < ARRAY_SIZE(mc_phy_settings_tbl); i++) {
-		write_mc_reg(mc_phy_settings_tbl[i][0], mc_phy_settings_tbl[i][1]);
+	for (i = 0; i < ARRAY_SIZE(g_ddr_fconf_cfg->mc_phy_settings_tbl); i += 2) {
+		uint32_t addr = g_ddr_fconf_cfg->mc_phy_settings_tbl[i];
+		uint32_t val  = g_ddr_fconf_cfg->mc_phy_settings_tbl[i + 1];
+
+		write_mc_reg(addr, val);
 	}
 
 	// Step8 is skipped because ECC is unused.
@@ -680,20 +674,20 @@ static void program_phy1(uint32_t sl_lanes, uint32_t byte_lanes)
 	int i;
 
 	// Step1
-	tmp = read_mc_reg(DDRMC_R039);
+	tmp = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r039);
 	dram_clk_period = tmp & 0xFFFF;
 	dram = (tmp >> 16) & 0xF;
 
-	tmp = read_mc_reg(DDRMC_R025);
+	tmp = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r025);
 	odt_wr_map_cs0 = (tmp >> 24) & 0x3;
 	odt_rd_map_cs0 = (tmp >> 16) & 0x3;
 
 	// Step2
-	tmp = read_mc_reg(DDRMC_R002);
+	tmp = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r002);
 	CL = (tmp >> 17) & 0x1F;
 	CWL = (tmp >> 24) & 0x1F;
 
-	tmp = read_mc_reg(DDRMC_R003);
+	tmp = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r003);
 	AL = tmp & 0x1F;
 	PL = (tmp >> 8) & 0xF;
 
@@ -701,8 +695,8 @@ static void program_phy1(uint32_t sl_lanes, uint32_t byte_lanes)
 	WL = CWL + AL + PL;
 
 	// Step3
-	mr1 = read_mc_reg(DDRMC_R009) & 0xFFFF;
-	mr2 = read_mc_reg(DDRMC_R010) & 0xFFFF;
+	mr1 = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r009) & 0xFFFF;
+	mr2 = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r010) & 0xFFFF;
 	if (dram == 2) {
 		// DDR4
 		mr1_wl_mask = (0x7 << 8) | (0x1 << 7);	// 0x78
@@ -747,7 +741,7 @@ static void program_phy1(uint32_t sl_lanes, uint32_t byte_lanes)
 	mr2_wl = (mr2 & (0xFFFF ^ mr2_wl_mask)) | (0x0 << 9);
 
 	// Step4
-	tmp = read_mc_reg(DDRMC_R040);
+	tmp = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r040);
 	clk_drive = tmp & 0xF;
 	dq_dqs_drive = (tmp >> 4) & 0xF;
 	dq_dqs_term = (tmp >> 8) & 0xF;
@@ -982,8 +976,8 @@ static void exec_trainingVREF(uint32_t sl_lanes, uint32_t byte_lanes)
 		rmw_phy_reg(DDRPHY_R07, 0xFFFFFFCF, 0x00000010);
 	}
 	// Step3
-	vref_mid_level_code = (read_mc_reg(DDRMC_R040) >> 16) & 0xFF;
-	sweep_range = read_mc_reg(DDRMC_R043) & 0xFF;
+	vref_mid_level_code = (read_mc_reg(g_ddr_fconf_cfg->ddrmc_r040) >> 16) & 0xFF;
+	sweep_range = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r043) & 0xFF;
 
 	// Step4
 	for (i = 0; i < byte_lanes; i++) {
@@ -1082,8 +1076,8 @@ static void exec_trainingVREF(uint32_t sl_lanes, uint32_t byte_lanes)
 	rmw_phy_reg(DDRPHY_R54, 0xFFFFFF7F, 0x00000080);
 
 	// Step11
-	vref_mid_level_code = (read_mc_reg(DDRMC_R043) >> 8) & 0xFF;
-	sweep_range = (read_mc_reg(DDRMC_R043) >> 16) & 0xFF;
+	vref_mid_level_code = (read_mc_reg(g_ddr_fconf_cfg->ddrmc_r043) >> 8) & 0xFF;
+	sweep_range = (read_mc_reg(g_ddr_fconf_cfg->ddrmc_r043) >> 16) & 0xFF;
 
 	// Step12
 	orig_cs_config = read_phy_reg(DDRPHY_R25) & 0x3;
@@ -1172,7 +1166,7 @@ static void exec_trainingVREF(uint32_t sl_lanes, uint32_t byte_lanes)
 	setup_vref_training_registers(current_vref, sl_lanes, 0);
 
 	// Step19
-	rmw_mc_reg(DDRMC_R044, 0xFFFFFF00, current_vref);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r044, 0xFFFFFF00, current_vref);
 
 	// Step20
 	rmw_phy_reg(DDRPHY_R66, 0xFFFFFFFE, 0x00000000);
@@ -1203,7 +1197,7 @@ static void setup_vref_training_registers(uint8_t vref_value, uint8_t cs, uint8_
 	}
 
 	// Step2
-	mr = read_mc_reg(DDRMC_R017) & 0xFF00;
+	mr = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r017) & 0xFF00;
 	write_mr(cs, 6,
 		mr | (((turn_on_off_vref_training == 2) ? 0 : 1) << 7) | vref_op_code);
 
@@ -1219,25 +1213,25 @@ static void write_mr(uint8_t cs, uint8_t mrw_sel, uint16_t mrw_data)
 	// Step1
 	mrw_cs = 0;
 	if (cs & 0x1) {
-		rmw_mc_reg(DDRMC_R013, 0xFFFF0000, mrw_data);
+		rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r013, 0xFFFF0000, mrw_data);
 		mrw_cs = 0;
 	}
 	if (cs & 0x2) {
-		rmw_mc_reg(DDRMC_R014, 0xFFFF0000, mrw_data);
+		rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r014, 0xFFFF0000, mrw_data);
 		mrw_cs = 1;
 	}
 	mrw_allcs = ((cs & 0x3) == 0x3) ? 1 : 0;
 
 	// Step2
-	rmw_mc_reg(DDRMC_R008, 0xFC000000,
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r008, 0xFC000000,
 		0x02800000 | (mrw_allcs << 24) | (mrw_cs << 8) | mrw_sel);
 
 	// Step3
-	while ((read_mc_reg(DDRMC_R022) & (1 << 3)) != (1 << 3))
+	while ((read_mc_reg(g_ddr_fconf_cfg->ddrmc_r022) & (1 << 3)) != (1 << 3))
 		;
 
 	// Step4
-	rmw_mc_reg(DDRMC_R024, 0xFFFFFFF7, 0x00000008);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r024, 0xFFFFFFF7, 0x00000008);
 }
 
 static void exec_trainingBITLVL(uint32_t sl_lanes)
@@ -1318,8 +1312,10 @@ static void opt_delay(uint32_t sl_lanes, uint32_t byte_lanes)
 	rmw_phy_reg(DDRPHY_R27, 0xFBFFFFFF, 0x04000000);
 
 	// Step3
-	rmw_mc_reg(DDRMC_R004, ~(0x7F << LP_CMD_OFFSET), (0x00000011 << LP_CMD_OFFSET));
-	while (((read_mc_reg(DDRMC_R005) >> 24) & 0x7F) != 0x48)
+	int lp_cmd_offset = g_ddr_fconf_cfg->lp_cmd_offset;
+
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r004, ~(0x7F << lp_cmd_offset), (0x00000011 << lp_cmd_offset));
+	while (((read_mc_reg(g_ddr_fconf_cfg->ddrmc_r005) >> 24) & 0x7F) != 0x48)
 		;
 
 	// Step4
@@ -1362,8 +1358,8 @@ static void opt_delay(uint32_t sl_lanes, uint32_t byte_lanes)
 	}
 
 	// Step6
-	rmw_mc_reg(DDRMC_R004, ~(0x7F << LP_CMD_OFFSET), (0x00000002 << LP_CMD_OFFSET));
-	while (((read_mc_reg(DDRMC_R005) >> 24) & 0x7F) != 0x40)
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r004, ~(0x7F << lp_cmd_offset), (0x00000002 << lp_cmd_offset));
+	while (((read_mc_reg(g_ddr_fconf_cfg->ddrmc_r005) >> 24) & 0x7F) != 0x40)
 		;
 
 	// Step6
@@ -1420,7 +1416,7 @@ static void program_phy2(void)
 	uint32_t tmp, b21, b22, b23;
 
 	// Step1
-	tmp = read_mc_reg(DDRMC_R039);
+	tmp = read_mc_reg(g_ddr_fconf_cfg->ddrmc_r039);
 	dram_clk_period = tmp & 0xFFFF;
 	b21 = (tmp >> 21) & 0x1;
 	b22 = (tmp >> 22) & 0x1;
@@ -1447,9 +1443,9 @@ static void program_mc2(void)
 
 	// Step1
 	main_clk_dly = (read_phy_reg(DDRPHY_R21) >> 4) & 0xF;
-	tmp = (read_mc_reg(DDRMC_R028) >> 24) & 0x7F;
+	tmp = (read_mc_reg(g_ddr_fconf_cfg->ddrmc_r028) >> 24) & 0x7F;
 	tphy_rdlat = ((main_clk_dly + 1 + 1) * 2) + 2 + ((tmp == 1) ? 2 : 0);
 
 	// Step2
-	rmw_mc_reg(DDRMC_R027, 0xFFFFFF80, tphy_rdlat & 0x7F);
+	rmw_mc_reg(g_ddr_fconf_cfg->ddrmc_r027, 0xFFFFFF80, tphy_rdlat & 0x7F);
 }

@@ -15,19 +15,18 @@
 #include <io_sddrv.h>
 #include <lib/mmio.h>
 #include <tools_share/firmware_image_package.h>
-#if PLAT_SOC_RZV2H
-#include <xspi.h>
-#include <rz_soc_def.h>
-#else
 #include <spi_multi.h>
+#include <xspi.h>
 #include <rzg2l_def.h>
 #include <esdif.h>
 #include <io_sddrv.h>
 #include <platform_def.h>
-#endif
 #include <sys.h>
 #include <emmc_def.h>
-#include <sys_regs.h>
+#include <sys_regs_offset.h>
+#include <rz_fconf.h>
+#include <lib/fconf/fconf.h>
+#include <board_info.h>
 
 static uintptr_t memdrv_dev_handle;
 static uintptr_t fip_dev_handle;
@@ -37,37 +36,23 @@ static uintptr_t sddrv_dev_handle;
 
 static uintptr_t boot_io_drv_id;
 
-#if PLAT_SOC_RZV2H
-static const io_block_spec_t spirom_block_spec = {
-	.offset = RZV2H_SOC_SPIROM_FIP_BASE,
-	.length = RZV2H_SPIROM_FIP_SIZE,
-};
+#define SPI_MULTI_IF	(0)
+#define XSPI_IF			(1)
 
-static const io_drv_spec_t emmc_block_spec = {
-	.offset = RZV2H_EMMC_FIP_BASE,
-	.length = RZV2H_EMMC_FIP_SIZE,
-};
-
-static const io_drv_spec_t sd_block_spec = {
-	.offset = RZV2H_SD_FIP_BASE,
-	.length = RZV2H_SD_FIP_SIZE,
-};
-#else
-static const io_block_spec_t spirom_block_spec = {
+static io_block_spec_t spirom_block_spec = {
 	.offset = RZG2L_SPIROM_FIP_BASE,
 	.length = RZG2L_SPIROM_FIP_SIZE,
 };
 
-static const io_drv_spec_t emmc_block_spec = {
+static io_drv_spec_t emmc_block_spec = {
 	.offset = RZG2L_EMMC_FIP_BASE,
 	.length = RZG2L_EMMC_FIP_SIZE,
 };
 
-static const io_drv_spec_t sd_block_spec = {
+static io_drv_spec_t sd_block_spec = {
 	.offset = RZG2L_SD_FIP_BASE,
 	.length = RZG2L_SD_FIP_SIZE,
 };
-#endif
 
 static const io_uuid_spec_t bl31_file_spec = {
 	.uuid = UUID_EL3_RUNTIME_FIRMWARE_BL31,
@@ -271,92 +256,24 @@ static int32_t open_sddrv(const uintptr_t spec)
 	return io_dev_init(sddrv_dev_handle, 0);
 }
 
-#if PLAT_SOC_RZV2H
-static void update_dev_policies(uint16_t boot_mode)
-{
-	switch (boot_mode) {
-	case SYS_BOOT_MODE_SPI_1_8:
-	case SYS_BOOT_MODE_SPI_3_3:
-		policies[FIP_IMAGE_ID] = spirom_fip_policy;
-		break;
-	case SYS_BOOT_MODE_EMMC_1_8:
-	case SYS_BOOT_MODE_EMMC_3_3:
-		policies[FIP_IMAGE_ID] = emmc_fip_policy;
-		break;
-	case SYS_BOOT_MODE_ESD:
-		policies[FIP_IMAGE_ID] = sd_fip_policy;
-		break;
-	default:
-		panic();
-	}
-}
 void rz_io_setup(void)
 {
 	const io_dev_connector_t *memmap;
 	const io_dev_connector_t *emmc;
-	const io_dev_connector_t *sd;
-	const io_dev_connector_t *rzsoc;
-	boot_mode_t boot_mode;
-
-	boot_mode = sys_get_boot_mode();
-
-	boot_io_drv_id = FIP_IMAGE_ID;
-
-	register_io_dev_fip(&rzsoc);
-
-	io_dev_open(rzsoc, 0, &fip_dev_handle);
-
-	if (boot_mode == SYS_BOOT_MODE_SPI_1_8 ||
-		boot_mode == SYS_BOOT_MODE_SPI_3_3) {
-#if PLAT_SOC_RZG2L
-		spi_multi_setup();
-#else
-		xspi_setup();
-#endif /* PLAT_SOC_RZG2L */
-		register_io_dev_memmap(&memmap);
-		io_dev_open(memmap, 0, &memdrv_dev_handle);
-	} else if  (boot_mode == SYS_BOOT_MODE_EMMC_1_8 ||
-				boot_mode == SYS_BOOT_MODE_EMMC_3_3) {
-		if (emmc_init() != EMMC_SUCCESS) {
-			NOTICE("BL2: Failed to eMMC driver initialize.\n");
-			panic();
-		}
-		emmc_memcard_power(EMMC_POWER_ON);
-		if (emmc_mount() != EMMC_SUCCESS) {
-			NOTICE("BL2: Failed to eMMC mount operation.\n");
-			panic();
-		}
-
-		register_io_dev_emmcdrv(&emmc);
-		io_dev_open(emmc, 0, &emmcdrv_dev_handle);
-	} else if (boot_mode == SYS_BOOT_MODE_ESD) {
-		register_io_dev_sddrv(&sd);
-		io_dev_open(sd, 0, &sddrv_dev_handle);
-	} else {
-		ERROR("Unsupported IO device %d.\n", boot_mode);
-		panic();
-	}
-
-	update_dev_policies(boot_mode);
-}
-#else
-void rz_io_setup(void)
-{
-	const io_dev_connector_t *memmap;
-	const io_dev_connector_t *emmc;
-	const io_dev_connector_t *rzg2l;
+	const io_dev_connector_t *rzcmn;
 	const io_dev_connector_t *sd;
 	
 	uint32_t stat_md_boot;
+	const struct common_config_t * common_fconf_cfg = common_config_getter();
 
 	boot_io_drv_id = FIP_IMAGE_ID;
 
-	register_io_dev_fip(&rzg2l);
+	register_io_dev_fip(&rzcmn);
 
-	io_dev_open(rzg2l, 0, &fip_dev_handle);
+	io_dev_open(rzcmn, 0, &fip_dev_handle);
 
 	/* Boot Mode eSD */
-	stat_md_boot = mmio_read_32(SYS_LSI_MODE) & MASK_BOOTM_DEVICE;
+	stat_md_boot = sys_get_boot_mode();
 	if (stat_md_boot == BOOT_MODE_ESD){
 		panic();
 		if (esd_main() != SD_OK) {
@@ -366,6 +283,9 @@ void rz_io_setup(void)
 		register_io_dev_sddrv(&sd);
 		io_dev_open(sd, 0, &sddrv_dev_handle);
 
+		sd_block_spec.offset = common_fconf_cfg->sd_fip_base;
+		sd_block_spec.length = common_fconf_cfg->sd_fip_size;
+
 		struct plat_io_policy sd_fip_policy = {
 				&sddrv_dev_handle,
 				(uintptr_t) &sd_block_spec,
@@ -374,9 +294,18 @@ void rz_io_setup(void)
 	}
 	else if (stat_md_boot == BOOT_MODE_SPI_1_8 ||
 		stat_md_boot == BOOT_MODE_SPI_3_3) {
-		spi_multi_setup();
+		uint32_t spi_type = FCONF_GET_PROPERTY(hw_config, spi_config, spi_type);
+
+		if (spi_type == SPI_MULTI_IF) {
+			spi_multi_setup();
+		} else if (spi_type == XSPI_IF) {
+			xspi_setup();
+		}
 		register_io_dev_memmap(&memmap);
 		io_dev_open(memmap, 0, &memdrv_dev_handle);
+
+		spirom_block_spec.offset = common_fconf_cfg->spirom_fip_base;
+		spirom_block_spec.length = common_fconf_cfg->spirom_fip_size;
 
 		struct plat_io_policy spirom_fip_policy = {
 				&memdrv_dev_handle,
@@ -399,6 +328,9 @@ void rz_io_setup(void)
 		register_io_dev_emmcdrv(&emmc);
 		io_dev_open(emmc, 0, &emmcdrv_dev_handle);
 
+		emmc_block_spec.offset = common_fconf_cfg->emmc_fip_base;
+		emmc_block_spec.length = common_fconf_cfg->emmc_fip_size;
+
 		struct plat_io_policy emmc_fip_policy = {
 				&emmcdrv_dev_handle,
 				(uintptr_t) &emmc_block_spec,
@@ -408,7 +340,7 @@ void rz_io_setup(void)
 		panic();
 	}
 }
-#endif
+
 int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 				uintptr_t *image_spec)
 {
