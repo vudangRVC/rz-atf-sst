@@ -34,12 +34,18 @@ func plat_secondary_reset
 	bic	w0, w0, #TFP_BIT
 	msr	cptr_el3, x0
 
-	ldr	x0, =PARAMS_BASE
-	ldr	x1, [x0]
-	orr	x1, x1, #1
-	str	x1, [x0]
-	mov_imm	x2, BL31_BASE
-	br	x2
+#if defined(IMAGE_BL31)
+	adrp x0, bl31_params_base
+	add  x0, x0, :lo12:bl31_params_base
+	ldr  x0, [x0]
+	ldr  x1, [x0]
+	orr  x1, x1, #1
+	str  x1, [x0]
+
+	mov_imm x2, BL31_BASE
+	br x2
+#endif
+
 	nop
 	nop
 	nop
@@ -110,8 +116,11 @@ func plat_get_my_entrypoint
 	mov x0, #0
 	ret x9
 #else
-	ldr x1, =PARAMS_BASE
-	ldr x21, [x1]
+	/* Load params base from global variable */
+	adrp	x0, bl31_params_base
+	add	x0, x0, :lo12:bl31_params_base
+	ldr	x0, [x0]
+	ldr	x21, [x0]
 
 	/* Check the reset info */
 	and x1, x21, #0x000c

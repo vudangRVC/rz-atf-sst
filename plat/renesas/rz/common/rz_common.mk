@@ -4,23 +4,30 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-PLAT_SOC_RZG2L					:= 1
+PLAT_SOC_CMN					:= 1
 BL2_AT_EL3						:= 1
 RESET_TO_BL2					:= 1
+RESET_TO_BL31					:= 1
 COLD_BOOT_SINGLE_CPU			:= 1
-PROGRAMMABLE_RESET_ADDRESS		:= 1
+PROGRAMMABLE_RESET_ADDRESS		:= 0
 WARMBOOT_ENABLE_DCACHE_EARLY	:= 1
 GICV3_SUPPORT_GIC600			:= 1
+GICV3_OVERRIDE_DISTIF_PWR_OPS	:= 1
 HW_ASSISTED_COHERENCY			:= 1
 USE_COHERENT_MEM				:= 0
 TRUSTED_BOARD_BOOT				:= 0
 PROTECTED_CHIPID				:= 1
 DEBUG_FPGA						:= 0
+PLAT_DDR_ECC					:= 0
 PLAT_EMMC_WRITE_ENABLE			:= 0
+PLAT_SYSTEM_SUSPEND				:= 0
+ENABLE_PIE						:= 1
 
-$(eval $(call add_define,PLAT_SOC_RZG2L))
+$(eval $(call add_define,PLAT_SOC_CMN))
 $(eval $(call add_define,PROTECTED_CHIPID))
 $(eval $(call add_define,DEBUG_FPGA))
+$(eval $(call add_define,ENABLE_PIE))
+$(eval $(call add_define,PLAT_EXTRA_LD_SCRIPT))
 
 WA_RZG2L_GIC64BIT				:= 1
 $(eval $(call add_define,WA_RZG2L_GIC64BIT))
@@ -30,8 +37,27 @@ $(eval $(call add_define,WA_RZG2L_GIC64BIT))
 # Crypto module.
 override CRYPTO_SUPPORT			:= 0
 
+ifneq (${PLAT_SYSTEM_SUSPEND},0)
+override PLAT_SYSTEM_SUSPEND	:= 1
+endif
+
+# DEBUG helper flag to generate obj file
+ifneq (${DEBUG},0)
+CFLAGS += -save-temps=obj \
+
+include lib/libc/libc.mk
+$(BUILD_PLAT)/lib/libc/snprintf.o:
+    CFLAGS += -Wno-error=implicit-fallthrough
+endif
+
 # Enable workarounds for selected Cortex-A55 erratas.
 ERRATA_A55_1530923				:= 1
+ERRATA_A55_768277				:= 1
+ERRATA_A55_778703 				:= 1
+ERRATA_A55_798797 				:= 1
+ERRATA_A55_846532 				:= 1
+ERRATA_A55_903758 				:= 1
+ERRATA_A55_1221012				:= 1
 
 # Support QSPI Flash
 ifndef SPI_FLASH
@@ -40,6 +66,17 @@ ifndef SPI_FLASH
 	else
 		SPI_FLASH = MT25QU512ABB
 	endif
+endif
+
+ifeq (${ENABLE_PIE},1)
+	include lib/cpus/cpu-ops.mk
+
+	BL2_CPPFLAGS += -DENABLE_PIE=1
+	BL2_CFLAGS   += -fpie -fno-plt
+	BL2_LDFLAGS  += -pie --no-dynamic-linker --emit-relocs
+
+	PLAT_BL_COMMON_SOURCES += lib/cpus/aarch64/cpu_helpers.S \
+							lib/cpus/errata_report.c
 endif
 
 PLAT_INCLUDES			:=	-Iplat/renesas/rz/common/include						\
@@ -65,6 +102,9 @@ EMMC_SOURCES			:=	plat/renesas/rz/common/drivers/emmc/emmc_interrupt.c	\
 SPI_MULTI_SOURCE 		:=	plat/renesas/rz/common/drivers/spi_multi/spi_multi.c	\
 							plat/renesas/rz/common/drivers/spi_multi/${SPI_FLASH}/spi_multi_device.c
 
+XSPI_SOURCES			:=	plat/renesas/rz/common/drivers/xspi.c	\
+							plat/renesas/rz/common/drivers/io/io_xspidrv.c
+
 SD_SOURCES				:=	plat/renesas/rz/common/drivers/sd/sd_init.c				\
 							plat/renesas/rz/common/drivers/sd/sd_mount.c			\
 							plat/renesas/rz/common/drivers/sd/sd_util.c				\
@@ -84,7 +124,7 @@ BL_COMMON_SOURCES		+=	lib/cpus/aarch64/cortex_a55.S							\
 
 include lib/xlat_tables_v2/xlat_tables.mk
 PLAT_BL_COMMON_SOURCES	:=	${XLAT_TABLES_LIB_SRCS}									\
-							plat/renesas/rz/common/aarch64/plat_helpers.S			\
+							plat/renesas/rz/common/aarch64/plat_helpers_system_suspend.S		\
 							plat/renesas/rz/common/drivers/scifa.S					\
 							plat/renesas/rz/common/drivers/syc.c					\
 							plat/renesas/rz/common/drivers/sys.c					\
@@ -107,9 +147,11 @@ BL2_SOURCES				+=	common/desc_image_load.c								\
 							plat/renesas/rz/common/plat_image_load.c				\
 							plat/renesas/rz/common/plat_storage.c					\
 							plat/renesas/rz/common/drivers/pfc.c					\
+							plat/renesas/rz/common/board_info.c						\
 							${RZ_TIMER_SOURCES}										\
 							${EMMC_SOURCES}											\
 							${SPI_MULTI_SOURCE}										\
+							${XSPI_SOURCES}											\
 							${DDR_SOURCES}											\
 							${FDT_WRAPPERS_SOURCES}									\
 							${FCONF_SOURCES}										\
@@ -127,8 +169,6 @@ BL31_SOURCES			+=	plat/common/plat_gicv3.c								\
 							plat/renesas/rz/common/rz_plat_sip_handler.c			\
 							plat/renesas/rz/common/rz_sip_svc.c						\
 							plat/renesas/rz/common/board_info.c						\
-							${FDT_WRAPPERS_SOURCES}									\
-							${FCONF_SOURCES}										\
 							${SD_SOURCES}											\
 							${GICV3_SOURCES}
 
