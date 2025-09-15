@@ -16,7 +16,11 @@ MEMORY {
     ROM (rx): ORIGIN = BL2_RO_BASE, LENGTH = BL2_RO_LIMIT - BL2_RO_BASE
     RAM (rwx): ORIGIN = BL2_RW_BASE, LENGTH = BL2_RW_LIMIT - BL2_RW_BASE
 #else /* BL2_IN_XIP_MEM */
+ #if ENABLE_PIE
+    RAM (rwx): ORIGIN = 0, LENGTH = (RZCMN_RAM_MAX_SIZE)
+ #else
     RAM (rwx): ORIGIN = BL2_BASE, LENGTH = BL2_LIMIT - BL2_BASE
+ #endif
 #endif /* BL2_IN_XIP_MEM */
 
 #if SEPARATE_BL2_NOLOAD_REGION
@@ -37,10 +41,14 @@ SECTIONS {
     ASSERT(. == ALIGN(PAGE_SIZE),
         "BL2_RO_BASE address is not aligned on a page boundary.")
 #else /* BL2_IN_XIP_MEM */
+ #if ENABLE_PIE
+    . = 0x0;  /* Start at zero for PIE */
+ #else
     . = BL2_BASE;
 
     ASSERT(. == ALIGN(PAGE_SIZE),
         "BL2_BASE address is not aligned on a page boundary.")
+ #endif
 #endif /* BL2_IN_XIP_MEM */
 
 #if SEPARATE_CODE_AND_RODATA
@@ -107,6 +115,14 @@ SECTIONS {
 
     ASSERT(__CPU_OPS_END__ > __CPU_OPS_START__,
         "cpu_ops not defined for this platform.")
+#if ENABLE_PIE
+    /* PIE fixup table */
+    .pie_fixup : {
+        __PIE_FIXUP_START__ = .;
+        KEEP(*(.pie_fixup))
+        __PIE_FIXUP_END__ = .;
+    }
+#endif
 
 #if BL2_IN_XIP_MEM
     . = BL2_RW_BASE;
@@ -201,6 +217,8 @@ SECTIONS {
 #if BL2_IN_XIP_MEM
     ASSERT(. <= BL2_RW_LIMIT, "BL2's RW content has exceeded its limit.")
 #else /* BL2_IN_XIP_MEM */
+ #if !ENABLE_PIE
     ASSERT(. <= BL2_LIMIT, "BL2 image has exceeded its limit.")
+ #endif
 #endif /* BL2_IN_XIP_MEM */
 }

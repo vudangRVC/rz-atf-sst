@@ -7,45 +7,40 @@
 
 #include <lib/mmio.h>
 #include <sys.h>
-#include <sys_regs.h>
+#include <sys_regs_offset.h>
 #include <common/debug.h>
+#include <lib/fconf/fconf.h>
+#include <rz_fconf.h>
 
 
-#define BOOT_MODE_ESD		(0)
-#define BOOT_MODE_EMMC_1_8	(1)
-#define BOOT_MODE_EMMC_3_3	(2)
-#define BOOT_MODE_SPI_1_8	(3)
-#define BOOT_MODE_SPI_3_3	(4)
-#define BOOT_MODE_SCIF		(5)
 
-#define MASK_BOOTM_DEVICE	(0x0F)
-#define MASK_BOOTM_SECURE	(0x10)
-
+bool sys_is_resume_reboot(void)
+{
+#if PLAT_SYSTEM_SUSPEND
+	return pwrc_board_is_resume();
+#else
+	return false;
+#endif
+}
 
 boot_mode_t sys_get_boot_mode(void)
 {
-	uint32_t stat_md_boot = mmio_read_32(SYS_LSI_MODE) & MASK_BOOTM_DEVICE;
-	boot_mode_t boot_mode;
+	/* Initialize global SYSC config from DTB.  */
+	const struct sysc_config_t * g_sysc_fconf_cfg = sysc_config_getter();
 
-	switch (stat_md_boot) {
-	case (BOOT_MODE_ESD):
+	uint32_t stat_md_boot = mmio_read_32(g_sysc_fconf_cfg->sysc_base + g_sysc_fconf_cfg->sysc_lsi_mode_reg_offset) & g_sysc_fconf_cfg->sysc_lsi_mode_mask;
+	boot_mode_t boot_mode = 0;
+
+	if (stat_md_boot == g_sysc_fconf_cfg->sysc_boot_mode_esd) {
 		boot_mode = SYS_BOOT_MODE_ESD;
-		break;
-	case (BOOT_MODE_EMMC_1_8):
+	} else if (stat_md_boot == g_sysc_fconf_cfg->sysc_boot_mode_emmc_1_8) {
 		boot_mode = SYS_BOOT_MODE_EMMC_1_8;
-		break;
-	case (BOOT_MODE_EMMC_3_3):
+	} else if (stat_md_boot == g_sysc_fconf_cfg->sysc_boot_mode_emmc_3_3) {
 		boot_mode = SYS_BOOT_MODE_EMMC_3_3;
-		break;
-	case (BOOT_MODE_SPI_1_8):
+	} else if (stat_md_boot == g_sysc_fconf_cfg->sysc_boot_mode_spi_1_8) {
 		boot_mode = SYS_BOOT_MODE_SPI_1_8;
-		break;
-	case (BOOT_MODE_SPI_3_3):
+	} else if (stat_md_boot == g_sysc_fconf_cfg->sysc_boot_mode_spi_3_3) {
 		boot_mode = SYS_BOOT_MODE_SPI_3_3;
-		break;
-
-	default:
-		panic();
 	}
 
 	return boot_mode;

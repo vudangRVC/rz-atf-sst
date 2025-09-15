@@ -30,11 +30,8 @@ Includes   <System Includes> , "Project Includes"
 #ifndef SD_H
 #define SD_H
 
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
 #include <rzg2l_def.h>
-#endif
+#include <rzv2h_def.h>
 
 #define _SDHI0_BASE_    MMC0_SD_BASE
 

@@ -7,11 +7,8 @@
 #ifndef __OTP_REGS_H__
 #define __OTP_REGS_H__
 
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
 #include <rzg2l_def.h>
-#endif						/* Get the OTP base address */
+#include <rzv2h_def.h>						/* Get the OTP base address */
 
 
 #define OTP_OTPPWR_OFFSET					UL(0x0000)
