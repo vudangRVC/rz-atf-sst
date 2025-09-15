@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2025, Arm Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2023, Arm Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,29 +12,35 @@ OUTPUT_ARCH(PLATFORM_LINKER_ARCH)
 ENTRY(bl2_entrypoint)
 
 MEMORY {
+#if ENABLE_PIE
+    RAM (rwx): ORIGIN = RZG2L_BL2_BASE, LENGTH = (RZCMN_RAM_MAX_SIZE)
+#else
     RAM (rwx): ORIGIN = BL2_BASE, LENGTH = BL2_LIMIT - BL2_BASE
+#endif
 }
 
 SECTIONS {
-    RAM_REGION_START = ORIGIN(RAM);
-    RAM_REGION_LENGTH = LENGTH(RAM);
+#if ENABLE_PIE
+    . = 0x0;  /* Start at zero for PIE */
+#else
     . = BL2_BASE;
 
     ASSERT(. == ALIGN(PAGE_SIZE),
         "BL2_BASE address is not aligned on a page boundary.")
+#endif
 
 #if SEPARATE_CODE_AND_RODATA
     .text . : {
-        ASSERT(. == ALIGN(PAGE_SIZE),
-        ".text address is not aligned on a page boundary.");
-
         __TEXT_START__ = .;
 
+#if ENABLE_RME
+        *bl2_rme_entrypoint.o(.text*)
+#else /* ENABLE_RME */
         *bl2_entrypoint.o(.text*)
+#endif /* ENABLE_RME */
 
         *(SORT_BY_ALIGNMENT(.text*))
         *(.vectors)
-        __TEXT_END_UNALIGNED__ = .;
 
         . = ALIGN(PAGE_SIZE);
 
@@ -57,16 +63,12 @@ SECTIONS {
 
         RODATA_COMMON
 
-        __RODATA_END_UNALIGNED__ = .;
         . = ALIGN(PAGE_SIZE);
 
         __RODATA_END__ = .;
     } >RAM
 #else /* SEPARATE_CODE_AND_RODATA */
     .ro . : {
-        ASSERT(. == ALIGN(PAGE_SIZE),
-        ".ro address is not aligned on a page boundary.");
-
         __RO_START__ = .;
 
         *bl2_entrypoint.o(.text*)
@@ -89,6 +91,15 @@ SECTIONS {
         __RO_END__ = .;
     } >RAM
 #endif /* SEPARATE_CODE_AND_RODATA */
+
+#if ENABLE_PIE
+    /* PIE fixup table */
+    .pie_fixup : {
+        __PIE_FIXUP_START__ = .;
+        KEEP(*(.pie_fixup))
+        __PIE_FIXUP_END__ = .;
+    }
+#endif
 
     __RW_START__ = .;
 
@@ -122,7 +133,6 @@ SECTIONS {
 
     __RW_END__ = .;
     __BL2_END__ = .;
-    RAM_REGION_END = .;
 
     __BSS_SIZE__ = SIZEOF(.bss);
 
@@ -131,5 +141,4 @@ SECTIONS {
         __COHERENT_RAM_END_UNALIGNED__ - __COHERENT_RAM_START__;
 #endif /* USE_COHERENT_MEM */
 
-    ASSERT(. <= BL2_LIMIT, "BL2 image has exceeded its limit.")
 }

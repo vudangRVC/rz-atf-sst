@@ -14,17 +14,7 @@
  ******************************************************************************/
 int dt_validation(uintptr_t dt_addr)
 {
-	int ret;
-
-	ret = fdt_check_header((void *)dt_addr);
-	if (ret != 0) {
-		ERROR("DTB validation failed: %s (%d)\n", fdt_strerror(ret), ret);
-		ERROR("DTB location: 0x%lx, magic: 0x%x\n", 
-			  dt_addr, 
-			  fdt_magic((const void *)dt_addr));
-	}
-
-	return ret;
+	return fdt_check_header((void *)dt_addr);
 }
 
 int8_t read_prop_from_subnode(void *fdt, const char *node, const char *sub_node, const char *prop_name,
