@@ -1,0 +1,757 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: "http://devicetree.org/schemas/arm/renesas/renesas,rz-boards.yaml#"
+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+
+title: Renesas RZ Board Platforms (RZ/G2L, RZ/V2L, RZ/V2H)
+
+description: |
+  Board-level schema covering the common structure and board/firmware parameters
+  used by Renesas RZ boards:
+    - RZ/G2L SMARC EVK (r9a07g044l2)
+    - RZ/V2L SMARC EVK (r9a07g054l2)
+    - RZ/G2L SBC
+    - RZ/V2H EVK ver1 (r9a09g057h4)
+
+select:
+  required:
+    - compatible
+  properties:
+    compatible:
+      contains:
+        anyOf:
+          - const: renesas,smarc-evk
+          - const: renesas,rzg2l-sbc
+          - const: renesas,r9a09g057h4-dev
+
+properties:
+  compatible:
+    anyOf:
+      - items:
+          - const: renesas,rzg2l-sbc
+          - const: renesas,r9a07g044l2
+          - const: renesas,r9a07g044
+      - items:
+          - const: renesas,smarc-evk
+          - const: renesas,r9a07g044l2
+          - const: renesas,r9a07g044
+      - items:
+          - const: renesas,smarc-evk
+          - const: renesas,r9a07g054l2
+          - const: renesas,r9a07g054
+      - items:
+          - const: renesas,r9a09g057h4-dev
+          - const: renesas,r9a09g057h4
+          - const: renesas,r9a09g057
+
+  model:
+    type: string
+
+  "#address-cells":
+    const: 2
+  "#size-cells":
+    const: 2
+
+patternProperties:
+  # Top-level fixed clocks (board-provided)
+  "^(extal|extal-clk|et[01]_(txc_tx_clk|rxc_rx_clk))(@[0-9a-f]+)?$":
+    type: object
+    description: External reference clock and optional Ethernet clocks
+    properties:
+      compatible:
+        const: fixed-clock
+      "#clock-cells":
+        const: 0
+      clock-frequency:
+        $ref: /schemas/types.yaml#/definitions/uint32
+    required:
+      - compatible
+      - "#clock-cells"
+      - clock-frequency
+    additionalProperties: false
+
+  # SoC bus node
+  soc:
+    type: object
+    $ref: /schemas/simple-bus.yaml#
+    properties:
+      compatible:
+        const: simple-bus
+      "#address-cells":
+        const: 2
+      "#size-cells":
+        const: 2
+
+      # Common board/firmware parameters
+      soc_id:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: SoC identifier (1 = RZG2L, 2 = RZV2L, 3 = RZV2H)
+      bl2_limit:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: Physical address limit for BL2 image placement
+      enable_cold_boot:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: "Enable cold boot entry (0 = disabled, 1 = enabled). See more at: https://trustedfirmware-a.readthedocs.io/en/latest/design/firmware-design.html#cold-boot"
+
+      # Boot image locations for different media
+      spirom_fip_base:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: Base byte offset in SPI-ROM where the FIP image starts
+      spirom_fip_size:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: Size in bytes of the FIP image stored in SPI-ROM
+      emmc_fip_base:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: Base byte offset in eMMC where the FIP image starts
+      emmc_fip_size:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: Size in bytes of the FIP image stored in eMMC
+      sd_fip_base:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: Base byte offset in SD card where the FIP image starts
+      sd_fip_size:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: Size in bytes of the FIP image stored in SD card
+
+    required:
+      - compatible
+      - "#address-cells"
+      - "#size-cells"
+    additionalProperties: true
+
+    patternProperties:
+      # UART (SCIF). Exact device bindings are validated by the SCIF schema.
+      "^serial@[0-9a-f]+$":
+        type: object
+        properties:
+          compatible:
+            anyOf:
+              - const: renesas,scif-r9a07g044
+              - const: renesas,scif-r9a07g054
+              - const: renesas,scif-r9a09g057
+          reg: true
+          clock-names: true
+          dmas: true
+          dma-names: true
+          power-domains: true
+          status:
+            enum: [ "okay", "disabled" ]
+          uart_inck_hz:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Optional input reference clock override for UART
+          uart_baudrate:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Optional default UART baudrate
+        required:
+          - compatible
+          - reg
+        additionalProperties: true
+
+      # RPC-IF (SPI Multi I/O or XSPI)
+      "^spi@[0-9a-f]+$":
+        type: object
+        properties:
+          compatible:
+            anyOf:
+              - items:
+                  - const: renesas,r9a07g044-rpc-if
+                  - const: renesas,rzg2l-rpc-if
+              - items:
+                  - const: renesas,r9a07g054-rpc-if
+                  - const: renesas,rzg2l-rpc-if
+              - const: renesas,r9a09g057-rpc-if
+          reg: true
+          reg-names: true
+          power-domains: true
+          "#address-cells":
+            const: 1
+          "#size-cells":
+            const: 0
+          status:
+            enum: [ "okay", "disabled" ]
+          spi_type:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: 0 = SPI Multi I/O, 1 = XSPI
+          # SPI Multi I/O specific settings used by spi_multi driver
+          spim_phycnt:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: PHY Control register value
+          spim_phyoffset1:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: PHY Offset 1 register value
+          spim_phyoffset2:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: PHY Offset 2 register value
+          spim_cmncr:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Common control register value (CMNCR)
+          spim_ssldr:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: SSL delay register value (SSLDR)
+          spim_drcr:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Data Read Control register value (DRCR)
+          spim_drcmr:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Data Read Command register value (DRCMR)
+          spim_drear:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Data Read Extended Address register value (DREAR)
+          spim_drenr:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Data Read Enable register value (DRENR)
+          spim_drdmcr:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Data Read Dummy Cycle register value (DRDMCR)
+          spim_drdrenr:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Data Read Dummy Enable register value (DRDRENR)
+        required:
+          - compatible
+          - reg
+        allOf:
+          - if:
+              properties:
+                spi_type:
+                  const: 0  # SPI Multi I/O
+            then:
+              required:
+                - spim_phycnt
+                - spim_phyoffset1
+                - spim_phyoffset2
+                - spim_cmncr
+                - spim_ssldr
+                - spim_drcr
+                - spim_drcmr
+                - spim_drear
+                - spim_drenr
+                - spim_drdmcr
+                - spim_drdrenr
+        additionalProperties: true
+
+      # CPG (Clock Pulse Generator)
+      "^clock-controller@[0-9a-f]+$":
+        type: object
+        properties:
+          compatible:
+            anyOf:
+              - const: renesas,r9a07g044-cpg
+              - const: renesas,r9a07g054-cpg
+              - const: renesas,r9a09g057-cpg
+          reg: true
+          clocks: true
+          clock-names: true
+          "#clock-cells":
+            const: 2
+          "#reset-cells":
+            const: 1
+          "#power-domain-cells":
+            const: 0
+          status:
+            enum: [ "okay", "disabled" ]
+
+          cpg_type:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Implementation selector for CPG driver behavior on control clock settings and WDT reset clock (0 = RZG2L/V2L, 1 = RZV2H)
+          cpg_selector_on_off:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Enable selector toggling during setup (0 = no, 1 = yes)
+          cpg_early_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Early-stage CPG setup required by firmware (0 = no, 1 = yes)
+          cpg_mstop_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Configure module stop (MSTOP) during setup (0 = no, 1 = yes)
+
+          cpg_clk_on_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              Table of CPG Clock ON/OFF register programming entries. Encoded as a
+              flattened array of 32-bit values grouped in sets of four, in the
+              following order per entry:
+                [register_address, register_value, monitor_address, type]
+              where:
+                - register_address: 32-bit offset of the target CPG register
+                - register_value: 32-bit value to write to the register
+                - monitor_address: 32-bit offset of the status/monitor register
+                - type: 0 for Clock entries (this table contains clock entries)
+
+              Example (two entries shown):
+                0x0504 0x00030000  0x0684  0
+                0x0520 0x00010000  0x06A0  0
+          cpg_reset_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              Table of CPG Reset ON/OFF register programming entries. Encoded as a
+              flattened array of 32-bit values grouped in sets of four, in the
+              following order per entry:
+                [register_address, register_value, monitor_address, type]
+              where:
+                - register_address: 32-bit offset of the target Reset register
+                - register_value: 32-bit value to write to the register
+                - monitor_address: 32-bit offset of the status/monitor register
+                - type: 1 for Reset entries (this table contains reset entries)
+
+              Example (two entries shown):
+                0x0804 0x00070000  0x0984  1
+                0x0820 0x00010000  0x09A0  1
+          cpg_static_select_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              Table for Static Source Clock and Division Ratio configuration.
+              Encoded as pairs of 32-bit values:
+                [register_address, register_value]
+
+              Example:
+                0x0208 0x01000100
+                0x0408 0x01000000
+          cpg_dynamic_select_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              Table for Dynamic Source Clock and Division Ratio configuration.
+              Encoded as pairs of 32-bit values:
+                [register_address, register_value]
+          cpg_pll_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              PLL configuration entries. Encoded as groups of eight 32-bit values
+              per PLL instance in the following order:
+                [stby_reg_addr, stby_reg_value,
+                 clk1_reg_addr, clk1_reg_value,
+                 clk2_reg_addr, clk2_reg_value,
+                 mon_reg_addr,  mon_reg_value]
+
+              These correspond respectively to:
+                - PLL standby control register
+                - PLL output clock setting register 1
+                - PLL output clock setting register 2
+                - PLL monitor register
+
+              Example (two PLL entries shown):
+                0x0010 0x00010001  0x0014 0xFAE13203  0x0018 0x00081000  0x001C 0x00000011
+                0x0020 0x00010001  0x0024 0x00003e83  0x0028 0x00082D02  0x002C 0x00000011
+        required:
+          - compatible
+          - reg
+        additionalProperties: true
+
+      # SYSC (System Controller)
+      "^system-controller@[0-9a-f]+$":
+        type: object
+        properties:
+          compatible:
+            anyOf:
+              - const: renesas,r9a07g044-sysc
+              - const: renesas,r9a07g054-sysc
+              - const: renesas,r9a09g057-sysc
+          reg: true
+          status:
+            enum: [ "okay", "disabled" ]
+          enable_pwrc_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: |
+              Enable platform power controller (PWRC) initialization by firmware.
+              When set to 1, BL2 calls pwrc_setup() to initialize power/reset domains
+              early; some SoCs may also invoke PWRC setup in BL31 as configured.
+          sysc_lsi_mode_mask:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Bit mask applied to the SYSC LSI mode register to isolate the boot mode field.
+          sysc_lsi_mode_reg_offset:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Offset from SYSC base to the LSI mode register containing boot mode straps.
+          sysc_boot_mode_esd:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Masked value of the LSI mode register corresponding to SD boot.
+          sysc_boot_mode_emmc_1_8:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Masked value of the LSI mode register corresponding to eMMC 1.8V boot.
+          sysc_boot_mode_emmc_3_3:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Masked value of the LSI mode register corresponding to eMMC 3.3V boot.
+          sysc_boot_mode_spi_1_8:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Masked value of the LSI mode register corresponding to SPI 1.8V boot.
+          sysc_boot_mode_spi_3_3:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Masked value of the LSI mode register corresponding to SPI 3.3V boot.
+
+          tzc_msram_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Enable TZC-400 initialization for SRAM (M33/ASRAM regions) in BL2.
+          tzc_m33_base:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Base address of the TZC-400 instance protecting the M33 SRAM region.
+          tzc_spi_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Enable TZC-400 initialization for the SPI/xSPI region.
+          tzc_spi_base:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Base address of the TZC-400 instance used for SPI/xSPI.
+          tzc_ddr_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Enable TZC-400 initialization for DDR controller ports.
+          tzc_ddr00_base:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Base address of the TZC-400 instance for DDR port 0 channel 0 (SoC-specific mapping).
+          tzc_ddr01_base:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Base address of the TZC-400 instance for DDR port 0 channel 1 (SoC-specific mapping).
+          tzc_ddr10_base:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Base address of the TZC-400 instance for DDR port 1 channel 0 (SoC-specific mapping).
+          tzc_ddr11_base:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Base address of the TZC-400 instance for DDR port 1 channel 1 (SoC-specific mapping).
+          tzc_pci_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Enable TZC-400 initialization for the PCI/PCIe region.
+          tzc_pci_base:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Base address of the TZC-400 instance used for PCI/PCIe.
+          tzc_r8_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Enable TZC-400 initialization for the R8 accelerator region (if present).
+          tzc_r8_base:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Base address of the TZC-400 instance used for the R8 accelerator region.
+          sys_acctl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              System access control configuration table for security attribution.
+              Encoded as a flattened array of 32-bit values applied in-order by
+              platform code. Boards typically provide tuples per register offset;
+              consult SoC documentation for exact semantics.
+        required:
+          - compatible
+          - reg
+        additionalProperties: true
+
+      # SYC (System Counter)
+      "^system-counter@[0-9a-f]+$":
+        type: object
+        properties:
+          compatible:
+            anyOf:
+              - const: renesas,r9a07g044-syc
+              - const: renesas,r9a07g054-syc
+              - const: renesas,r9a09g057-syc
+          reg: true
+          syc_inck_hz:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Input reference clock frequency of the system counter
+        required:
+          - compatible
+          - reg
+        additionalProperties: true
+
+      # PFC / Pin Controller
+      "^pinctrl@[0-9a-f]+$":
+        type: object
+        properties:
+          compatible:
+            anyOf:
+              - const: renesas,r9a07g044-pinctrl
+              - const: renesas,r9a07g054-pinctrl
+              - const: renesas,r9a09g057-pinctrl
+          reg: true
+          status:
+            enum: [ "okay", "disabled" ]
+
+          pfc_mux_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Apply mux table during early setup (0 = no, 1 = yes)
+          pfc_qspi_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Apply QSPI pin configuration during setup (0 = no, 1 = yes)
+          pfc_sd_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Apply SD/SDIO pin configuration during setup (0 = no, 1 = yes)
+          pfc_scif_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Apply SCIF pin configuration during setup (0 = no, 1 = yes)
+          pfc_drive_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Apply drive-strength configuration during setup (0 = no, 1 = yes)
+          pfc_riic_pmic_setup:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Apply RIIC/PMIC I2C pin configuration (0 = no, 1 = yes)
+
+          pfc_mux_reg_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              Multiplexing/function configuration table for the PFC, encoded per entry
+              as five consecutive triplets (total 15 words per entry):
+                [PMC_op, PMC_addr, PMC_val,
+                 PFC_op, PFC_addr, PFC_val,
+                 IOLH_op, IOLH_addr, IOLH_val,
+                 PUPD_op, PUPD_addr, PUPD_val,
+                 SR_op,  SR_addr,  SR_val]
+
+              - op: 1 = write this register, 0 = skip
+              - addr: 32-bit offset of the corresponding PFC/IO register
+              - val:  value to write when op = 1
+
+              Example (one entry shown over multiple lines):
+                1 0x0222 0x00000003  1 0x0488 0x00000011  0 0x1120 0x00000101
+                0 0x1D10 0x00000000  0 0x1510 0x00000101
+
+          pfc_qspi_reg_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              QSPI pin configuration table, encoded per entry as three consecutive
+              triplets (total 9 words per entry):
+                [IOLH_op, IOLH_addr, IOLH_val,
+                 PUPD_op, PUPD_addr, PUPD_val,
+                 SR_op,   SR_addr,   SR_val]
+
+              - op: 1 = write this register, 0 = skip
+              - addr: 32-bit offset of the corresponding PFC/IO register
+              - val:  value to write when op = 1
+
+              Example (one entry shown over multiple lines):
+                0 0x00000000 0x00000000  0 0x00000000 0x00000000  1 0x1050 0x02020202
+          pfc_sd_reg_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: |
+              SD/SDIO pin configuration table, encoded per entry as six consecutive
+              triplets (total 18 words per entry):
+                [PMC_op, PMC_addr, PMC_val,
+                 PFC_op, PFC_addr, PFC_val,
+                 IOLH_op, IOLH_addr, IOLH_val,
+                 PUPD_op, PUPD_addr, PUPD_val,
+                 SR_op,  SR_addr,  SR_val,
+                 IEN_op, IEN_addr, IEN_val]
+
+              - op: 1 = write this register, 0 = skip
+              - addr: 32-bit offset of the corresponding PFC/IO register
+              - val:  value to write when op = 1
+
+              Example (one entry shown over multiple lines):
+                1 0x0222 0x00000003  1 0x0488 0x00000003  1 0x1030 0x00020202
+                1 0x1C30 0x00000000  1 0x1430 0x00010101  1 0x1830 0x00000100
+        required:
+          - compatible
+          - reg
+        additionalProperties: true
+
+      # DDR/SDRAM controller configuration
+      "^memory@[0-9a-f]+$":
+        type: object
+        properties:
+          compatible:
+            anyOf:
+              - const: renesas,r9a07g044-sdram
+              - const: renesas,r9a07g054-sdram
+              - const: renesas,r9a09g057-sdram-0
+          reg: true
+          ddr_type:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: 0 = DDR4, 1 = LPDDR4
+          # DDR4 controller register offsets (used by firmware programming)
+          lp_cmd_offset:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Low-power command timing offset applied during DDR4 init
+          ddrmc_r000: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R000)" }
+          ddrmc_r001: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R001)" }
+          ddrmc_r002: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R002)" }
+          ddrmc_r003: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R003)" }
+          ddrmc_r004: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R004)" }
+          ddrmc_r005: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R005)" }
+          ddrmc_r006: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R006)" }
+          ddrmc_r007: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R007)" }
+          ddrmc_r008: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R008)" }
+          ddrmc_r009: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R009)" }
+          ddrmc_r010: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R010)" }
+          ddrmc_r011: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R011)" }
+          ddrmc_r012: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R012)" }
+          ddrmc_r013: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R013)" }
+          ddrmc_r014: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R014)" }
+          ddrmc_r015: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R015)" }
+          ddrmc_r016: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R016)" }
+          ddrmc_r017: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R017)" }
+          ddrmc_r018: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R018)" }
+          ddrmc_r019: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R019)" }
+          ddrmc_r020: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R020)" }
+          ddrmc_r021: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R021)" }
+          ddrmc_r022: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R022)" }
+          ddrmc_r023: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R023)" }
+          ddrmc_r024: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R024)" }
+          ddrmc_r025: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R025)" }
+          ddrmc_r026: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R026)" }
+          ddrmc_r027: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R027)" }
+          ddrmc_r028: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R028)" }
+          ddrmc_r029: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R029)" }
+          ddrmc_r039: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R039)" }
+          ddrmc_r040: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R040)" }
+          ddrmc_r043: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R043)" }
+          ddrmc_r044: { $ref: /schemas/types.yaml#/definitions/uint32, description: "DDR MC register offset (DDRMC_R044)" }
+          # DDR4 configuration tables (RZ/G2L, RZ/V2L family)
+          swizzle_mc_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Memory controller swizzle table (pairs of address,value)
+          mc_init_num:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Number of initialization entries in mc_init_tbl
+          mc_init_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Memory controller initialization table (address,value pairs and sequences)
+          swizzle_phy_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: PHY swizzle table (indexed write sequences)
+          mc_phy_settings_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Memory controller PHY settings table (address,value pairs)
+          mc_odt_pins_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: ODT pins configuration table
+          mc_mr1_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Mode Register 1 values per rank
+          mc_mr2_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Mode Register 2 values per rank
+          mc_mr5_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Mode Register 5 values per rank
+          mc_mr6_tbl:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Mode Register 6 values per rank
+
+          # LPDDR4 configuration sequences (RZ/V2H family)
+          param_setup_mc:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Controller setup parameter table (index,value pairs)
+          param_phyinit_c:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: PHY init C parameter table
+          param_phyinit_swizzle:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: PHY init swizzle parameter table
+          param_phyinit_f_1d_0:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: PHY init F 1D step parameter table
+          param_phyinit_f_2d_0:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: PHY init F 2D step parameter table
+          param_phyinit_i:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: PHY init I parameter table
+          phyinit_1d:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: 1D PHY training sequence table
+          phyinit_2d:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: 2D PHY training sequence table
+          retention_phyreglist_1d:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Retention register list for PHY (1D)
+          retention_phyreglist_2d:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Retention register list for PHY (2D)
+          retention_mcreglist:
+            $ref: /schemas/types.yaml#/definitions/uint32-array
+            description: Retention register list for memory controller
+
+        allOf:
+          - if:
+              properties:
+                ddr_type:
+                  const: 0  # DDR4
+            then:
+              required:
+                - swizzle_mc_tbl
+                - mc_init_num
+                - mc_init_tbl
+                - swizzle_phy_tbl
+                - mc_phy_settings_tbl
+                - mc_odt_pins_tbl
+                - mc_mr1_tbl
+                - mc_mr2_tbl
+                - mc_mr5_tbl
+                - mc_mr6_tbl
+          - if:
+              properties:
+                ddr_type:
+                  const: 1  # LPDDR4
+            then:
+              required:
+                - param_setup_mc
+                - param_phyinit_c
+                - param_phyinit_swizzle
+                - param_phyinit_f_1d_0
+                - param_phyinit_f_2d_0
+                - param_phyinit_i
+                - phyinit_1d
+                - phyinit_2d
+                - retention_phyreglist_1d
+                - retention_phyreglist_2d
+                - retention_mcreglist
+        additionalProperties: true
+
+additionalProperties: true
+
+examples:
+  - |
+    / {
+      compatible = "renesas,smarc-evk", "renesas,r9a07g054l2", "renesas,r9a07g054";
+      #address-cells = <2>;
+      #size-cells = <2>;
+
+      extal_clk: extal {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <24000000>;
+      };
+
+      soc {
+        compatible = "simple-bus";
+        #address-cells = <2>;
+        #size-cells = <2>;
+
+        cpg: clock-controller@11010000 {
+          compatible = "renesas,r9a07g054-cpg";
+          reg = <0x0 0x11010000 0x0 0x10000>;
+          clocks = <&extal_clk>;
+          clock-names = "extal";
+          #clock-cells = <2>;
+          #reset-cells = <1>;
+          #power-domain-cells = <0>;
+        };
+      };
+    };
+  - |
+    / {
+      compatible = "renesas,r9a09g057h4-dev", "renesas,r9a09g057h4", "renesas,r9a09g057";
+      #address-cells = <2>;
+      #size-cells = <2>;
+
+      extal-clk {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <24000000>;
+      };
+
+      v2h: soc {
+        compatible = "simple-bus";
+        #address-cells = <2>;
+        #size-cells = <2>;
+
+        cpg: clock-controller@10420000 {
+          compatible = "renesas,r9a09g057-cpg";
+          reg = <0 0x10420000 0 0x10000>;
+          clocks = <&extal_clk>;
+          clock-names = "extal";
+          #clock-cells = <2>;
+          #reset-cells = <1>;
+          #power-domain-cells = <0>;
+        };
+
+        ddr: memory@40000000 {
+          compatible = "renesas,r9a09g057-sdram-0";
+          reg = <0 0x40000000 0 0x10000>;
+          ddr_type = <1>;
+        };
+      };
+    };
+...

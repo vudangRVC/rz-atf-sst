@@ -1,0 +1,15 @@
+soc: rzv2h
+board: evk
+
+# Optional output dts path (repo-relative). If not specified, defaults to: fdts/<soc>-<board>.dts
+output: fdts/rzv2h-evk-ver1.dts
+
+spi:
+  protocol: xspi
+  flash_chip: MT25QU512ABB
+
+ddr:
+  type: lpddr4
+  ddr sources: 
+    - plat/renesas/rz/soc/v2h/drivers/ddr/ddr_param_def_lpddr4.c
+    - plat/renesas/rz/soc/v2h/drivers/ddr/ddr_retcsr_lpddr4.c
