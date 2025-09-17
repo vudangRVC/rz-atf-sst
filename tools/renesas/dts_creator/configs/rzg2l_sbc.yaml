@@ -1,0 +1,15 @@
+soc: rzg2l
+board: sbc
+
+# Optional output dts path (repo-relative). If not specified, defaults to: fdts/<soc>-<board>.dts
+# output: fdts/rzg2l-sbc-ver2.dts
+
+spi:
+  protocol: spi_multi
+  flash_chip: IS25WP256
+
+ddr:
+  type: ddr4
+  ddr sources: 
+    - plat/renesas/rz/soc/g2l/drivers/ddr/param_mc_issi8.c
+    - plat/renesas/rz/common/drivers/ddr/param_swizzle_issi8.c

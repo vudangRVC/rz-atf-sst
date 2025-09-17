@@ -1,0 +1,15 @@
+soc: rzv2l
+board: evk
+
+# Optional output dts path (repo-relative). If not specified, defaults to: fdts/<soc>-<board>.dts
+output: fdts/r9a07g054l2-smarc.dts
+
+spi:
+  protocol: spi_multi
+  flash_chip: MT25QU512ABB
+
+ddr:
+  type: ddr4
+  ddr sources: 
+    - plat/renesas/rz/soc/v2l/drivers/ddr/param_mc_C-011_D4-01-1.c
+    - plat/renesas/rz/common/drivers/ddr/param_swizzle_T1bc.c

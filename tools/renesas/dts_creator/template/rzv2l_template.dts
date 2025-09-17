@@ -1,0 +1,599 @@
+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+/*
+ * Copyright (C) 2025 Renesas Electronics Corp.
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "renesas,r9a07g054l2", "renesas,r9a07g054";
+	model = "Renesas SMARC EVK based on r9a07g054l2";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	/* clock can be either from exclk or crystal oscillator (XIN/XOUT) */
+	extal_clk: extal {
+		compatible = "fixed-clock";
+		#clock-cells = <0x00>;
+		clock-frequency = <0x00>;
+		phandle = <0x03>;
+	};
+
+	v2l: soc {
+		compatible = "simple-bus";
+		soc_id = <0x2>;
+		bl2_limit = <0x0002F000>;
+		enable_cold_boot = <0>;
+		spirom_fip_base = <0x2001D200>;
+		spirom_fip_size = <0xFFE2E00>;
+		emmc_fip_base = <0x00020000>;
+		emmc_fip_size = <0x001DFFFF>;
+		sd_fip_base = <0x00010000>;
+		sd_fip_size = <0x001DFFFF>;
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
+
+		scif0: serial@1004b800 {
+			compatible = "renesas,scif-r9a07g054";
+			reg = <0x00 0x1004b800 0x00 0x400>;
+			interrupt-names = "eri", "rxi", "txi", "bri", "dri", "tei";
+			clocks = <&extal_clk>;
+			clock-names = "fck";
+			power-domains = <&cpg>;
+			status = "disabled";
+
+			uart_inck_hz = <100000000>;
+			uart_baudrate = <115200>;
+		};
+
+		spi0: spi@10060000 {
+			compatible = "renesas,r9a07g054-rpc-if", "renesas,rzg2l-rpc-if";
+			reg = <0x00 0x10060000 0x00 0x10000>,
+			      <0x00 0x20000000 0x00 0x10000000>,
+			      <0x00 0x10070000 0x00 0x10000>;
+			reg-names = "regs", "dirmap", "wbuf";
+			power-domains = <&cpg>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+
+			/* SPI type
+			 * [0] = SPI Multi IO
+			 * [1] = XSPI
+			 */
+			spi_type = <0>;
+
+			/* SPI Multi IO specific settings */
+			/* Add spim_phycnt here. */
+			/* Add spim_phyoffset1 here. */
+			/* Add spim_phyoffset2 here. */
+			/* Add spim_cmncr here. */
+			/* Add spim_ssldr here. */
+			/* Add spim_drcr here. */
+			/* Add spim_drcmr here. */
+			/* Add spim_drear here. */
+			/* Add spim_drenr here. */
+			/* Add spim_drdmcr here. */
+			/* Add spim_drdrenr here. */
+		};
+
+		cpg: clock-controller@11010000 {
+			compatible = "renesas,r9a07g054-cpg";
+			reg = <0 0x11010000 0 0x10000>;
+			clocks = <&extal_clk>;
+			clock-names = "extal";
+			#clock-cells = <2>;
+			#reset-cells = <1>;
+			#power-domain-cells = <0>;
+
+			cpg_type = <0>;
+			cpg_selector_on_off = <1>;
+			cpg_early_setup = <1>;
+			cpg_mstop_setup = <0>;
+
+			cpg_clk_on_tbl = <
+				0x0504 0x00030000
+				0x0684
+				0
+
+				0x0520 0x00010000
+				0x06A0
+				0
+
+				0x052C 0x00030003
+				0x06AC
+				0
+
+				0x0534 0x00060000
+				0x06B4
+				0
+
+				0x0538 0x00010000
+				0x06B8
+				0
+
+				0x053C 0x00010000
+				0x06BC
+				0
+
+				0x0540 0x00010000
+				0x06C0
+				0
+
+				0x0544 0x000F0000
+				0x06C4
+				0
+
+				0x0548 0x003C0000
+				0x06C8
+				0
+
+				
+				0x054C 0x00030000
+				0x06CC
+				0
+
+				0x0550 0x00030003
+				0x06D0
+				0
+
+				0x0554 0x00ff00ff
+				0x06D4
+				0
+
+				0x0558 0x00070000
+				0x06D8
+				0
+
+				0x055C 0x00030000
+				0x06DC
+				0
+
+				0x0560 0x00010001
+				0x06E0
+				0
+
+				0x0564 0x001f0000
+				0x06E4
+				0
+
+				0x0568 0x003f0000
+				0x06E8
+				0
+
+				0x056C 0x00030000
+				0x06EC
+				0
+
+				0x0570 0x00ff0000
+				0x06F0
+				0
+
+				0x0574 0x00010000
+				0x06F4
+				0
+
+				0x0578 0x000f0000
+				0x06F8
+				0
+
+				0x057C 0x00030000
+				0x06FC
+				0
+
+				0x0580 0x000f0000
+				0x0700
+				0
+
+				0x0584 0x001f0001
+				0x0704
+				0
+
+				0x0588 0x00030000
+				0x0708
+				0
+
+				0x058C 0x00010000
+				0x070C
+				0
+
+				0x0590 0x00070000
+				0x0710
+				0
+
+				0x0594 0x00010000
+				0x0714
+				0
+
+				0x0598 0x00010001
+				0x0718
+				0
+
+				0x05A8 0x00030000
+				0x0728
+				0
+
+				0x05AC 0x00010000
+				0x072C
+				0
+			>;
+
+			cpg_reset_tbl = <
+				0x0804 0x00070000
+				0x0984
+				1
+
+				0x0820 0x00010000
+				0x09A0
+				1
+
+				0x082C 0x00030003
+				0x09AC
+				1
+
+				0x0834 0x00060000
+				0x09B4
+				1
+
+				0x0838 0x00010000
+				0x09B8
+				1
+
+				0x083C 0x00010000
+				0x09BC
+				1
+
+				0x0840 0x00010000
+				0x09C0
+				1
+
+				0x0844 0x000f0000
+				0x09C4
+				1
+
+				0x0848 0x00060000
+				0x09C8
+				1
+
+				0x084C 0x007F0000
+				0x09CC
+				1
+
+				0x0850 0x00010001
+				0x09D0
+				1
+
+				0x0854 0x00030003
+				0x09D4
+				1
+
+				0x0858 0x00070000
+				0x09D8
+				1
+
+				0x085C 0x00030000
+				0x09DC
+				1
+
+				0x0860 0x00030003
+				0x09E0
+				1
+
+				0x0864 0x00070000
+				0x09E4
+				1
+
+				0x0868 0x00070000
+				0x09E8
+				1
+
+				0x086C 0x00010000
+				0x09EC
+				1
+
+				0x0870 0x000f0000
+				0x09F0
+				1
+
+				0x0874 0x00010000
+				0x09F4
+				1
+
+				0x0878 0x000f0000
+				0x09F8
+				1
+
+				0x087C 0x00030000
+				0x09FC
+				1
+
+				0x0880 0x000f0000
+				0x0A00
+				1
+
+				0x0884 0x001f0001
+				0x0A04
+				1
+
+				0x0888 0x00030000
+				0x0A08
+				1
+
+				0x088C 0x00010000
+				0x0A0C
+				1
+
+				0x0890 0x00070000
+				0x0A10
+				1
+
+				0x0894 0x00030000
+				0x0A14
+				1
+
+				0x0898 0x00070007
+				0x0A18
+				1
+
+				0x08A8 0x00030000
+				0x0A28
+				1
+
+				0x08AC 0x00010000
+				0x0A2C
+				1
+			>;
+
+			cpg_static_select_tbl = <
+				0x0208 0x01000100
+				0x0408 0x01000000
+			>;
+
+			cpg_dynamic_select_tbl = <
+				0x021C 0x00010001
+				0x0218 0x00110022
+			>;
+
+			cpg_pll_tbl = <
+				0x0010 0x00010001
+				0x0014 0xFAE13203
+				0x0018 0x00081000
+				0x001C 0x00000011
+
+				0x0020 0x00010001
+				0x0024 0x00003e83
+				0x0028 0x00082D02
+				0x002C 0x00000011
+			>;
+		};
+
+		sysc: system-controller@11020000 {
+			compatible = "renesas,r9a07g054-sysc";
+			reg = <0 0x11020000 0 0x10000>;
+
+			enable_pwrc_setup			= <0>;
+			sysc_lsi_mode_mask 			= <0x0F>;
+			sysc_lsi_mode_reg_offset	= <0x00000A00>;
+			sysc_boot_mode_esd 			= <0>;
+			sysc_boot_mode_emmc_1_8 	= <1>;
+			sysc_boot_mode_emmc_3_3 	= <2>;
+			sysc_boot_mode_spi_1_8 		= <3>;
+			sysc_boot_mode_spi_3_3 		= <4>;
+
+			/* Security control. */
+			tzc_msram_setup = <0>;
+			tzc_m33_base	= <0x0>;	// Not used
+			tzc_spi_setup	= <1>;
+			tzc_spi_base	= <0x11060000>;
+			tzc_ddr_setup	= <1>;
+			tzc_ddr00_base	= <0x11070000>;
+			tzc_ddr01_base	= <0x0>;	// Not used
+			tzc_ddr10_base	= <0x0>;	// Not used
+			tzc_ddr11_base	= <0x0>;	// Not used
+			tzc_pci_setup	= <0>;
+			tzc_pci_base	= <0x0>;	// Not used
+			tzc_r8_setup	= <0>;
+			tzc_r8_base		= <0x0>;	// Not used
+
+			sys_acctl = <
+				0x00000000 0x00BB00BB 0x00AAAA88
+				0x00000004 0xBBBBBBBB 0xAAAAAAAA
+				0x00000008 0x00BBBBBB 0x00AAAAAA
+				0x0000000C 0x00BBBBBB 0x00AAAAAA
+				0x00000010 0x0B0B00BB 0x0A0A00AA
+				0x00000014 0x00000000 0x00000000
+				0x00000100 0x0000000F 0x00000008
+				0x00000104 0x3FFF3CFF 0x0800C0AA
+				0x00000108 0x00FFCFFF 0x00000002
+				0x0000010C 0x3FFF3FFF 0x00000000
+				0x00000110 0xFFFF0FFF 0x00000000
+				0x00000114 0x00000033 0x00000000
+				0x00000118 0x0000000F 0x00000000
+				0x0000011C 0x0000000C 0x00000008
+				0x00000120 0x0000000F 0x00000000
+				0x00000124 0x00000000 0x00000000
+				0x00000128 0x00000003 0x00000000
+				0x0000012C 0x00000000 0x00000000
+				0x00000130 0x00000003 0x00000000
+				0x00000134 0x00000003 0x00000000
+				0x00000138 0x00000003 0x00000000
+				0x0000013C 0x00000000 0x00000000
+			>;
+		};
+
+		syc: system-counter@11000000 {
+			compatible = "renesas,r9a07g054-syc";
+			reg = <0 0x11000000 0 0x10000>;
+
+			syc_inck_hz = <24000000>;
+		};
+
+		pinctrl: pinctrl@11030000 {
+			compatible = "renesas,r9a07g054-pinctrl";
+			reg = <0 0x11030000 0 0x10000>, <0 0x110a0020 0 0x30>;
+
+			pfc_mux_setup		= <1>;
+			pfc_qspi_setup		= <1>;
+			pfc_sd_setup		= <1>;
+			pfc_scif_setup		= <0>;
+			pfc_drive_setup		= <0>;
+			pfc_riic_pmic_setup	= <0>;
+
+			pfc_mux_reg_tbl = <
+				1 0x0222 0x03
+				1 0x0488 0x00000011
+				0 0x1120 0x00000101
+				0 0x1D10 0x00000000
+				0 0x1510 0x00000101
+
+				1 0x0223 0x03
+				1 0x048C 0x00000011
+				0 0x1128 0x00000101
+				0 0x1D18 0x00000000
+				0 0x1518 0x00000101
+
+				1 0x0236 0x03
+				1 0x04D8 0x00000011
+				0 0x11B0 0x00000101
+				0 0x1DB0 0x00000000
+				0 0x15B0 0x00000101
+
+				1 0x0237 0x07
+				1 0x04DC 0x00000111
+				0 0x11B8 0x00010101
+				0 0x1DB8 0x00000000
+				0 0x15B8 0x00010101
+			>;
+
+			pfc_qspi_reg_tbl = <
+				0 0 0
+				0 0 0
+				1 0x1050 0x02020202
+				1 0x1C50 0x00000000
+				1 0x1450 0x01010101
+
+				0 0 0
+				0 0 0
+				1 0x1058 0x02020202
+				1 0x1C58 0x00000000
+				1 0x1458 0x01010101
+
+				0 0 0
+				0 0 0
+				1 0x1060 0x00020202
+				1 0x1C60 0x00000000
+				1 0x1460 0x00010000
+			>;
+
+			pfc_sd_reg_tbl = <
+				1 0x0222 0x0003
+				1 0x0488 0x00000003
+				1 0x1030 0x00020202
+				1 0x1C30 0x00000000
+				1 0x1430 0x00010101
+				1 0x1830 0x00000100
+
+				0 0 0
+				0 0 0
+				1 0x1038 0x02020202
+				1 0x1C38 0x00000000
+				1 0x1438 0x01010101
+				1 0x1838 0x01010101
+
+				1 0x0223 0x0003
+				1 0x048C 0x00000003
+
+				1 0x1040 0x00000202
+				1 0x1C40 0x00000000
+				1 0x1440 0x00000101
+				1 0x1840 0x00000100
+
+				0 0 0
+				0 0 0
+				1 0x1048 0x02020202
+				1 0x1C48 0x00000000
+				1 0x1448 0x01010101
+				1 0x1848 0x01010101
+			>;
+		};
+
+		ddr: memory@40000000 {
+			compatible = "renesas,r9a07g054-sdram";
+			reg = <0 0x40000000 0 0x10000>;
+
+			/* DDR type
+			 * [0] = DDR4
+			 * [1] = LPDDR4
+			 */
+			/* Add ddr_type here. */
+
+			lp_cmd_offset = <0x8>;
+
+			/* Add ddrmc_r000 here. */
+			/* Add ddrmc_r001 here. */
+			/* Add ddrmc_r002 here. */
+			/* Add ddrmc_r003 here. */
+			/* Add ddrmc_r004 here. */
+			/* Add ddrmc_r005 here. */
+			/* Add ddrmc_r006 here. */
+			/* Add ddrmc_r007 here. */
+			/* Add ddrmc_r008 here. */
+			/* Add ddrmc_r009 here. */
+			/* Add ddrmc_r010 here. */
+			/* Add ddrmc_r011 here. */
+			/* Add ddrmc_r012 here. */
+			/* Add ddrmc_r013 here. */
+			/* Add ddrmc_r014 here. */
+			/* Add ddrmc_r015 here. */
+			/* Add ddrmc_r016 here. */
+			/* Add ddrmc_r017 here. */
+			/* Add ddrmc_r018 here. */
+			/* Add ddrmc_r019 here. */
+			/* Add ddrmc_r020 here. */
+			/* Add ddrmc_r021 here. */
+			/* Add ddrmc_r022 here. */
+			/* Add ddrmc_r023 here. */
+			/* Add ddrmc_r024 here. */
+			/* Add ddrmc_r025 here. */
+			/* Add ddrmc_r026 here. */
+			/* Add ddrmc_r027 here. */
+			/* Add ddrmc_r028 here. */
+			/* Add ddrmc_r029 here. */
+			/* Add ddrmc_r039 here. */
+			/* Add ddrmc_r040 here. */
+			/* Add ddrmc_r043 here. */
+			/* Add ddrmc_r044 here. */
+
+			/* Add swizzle_mc_tbl here. */
+
+			/* Add mc_init_num here. */
+
+			/* Add mc_init_tbl here. */
+
+			/* Add swizzle_phy_tbl here. */
+
+			/* Add mc_phy_settings_tbl here. */
+
+			/* Add mc_odt_pins_tbl here. */
+
+			/* Add mc_mr1_tbl here. */
+
+			/* Add mc_mr2_tbl here. */
+
+			/* Add mc_mr5_tbl here. */
+
+			/* Add mc_mr6_tbl here. */
+		};
+
+		sdhi0: mmc@11c00000 {
+			compatible = "renesas,sdhi-r9a07g044",
+				     "renesas,rcar-gen3-sdhi";
+			reg = <0x0 0x11c00000 0x00 0x10000>;
+			clock-names = "core", "clkh", "cd", "aclk";
+			clocks = <&extal_clk>;
+			power-domains = <&cpg>;
+			status = "disabled";
+		};
+	};
+};

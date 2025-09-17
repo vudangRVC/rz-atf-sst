@@ -1,0 +1,758 @@
+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+/*
+ * Copyright (C) 2025 Renesas Electronics Corp.
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "renesas,r9a09g057h4", "renesas,r9a09g057";
+	model = "Renesas RZV2H based on r9a09g057h4";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	/* clock can be either from exclk or crystal oscillator (XIN/XOUT) */
+	extal_clk: extal-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	/* et0_txc_tx_clk clock input */
+	et0_txc_tx_clk: et0_txc_tx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	/* et0_rxc_rx_clk clock input */
+	et0_rxc_rx_clk: et0_rxc_rx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	/* et1_txc_tx_clk clock input */
+	et1_txc_tx_clk: et1_txc_tx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	/* et1_rxc_rx_clk clock input */
+	et1_rxc_rx_clk: et1_rxc_rx_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	v2h: soc {
+		compatible = "simple-bus";
+		soc_id = <0x3>;
+		bl2_limit = <0x08160000>;
+		enable_cold_boot = <1>;
+		spirom_fip_base = <0x20060000>;
+		spirom_fip_size = <0x001A0000>;
+		emmc_fip_base = <0x00060000>;
+		emmc_fip_size = <0x001A0000>;
+		sd_fip_base = <0x00060000>;
+		sd_fip_size = <0x001A0000>;
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
+
+		sysc: system-controller@10430000 {
+			compatible = "renesas,r9a09g057-sysc";
+			reg = <0 0x10430000 0 0x10000>;
+
+			enable_pwrc_setup			= <1>;
+			sysc_lsi_mode_mask 			= <0x7>;
+			sysc_lsi_mode_reg_offset	= <0x00000300>;
+			sysc_boot_mode_esd 			= <0>;
+			sysc_boot_mode_emmc_1_8 	= <5>;
+			sysc_boot_mode_emmc_3_3 	= <1>;
+			sysc_boot_mode_spi_1_8 		= <6>;
+			sysc_boot_mode_spi_3_3 		= <2>;
+
+			/* Security control. */
+			tzc_msram_setup = <1>;
+			tzc_m33_base	= <0x10460000>;
+			tzc_spi_setup	= <1>;
+			tzc_spi_base	= <0x10470000>;
+			tzc_ddr_setup	= <1>;
+			tzc_ddr00_base	= <0x13C60000>;
+			tzc_ddr01_base	= <0x13C70000>;
+			tzc_ddr10_base	= <0x13C80000>;
+			tzc_ddr11_base	= <0x13C90000>;
+			tzc_pci_setup	= <1>;
+			tzc_pci_base	= <0x13CC0000>;
+			tzc_r8_setup	= <1>;
+			tzc_r8_base		= <0x13CA0000>;
+
+			sys_acctl = <
+				0x00000000 0xBBBBBBBB 0xAAAAAAAA
+				0x00000004 0x000000BB 0x000000AA
+				0x00000008 0x00BBBBBB 0x00AAAAAA
+				0x0000000C 0x00BBBBBB 0x00AAAAAA
+				0x00000010 0x0000BBBB 0x0000AAAA
+				0x00000014 0x00BBBBBB 0x00AAAAAA
+				0x00000018 0x0000BBBB 0x0000AAAA
+				0x0000001C 0x0000BBBB 0x0000AAAA
+				0x00000020 0xBBBBBBBB 0xAAAAAAAA
+				0x00000024 0x0000BBBB 0x0000AAAA
+				0x00000028 0x00BBBBBB 0x00AAAAAA
+				0x0000002C 0x000000BB 0x000000AA
+				0x00000030 0x000000BB 0x000000AA
+				0x00000034 0x000000BB 0x000000AA
+				0x00000038 0x000000BB 0x000000AA
+				0x0000003C 0x000000BB 0x000000AA
+				0x00000040 0x000000BB 0x000000AA
+				0x00000044 0x000000BB 0x000000AA
+				0x00000048 0xBBBBBBBB 0xAAAAAAAA
+				0x00000100 0x00000003 0x00000000
+				0x00000104 0x00000003 0x00000000
+				0x00000108 0x0000000F 0x00000000
+				0x0000010C 0x00000003 0x00000000
+				0x00000110 0x0000000F 0x00000000
+				0x00000114 0x00000003 0x00000000
+				0x00000118 0x00000003 0x00000000
+				0x0000011C 0x00000FFF 0x00000000
+				0x00000120 0x00000003 0x00000000
+				0x00000124 0x00000003 0x00000000
+				0x00000128 0x00000003 0x00000000
+				0x0000012C 0x00000003 0x00000000
+				0x00000130 0x00000003 0x00000000
+				0x00000134 0x0000000F 0x00000000
+				0x00000138 0x00000003 0x00000000
+				0x0000013C 0x00000003 0x00000000
+				0x00000144 0x0000000F 0x00000000
+				0x0000014C 0x00000003 0x00000000
+				0x00000150 0x00000003 0x00000000
+				0x00000158 0x000003FF 0x00000000
+				0x00000180 0x0000000F 0x00000000
+				0x00000184 0x003FFFC3 0x00000000
+				0x0000018C 0x00000003 0x00000000
+				0x00000190 0x0000000F 0x00000000
+				0x00000194 0x00000003 0x00000000
+				0x00000198 0x0000FFFF 0x00000000
+				0x0000019C 0x0000003F 0x00000000
+				0x000001A0 0x0000FFFF 0x00000000
+				0x000001A4 0x0000000F 0x00000000
+				0x000001AC 0x000000FF 0x00000000
+				0x000001B0 0x000000FF 0x00000000
+				0x000001B4 0x0000000F 0x00000000
+				0x000001B8 0x00000003 0x00000000
+				0x000001BC 0x0000000F 0x00000000
+				0x000001C0 0x00000003 0x00000000
+				0x000001C4 0x00000003 0x00000000
+				0x000001C8 0x00000003 0x00000000
+				0x000001CC 0x0000003F 0x00000000
+				0x000001D0 0x0000003F 0x00000000
+				0x000001D4 0x0000003F 0x00000000
+				0x000001D8 0x0000003F 0x00000000
+				0x000001DC 0x00000003 0x00000000
+				0x000001E0 0x00000003 0x00000000
+				0x000001E8 0x000FFFFF 0x00000000
+				0x000001EC 0x0003FFFF 0x00000000
+				0x00000200 0x00000003 0x00000000
+				0x00000204 0x0000000F 0x00000000
+				0x00000208 0x0000FFFF 0x00000000
+				0x0000020C 0x000000FF 0x00000000
+				0x00000210 0x0000000F 0x00000000
+				0x00000240 0x00000003 0x00000000
+				0x00000244 0x00000003 0x00000000
+				0x00000248 0x00000003 0x00000000
+				0x00000260 0x00000003 0x00000000
+				0x00000264 0x00000003 0x00000000
+				0x0000026C 0x00000003 0x00000000
+				0x00000270 0x00000003 0x00000000
+				0x00000274 0x00000003 0x00000000
+			>;
+		};
+
+		syc: system-counter@14010000 {
+			compatible = "renesas,r9a09g057-syc";
+			reg = <0 0x14010000 0 0x10000>;
+
+			syc_inck_hz = <24000000>;
+		};
+
+		cpg: clock-controller@10420000 {
+			compatible = "renesas,r9a09g057-cpg";
+			reg = <0 0x10420000 0 0x10000>;
+			clocks = <&extal_clk>,
+				 <&et0_txc_tx_clk>, <&et0_rxc_rx_clk>,
+				 <&et1_txc_tx_clk>, <&et1_rxc_rx_clk>;
+			clock-names = "extal",
+				      "et0_txc_tx_clk", "et0_rxc_rx_clk",
+				      "et1_txc_tx_clk", "et1_rxc_rx_clk";
+			#clock-cells = <2>;
+			#reset-cells = <1>;
+			#power-domain-cells = <0>;
+
+			cpg_type 			= <1>;
+			cpg_selector_on_off = <0>;
+			cpg_early_setup		= <0>;
+			cpg_mstop_setup		= <1>;
+
+			cpg_clk_on_tbl = <
+				0x600 0x0000E000
+				0x800
+				0
+
+				0x604 0x00000003
+				0x800
+				0
+
+				0x60c 0x00000001
+				0x804
+				0
+
+				0x600 0x0000001E
+				0x800
+				0
+
+				0x63c 0x00000100
+				0x81c
+				0
+
+				0x610 0x000007F8
+				0x808
+				0
+
+				0x60c 0x00000006
+				0x804
+				0
+
+				0x60c 0x000007F8
+				0x804
+				0
+
+				0x610 0x0000E00
+				0x808
+				0
+
+				0x614 0x00000007
+				0x808
+				0
+
+				0x614 0x00001FF0
+				0x808
+				0
+
+				0x624 0x00008000
+				0x810
+				0
+
+				0x628 0x00000003
+				0x814
+				0
+
+				0x628 0x00007FF8
+				0x814
+				0
+
+				0x63c 0x00000007
+				0x81c
+				0
+
+				0x638 0x000000C0
+				0x81c
+				0
+
+				0x634 0x0000FFFC
+				0x818
+				0
+
+				0x638 0x00000003
+				0x81c
+				0
+
+				0x638 0x00001F00
+				0x81c
+				0
+
+				0x638 0x0000E000
+				0x81c
+				0
+
+				0x63c 0x00000020
+				0x81c
+				0
+
+				0x660 0x000007FF
+				0x81c
+				0
+
+				0x62c 0x000000F8
+				0x814
+				0
+
+				0x628 0x00008000
+				0x814
+				0
+
+				0x62c 0x00000007
+				0x814
+				0
+
+				0x624 0x00000FF8
+				0x810
+				0
+
+				0x620 0x00008000
+				0x810
+				0
+
+				0x614 0x0000E000
+				0x808
+				0
+
+				0x618 0x0000FFFF
+				0x80c
+				0
+
+				0x61c 0x0000FFFF
+				0x80c
+				0
+
+				0x620 0x00007FFF
+				0x810
+				0
+
+				0x624 0x00007000
+				0x810
+				0
+
+				0x640 0x00000180
+				0x820
+				0
+
+				0x600 0x00000040
+				0x800
+				0
+
+				0x60c 0x0000F800
+				0x804
+				0
+
+				0x610 0x00000007
+				0x808
+				0
+
+				0x614 0x00000008
+				0x808
+				0
+
+				0x624 0x00000007
+				0x810
+				0
+
+				0x62c 0x0000FF00
+				0x814
+				0
+
+				0x630 0x0000000F
+				0x818
+				0
+
+				0x630 0x00000030
+				0x818
+				0
+
+				0x638 0x0000003C
+				0x81c
+				0
+
+				0x63c 0x00000018
+				0x81c
+				0
+
+				0x63c 0x000000C0
+				0x81c
+				0
+
+				0x63c 0x00003E00
+				0x81c
+				0
+
+				0x63c 0x0000C000
+				0x81c
+				0
+
+				0x640 0x00000001
+				0x820
+				0
+
+				0x640 0x0000007E
+				0x820
+				0
+
+				0x640 0x00000600
+				0x820
+				0
+
+				0x644 0x0000007F
+				0x820
+				0	
+			>;
+
+			cpg_reset_tbl = <
+				0x908 0x00000FFF
+				0xA00
+				1
+
+				0x908 0x00001000
+				0xA04
+				1
+
+				0x914 0x00000100
+				0xA08
+				1
+
+				0x90C 0x00000008
+				0xA04
+				1
+
+				0x918 0x00006000
+				0xA08
+				1
+
+				0x918 0x00008000
+				0xA0C
+				1
+
+				0x91C 0x0000001F
+				0xA0C
+				1
+
+				0x914 0x00001E00
+				0xA08
+				1
+
+				0x914 0x0000E000
+				0xA08
+				1
+
+				0x918 0x0000001F
+				0xA08
+				1
+
+				0x91C 0x000001C0
+				0xA0C
+				1
+
+				0x91C 0x0000F800
+				0xA0C
+				1
+
+				0x920 0x00000001
+				0xA0C
+				1
+
+				0x928 0x00000018
+				0xA10
+				1
+
+				0x928 0x00000380
+				0xA10
+				1
+
+				0x934 0x0000E000
+				0xA18
+				1
+
+				0x934 0x00000060
+				0xA18
+				1
+
+				0x930 0x00007FE0
+				0xA14
+				1
+
+				0x930 0x00008000
+				0xA18
+				1
+
+				0x934 0x00000001
+				0xA18
+				1
+
+				0x934 0x00000180
+				0xA18
+				1
+
+				0x934 0x00001000
+				0xA18
+				1
+
+				0x938 0x00000FFE
+				0xA18
+				1
+
+				0x928 0x00007000
+				0xA10
+				1
+
+				0x928 0x00008000
+				0xA14
+				1
+
+				0x928 0x00000C00
+				0xA10
+				1
+
+				0x924 0x0000FF00
+				0xA10
+				1
+
+				0x928 0x00000001
+				0xA10
+				1
+
+				0x924 0x00000020
+				0xA10
+				1
+
+				0x920 0x00007FFE
+				0xA0C
+				1
+
+				0x920 0x00008000
+				0xA10
+				1
+
+				0x924 0x0000001F
+				0xA10
+				1
+
+				0x928 0x00000006
+				0xA10
+				1
+
+				0x93C 0x00000040
+				0xA1C
+				1
+
+				0x90C 0x00000040
+				0xA04
+				1
+
+				0x90C 0x00000080
+				0xA04
+				1
+
+				0x918 0x00001FE0
+				0xA08
+				1
+
+				0x91C 0x00000600
+				0xA0C
+				1
+
+				0x924 0x000000C0
+				0xA10
+				1
+
+				0x92C 0x00000003
+				0xA14
+				1
+
+				0x92C 0x00000004
+				0xA14
+				1
+
+				0x934 0x0000001E
+				0xA18
+				1
+
+				0x938 0x00000001
+				0xA18
+				1
+
+				0x938 0x00001000
+				0xA18
+				1
+
+				0x938 0x00002000
+				0xA18
+				1
+
+				0x938 0x00004000
+				0xA18
+				1
+
+				0x938 0x00008000
+				0xA1C
+				1
+
+				0x93C 0x00000003
+				0xA1C
+				1
+
+				0x93C 0x0000003C
+				0xA1C
+				1
+
+				0x93C 0x00000180
+				0xA1C
+				1
+
+				0x93C 0x00003000
+				0xA1C
+				1
+			>;
+
+			cpg_static_select_tbl = <
+				0x500 0x00000000
+				0x504 0x00000000
+			>;
+
+			cpg_dynamic_select_tbl = <
+				0x400 0x00000000
+				0x404 0x00000000
+				0x408 0x00000000
+				0x40c 0x10001000
+				0x410 0x01110111
+			>;
+		
+			cpg_pll_tbl = <
+				0x0A0 0x00010001
+				0 0
+				0 0
+				0x0B0 0
+
+				0x0C0 0x00010001
+				0x0C4 0x00003182
+				0x0C8 0x000C1803
+				0x0D0 0
+
+				0x120 0x00050001
+				0x124 0x00003482
+				0x128 0x000C1A01
+				0x130 0
+			>;
+		};
+
+		icu: interrupt-unit@10400000 {
+			compatible = "renesas,r9a09g057-icu";
+			reg = <0 0x10400000 0 0x10000>;
+		};
+
+		pinctrl: pinctrl@10410000 {
+			compatible = "renesas,r9a09g057-pinctrl";
+			reg = <0 0x10410000 0 0x10000>;
+
+			pfc_mux_setup		= <0>;
+			pfc_qspi_setup		= <1>;
+			pfc_sd_setup		= <1>;
+			pfc_scif_setup		= <1>;
+			pfc_drive_setup		= <1>;
+			pfc_riic_pmic_setup	= <1>;
+
+			pfc_qspi_reg_tbl = <
+				0 0 0
+				0 0 0
+				1 0x1048 0x00030303
+				1 0x1C48 0x00000000
+				1 0x1448 0x00000000
+				1 0x1848 0x00000100
+
+				0 0 0
+				0 0 0
+				1 0x1050 0x03030303
+				1 0x1C50 0x00000000
+				1 0x1450 0x00000000
+				1 0x1850 0x01010101
+			>;
+
+			pfc_sd_reg_tbl = <
+				0 0 0
+				0 0 0
+				1 0x1038 0x00030003
+				1 0x1C38 0x00000000
+				1 0x1438 0x00000000
+				0 0 0
+
+				0 0 0
+				0 0 0
+				1 0x1040 0x03030303
+				1 0x1C40 0x00000000
+				1 0x1440 0x00000000
+				0 0 0
+			>;
+		};
+
+		scif0: serial@11c01400 {
+			compatible = "renesas,scif-r9a09g057";
+			reg = <0 0x11c01400 0 0x400>;
+
+			uart_inck_hz = <100000000>;
+			uart_baudrate = <115200>;
+		};
+
+		xspi: spi@11030000 {
+			compatible = "renesas,r9a09g057-rpc-if";
+			reg = <0x00 0x11030000 0x00 0x10000>;
+			reg-names = "regs", "dirmap", "wbuf";
+			power-domains = <&cpg>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+
+			/* SPI type
+			 * [0] = SPI Multi IO
+			 * [1] = XSPI
+			 */
+			spi_type = <1>;
+		};
+
+		ddr: memory@40000000 {
+			compatible = "renesas,r9a09g057-sdram-0";
+			reg = <0 0x40000000 0 0x10000>;
+			ddr0-phy-base = <0x00000000 0x1A000000>;
+			ddr0-memc-base = <0x00000000 0x1E000000>;
+
+			/* DDR type
+			 * [0] = DDR4
+			 * [1] = LPDDR4
+			 */
+			/* Add ddr_type here. */
+
+			/* Add param_setup_mc here. */
+
+			/* Add param_phyinit_c here. */
+
+			/* Add param_phyinit_swizzle here. */
+
+			/* Add param_phyinit_f_1d_0 here. */
+
+			/* Add param_phyinit_f_2d_0 here. */
+
+			/* Add param_phyinit_i here. */
+
+			/* Add phyinit_1d here. */
+
+			/* Add phyinit_2d here. */
+
+			/* Add retention_phyreglist_1d here. */
+
+			/* Add retention_phyreglist_2d here. */
+
+			/* Add retention_mcreglist here. */
+		};
+
+		sdhi0: mmc@15c00000  {
+			compatible = "renesas,sdhi-r9a09g057";
+			reg = <0x0 0x15c00000 0 0x10000>;
+			power-domains = <&cpg>;
+			mmc-no-pin-volt-switch;
+			status = "disabled";
+		};
+	};
+};
