@@ -30,13 +30,15 @@
  ******************************************************************************/
 #define PLATFORM_STACK_SIZE		U(0x1000)
 
+/* Common platform */
 #define PLATFORM_SYSTEM_COUNT	U(1)
 #define PLATFORM_CLUSTER_COUNT	U(1)
-#define PLATFORM_CORE_COUNT		U(2)
+#define PLATFORM_CORE_COUNT		U(4)
+
+/* RZG2L */
+#define RZG2L_PLATFORM_CORE_COUNT		U(2)
 
 /* RZV2H */
-#define RZV2H_PLATFORM_SYSTEM_COUNT		U(1)
-#define RZV2H_PLATFORM_CLUSTER_COUNT	U(1)
 #define RZV2H_PLATFORM_CORE_COUNT		U(4)
 
 #define PLAT_MAX_PWR_LVL		MPIDR_AFFLVL2
@@ -48,7 +50,7 @@
 #define PLAT_MAX_OFF_STATE		U(2)
 #define PLAT_MAX_PWR_LVL_STATES	U(2)
 
-#define MAX_IO_DEVICES			U(2)
+#define MAX_IO_DEVICES			U(3)
 #define MAX_IO_HANDLES			U(2)
 #define MAX_IO_BLOCK_DEVICES	U(1)
 
