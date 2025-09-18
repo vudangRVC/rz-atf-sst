@@ -14,6 +14,7 @@
 #include <lib/fconf/fconf.h>
 #include <lib/libfdt/libfdt.h>
 #include <rz_fconf.h>
+#include <common/debug.h>
 
 const struct pfc_config_t * g_pfc_fconf_cfg;
 
@@ -202,6 +203,7 @@ static void pfc_sd_setup(void)
 {
 	int      cnt;
 	int i, j = 0;
+	uint64_t temp = 0;
 	const void *fdt = (const void *)(uintptr_t)dtb_base;
 	int len;
 
@@ -211,35 +213,70 @@ static void pfc_sd_setup(void)
 
 	const fdt32_t *prop = fdt_getprop(fdt, g_pfc_fconf_cfg->pfc_node, "pfc_sd_reg_tbl", &len);
 	for (i = 0; i < (len / sizeof(uint32_t)); i += 18, j++) {
-		/* PMC */
-		pfc_sd_reg_tbl[j].pmc.flg = fdt32_to_cpu(prop[i]);
-		pfc_sd_reg_tbl[j].pmc.reg = fdt32_to_cpu(prop[i + 1]);
-		pfc_sd_reg_tbl[j].pmc.val = fdt32_to_cpu(prop[i + 2]);
+		if (j == 1) {
+			/* PMC */
+			pfc_sd_reg_tbl[j].pmc.flg = fdt32_to_cpu(prop[i]);
+			pfc_sd_reg_tbl[j].pmc.reg = fdt32_to_cpu(prop[i + 1]);
+			pfc_sd_reg_tbl[j].pmc.val = fdt32_to_cpu(prop[i + 2]);
 
-		/* PFC */
-		pfc_sd_reg_tbl[j].pfc.flg = fdt32_to_cpu(prop[i + 3]);
-		pfc_sd_reg_tbl[j].pfc.reg = fdt32_to_cpu(prop[i + 4]);
-		pfc_sd_reg_tbl[j].pfc.val = fdt32_to_cpu(prop[i + 5]);
+			/* PFC */
+			pfc_sd_reg_tbl[j].pfc.flg = fdt32_to_cpu(prop[i + 3]);
+			pfc_sd_reg_tbl[j].pfc.reg = fdt32_to_cpu(prop[i + 4]);
+			pfc_sd_reg_tbl[j].pfc.val = fdt32_to_cpu(prop[i + 5]);
 
-		/* IOLH */
-		pfc_sd_reg_tbl[j].iolh.flg = fdt32_to_cpu(prop[i + 6]);
-		pfc_sd_reg_tbl[j].iolh.reg = fdt32_to_cpu(prop[i + 7]);
-		pfc_sd_reg_tbl[j].iolh.val = fdt32_to_cpu(prop[i + 8]);
+			/* IOLH */
+			pfc_sd_reg_tbl[j].iolh.flg = fdt32_to_cpu(prop[i + 6]);
+			pfc_sd_reg_tbl[j].iolh.reg = fdt32_to_cpu(prop[i + 7]);
+			temp = (uint64_t)fdt32_to_cpu(prop[i + 8]);
+			pfc_sd_reg_tbl[j].iolh.val = (temp << 32) | temp;
 
-		/* PUPD */
-		pfc_sd_reg_tbl[j].pupd.flg = fdt32_to_cpu(prop[i + 9]);
-		pfc_sd_reg_tbl[j].pupd.reg = fdt32_to_cpu(prop[i + 10]);
-		pfc_sd_reg_tbl[j].pupd.val = fdt32_to_cpu(prop[i + 11]);
+			/* PUPD */
+			pfc_sd_reg_tbl[j].pupd.flg = fdt32_to_cpu(prop[i + 9]);
+			pfc_sd_reg_tbl[j].pupd.reg = fdt32_to_cpu(prop[i + 10]);
+			pfc_sd_reg_tbl[j].pupd.val = fdt32_to_cpu(prop[i + 11]);
 
-		/* SR */
-		pfc_sd_reg_tbl[j].sr.flg = fdt32_to_cpu(prop[i + 12]);
-		pfc_sd_reg_tbl[j].sr.reg = fdt32_to_cpu(prop[i + 13]);
-		pfc_sd_reg_tbl[j].sr.val = fdt32_to_cpu(prop[i + 14]);
+			/* SR */
+			pfc_sd_reg_tbl[j].sr.flg = fdt32_to_cpu(prop[i + 12]);
+			pfc_sd_reg_tbl[j].sr.reg = fdt32_to_cpu(prop[i + 13]);
+			temp = (uint64_t)fdt32_to_cpu(prop[i + 14]);
+			pfc_sd_reg_tbl[j].sr.val = (temp << 32) | temp;
 
-		/* IEN */
-		pfc_sd_reg_tbl[j].ien.flg = fdt32_to_cpu(prop[i + 15]);
-		pfc_sd_reg_tbl[j].ien.reg = fdt32_to_cpu(prop[i + 16]);
-		pfc_sd_reg_tbl[j].ien.val = fdt32_to_cpu(prop[i + 17]);
+			/* IEN */
+			pfc_sd_reg_tbl[j].ien.flg = fdt32_to_cpu(prop[i + 15]);
+			pfc_sd_reg_tbl[j].ien.reg = fdt32_to_cpu(prop[i + 16]);
+			temp = (uint64_t)fdt32_to_cpu(prop[i + 17]);
+			pfc_sd_reg_tbl[j].ien.val = (temp << 32) | temp;
+		} else {
+			/* PMC */
+			pfc_sd_reg_tbl[j].pmc.flg = fdt32_to_cpu(prop[i]);
+			pfc_sd_reg_tbl[j].pmc.reg = fdt32_to_cpu(prop[i + 1]);
+			pfc_sd_reg_tbl[j].pmc.val = fdt32_to_cpu(prop[i + 2]);
+
+			/* PFC */
+			pfc_sd_reg_tbl[j].pfc.flg = fdt32_to_cpu(prop[i + 3]);
+			pfc_sd_reg_tbl[j].pfc.reg = fdt32_to_cpu(prop[i + 4]);
+			pfc_sd_reg_tbl[j].pfc.val = fdt32_to_cpu(prop[i + 5]);
+
+			/* IOLH */
+			pfc_sd_reg_tbl[j].iolh.flg = fdt32_to_cpu(prop[i + 6]);
+			pfc_sd_reg_tbl[j].iolh.reg = fdt32_to_cpu(prop[i + 7]);
+			pfc_sd_reg_tbl[j].iolh.val = fdt32_to_cpu(prop[i + 8]);
+
+			/* PUPD */
+			pfc_sd_reg_tbl[j].pupd.flg = fdt32_to_cpu(prop[i + 9]);
+			pfc_sd_reg_tbl[j].pupd.reg = fdt32_to_cpu(prop[i + 10]);
+			pfc_sd_reg_tbl[j].pupd.val = fdt32_to_cpu(prop[i + 11]);
+
+			/* SR */
+			pfc_sd_reg_tbl[j].sr.flg = fdt32_to_cpu(prop[i + 12]);
+			pfc_sd_reg_tbl[j].sr.reg = fdt32_to_cpu(prop[i + 13]);
+			pfc_sd_reg_tbl[j].sr.val = fdt32_to_cpu(prop[i + 14]);
+
+			/* IEN */
+			pfc_sd_reg_tbl[j].ien.flg = fdt32_to_cpu(prop[i + 15]);
+			pfc_sd_reg_tbl[j].ien.reg = fdt32_to_cpu(prop[i + 16]);
+			pfc_sd_reg_tbl[j].ien.val = fdt32_to_cpu(prop[i + 17]);
+		}
 	}
 
 	for (cnt = 0; cnt < ARRAY_SIZE(pfc_sd_reg_tbl); cnt++) {
