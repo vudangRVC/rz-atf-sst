@@ -484,36 +484,47 @@ int fconf_populate_spi_config(uintptr_t config)
 
 	const char *spi_props[] = {
 		"spi_type",
-		"spim_phycnt",
-		"spim_phyoffset1",
-		"spim_phyoffset2",
-		"spim_cmncr",
-		"spim_ssldr",
-		"spim_drcr",
-		"spim_drcmr",
-		"spim_drear",
-		"spim_drenr",
-		"spim_drdmcr",
-		"spim_drdrenr",
 	};
 
 	uint32_t *targets[] = {
 		&spi_config.spi_type,
-		&spi_config.phycnt,
-		&spi_config.phyoffset1,
-		&spi_config.phyoffset2,
-		&spi_config.cmncr,
-		&spi_config.ssldr,
-		&spi_config.drcr,
-		&spi_config.drcmr,
-		&spi_config.drear,
-		&spi_config.drenr,
-		&spi_config.drdmcr,
-		&spi_config.drdrenr,
 	};
 
 	read_prop_from_subnode(fdt, "/soc", spi_path, "reg", 1, &spi_config.spi_base);
 	fconf_read_u32_props(fdt, spi_node, spi_props, (uint32_t **)targets, ARRAY_SIZE(spi_props));
+
+	/* Specific initilize for DDR4 */
+	if (spi_config.spi_type == 0) {
+		const char *spi_mul_props[] = {
+			"spim_phycnt",
+			"spim_phyoffset1",
+			"spim_phyoffset2",
+			"spim_cmncr",
+			"spim_ssldr",
+			"spim_drcr",
+			"spim_drcmr",
+			"spim_drear",
+			"spim_drenr",
+			"spim_drdmcr",
+			"spim_drdrenr",
+		};
+
+		uint32_t *spi_mul_targets[] = {
+			&spi_config.phycnt,
+			&spi_config.phyoffset1,
+			&spi_config.phyoffset2,
+			&spi_config.cmncr,
+			&spi_config.ssldr,
+			&spi_config.drcr,
+			&spi_config.drcmr,
+			&spi_config.drear,
+			&spi_config.drenr,
+			&spi_config.drdmcr,
+			&spi_config.drdrenr,
+		};
+
+		fconf_read_u32_props(fdt, spi_node, spi_mul_props, (uint32_t **)spi_mul_targets, ARRAY_SIZE(spi_mul_props));
+	}
 
 	return 0;
 }

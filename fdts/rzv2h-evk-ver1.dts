@@ -712,19 +712,6 @@
 			 * [1] = XSPI
 			 */
 			spi_type = <1>;
-
-			/* SPI Multi IO specific settings */
-			spim_phycnt = <0x260>;
-			spim_phyoffset1 = <0x31511144>;
-			spim_phyoffset2 = <0x431>;
-			spim_cmncr = <0x155a200>;
-			spim_ssldr = <0x30303>;
-			spim_drcr = <0x1f0300>;
-			spim_drcmr = <0xeb0000>;
-			spim_drear = <0x0>;
-			spim_drenr = <0x202c700>;
-			spim_drdmcr = <0x9>;
-			spim_drdrenr = <0x0>;
 		};
 
 		ddr: memory@40000000 {

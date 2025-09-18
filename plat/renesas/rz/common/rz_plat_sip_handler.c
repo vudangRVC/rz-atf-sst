@@ -24,8 +24,8 @@ extern uint32_t soc_id;
 
 static uintptr_t rz_otp_handler_devid(void *handle, u_register_t x1)
 {
-	uint32_t devid_1 = mmio_read_32(bl31_board_cfg[soc_id].sysc_base + RZ_OTP_BASE_DEVID);
-	uint32_t devid_2 = mmio_read_32(bl31_board_cfg[soc_id].otp_base + RZ_SYS_BASE_DEVID);
+	uint32_t devid_1 = mmio_read_32(bl31_board_cfg[soc_id].otp_base + RZ_OTP_BASE_DEVID);
+	uint32_t devid_2 = mmio_read_32(bl31_board_cfg[soc_id].sysc_base + RZ_SYS_BASE_DEVID);
 	SMC_RET2(handle, devid_1, devid_2);
 }
 
