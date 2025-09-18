@@ -698,7 +698,7 @@
 #define PFC_ON				(1)
 
 #define PFC_MUX_TBL_NUM		(4)
-#define PFC_QSPI_TBL_NUM	(3)
+#define PFC_QSPI_TBL_NUM	(5)
 #define PFC_SD_TBL_NUM		(4)
 
 typedef struct {

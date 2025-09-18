@@ -336,6 +336,7 @@ void rz_io_setup(void)
 				(uintptr_t) &emmc_block_spec,
 				&open_emmcdrv};
 		policies[FIP_IMAGE_ID] = emmc_fip_policy;
+		(void)bl2_emmc_load_boardinfo(emmcdrv_dev_handle);
 	} else {
 		panic();
 	}
