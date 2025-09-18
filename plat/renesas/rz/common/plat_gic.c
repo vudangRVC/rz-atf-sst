@@ -30,9 +30,6 @@ static unsigned int plat_mpidr_to_core_pos(u_register_t mpidr)
 }
 
 gicv3_driver_data_t rzcmn_gic_data = {
-	.gicd_base = RZ_SOC_GICD_BASE,
-	.gicr_base = RZ_SOC_GICR_BASE,
-	.rdistif_num = PLATFORM_CORE_COUNT,
 	.rdistif_base_addrs = plat_rdistif_base_addrs,
 	.mpidr_to_core_pos = plat_mpidr_to_core_pos,
 };

@@ -12,6 +12,7 @@
 #include <lib/psci/psci.h>
 #include <lib/utils_def.h>
 #include <plat/common/platform.h>
+#include <rz_private.h>
 
 #if ENABLE_PSCI_STAT && ENABLE_PMF
 #pragma weak plat_psci_stat_accounting_start
@@ -40,6 +41,10 @@ PMF_DECLARE_CAPTURE_TIMESTAMP(psci_svc)
 PMF_DECLARE_GET_TIMESTAMP(psci_svc)
 PMF_REGISTER_SERVICE(psci_svc, PMF_PSCI_STAT_SVC_ID, PSCI_STAT_TOTAL_IDS,
 	PMF_STORE_ENABLE)
+
+
+extern bl31_board_cfg_t bl31_board_cfg[];
+extern uint32_t soc_id;
 
 /*
  * This function calculates the stats residency in microseconds,
@@ -104,7 +109,8 @@ u_register_t plat_psci_stat_get_residency(unsigned int lvl,
 	unsigned int pmf_flags;
 
 	assert((lvl >= PSCI_CPU_PWR_LVL) && (lvl <= PLAT_MAX_PWR_LVL));
-	assert(last_cpu_idx <= PLATFORM_CORE_COUNT);
+	assert(state_info != NULL);
+	assert(last_cpu_idx <= bl31_board_cfg[soc_id].platform_core_count);
 
 	if (lvl == PSCI_CPU_PWR_LVL)
 		assert(last_cpu_idx == plat_my_core_pos());

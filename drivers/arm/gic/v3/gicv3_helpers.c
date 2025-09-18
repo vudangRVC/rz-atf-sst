@@ -18,6 +18,10 @@
 
 #include "../common/gic_common_private.h"
 #include "gicv3_private.h"
+#include <rz_private.h>
+
+extern bl31_board_cfg_t bl31_board_cfg[];
+extern uint32_t soc_id;
 
 uintptr_t gicv3_get_multichip_base(uint32_t spi_id, uintptr_t gicd_base)
 {
@@ -412,7 +416,7 @@ unsigned int gicv3_rdistif_get_number_frames(const uintptr_t gicr_frame)
 	uintptr_t rdistif_base = gicr_frame;
 	unsigned int count;
 
-	for (count = 1U; count < PLATFORM_CORE_COUNT; count++) {
+	for (count = 1U; count < bl31_board_cfg[soc_id].platform_core_count; count++) {
 		uint64_t typer_val = gicr_read_typer(rdistif_base);
 
 		if ((typer_val & TYPER_LAST_BIT) != 0U) {

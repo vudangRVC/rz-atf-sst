@@ -346,7 +346,7 @@ static void cpg_pll_start(CPG_PLL_SETTINGS *pdata, uint32_t size)
 	int cnt;
 	uint32_t val;
 
-	for (cnt = 0; cnt < size; cnt++) {
+	for (cnt = 0; cnt < size; cnt++, pdata++) {
 		if (pdata->stby.addr != (uintptr_t)NULL) {
 			CPG_REG_WRITE(pdata->stby.addr, pdata->stby.val);
 		}
@@ -359,7 +359,7 @@ static void cpg_pll_start(CPG_PLL_SETTINGS *pdata, uint32_t size)
 
 		do {
 			val = CPG_REG_READ(pdata->mon.addr);
-		} while ((val & pdata->mon.val) != pdata->mon.val);
+		} while (((val & pdata->mon.val) != pdata->mon.val) && (pdata->mon.addr != (uintptr_t)NULL));
 	}
 }
 

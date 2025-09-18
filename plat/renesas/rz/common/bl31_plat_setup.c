@@ -56,11 +56,12 @@ void plat_copy_code_to_system_ram(void)
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type);
 
+extern uintptr_t bl31_params_base;
 uint32_t soc_id;
 
 bl31_board_cfg_t bl31_board_cfg[] = {
 	[RZ_SOC_RZG2L] = {
-		.soc_name              = "rzg2l",
+		.soc_name          = "rzg2l",
 		.scif0_base        = RZG2L_SCIF0_BASE,
 		.sram_base         = RZG2L_SRAM_BASE,
 		.tzc_msram_base    = RZG2L_TZC_MSRAM_BASE,
@@ -70,7 +71,7 @@ bl31_board_cfg_t bl31_board_cfg[] = {
 		.cpg_base          = RZG2L_CPG_BASE,
 		.gicd_base         = RZG2L_GICD_BASE,
 		.gicr_base         = RZG2L_GICR_BASE,
-		.platform_core_count = PLATFORM_CORE_COUNT,
+		.platform_core_count = RZG2L_PLATFORM_CORE_COUNT,
 		.otp_base          = RZG2L_OTP_BASE,
 		.otp_base_chipid   = (RZG2L_OTP_BASE + 0x1140),
 		.device_area_size  = RZG2L_DEVICE_SIZE,
@@ -81,7 +82,7 @@ bl31_board_cfg_t bl31_board_cfg[] = {
 		.enable_pwrc_setup = false,
 	},
 	[RZ_SOC_RZV2L] = {
-		.soc_name              = "rzv2l",
+		.soc_name          = "rzv2l",
 		.scif0_base        = RZG2L_SCIF0_BASE,
 		.sram_base         = RZG2L_SRAM_BASE,
 		.tzc_msram_base    = RZG2L_TZC_MSRAM_BASE,
@@ -91,7 +92,7 @@ bl31_board_cfg_t bl31_board_cfg[] = {
 		.cpg_base          = RZG2L_CPG_BASE,
 		.gicd_base         = RZG2L_GICD_BASE,
 		.gicr_base         = RZG2L_GICR_BASE,
-		.platform_core_count = PLATFORM_CORE_COUNT,
+		.platform_core_count = RZG2L_PLATFORM_CORE_COUNT,
 		.otp_base          = RZG2L_OTP_BASE,
 		.otp_base_chipid   = (RZG2L_OTP_BASE + 0x1140),
 		.device_area_size  = RZG2L_DEVICE_SIZE,
@@ -102,7 +103,7 @@ bl31_board_cfg_t bl31_board_cfg[] = {
 		.enable_pwrc_setup = false,
 	},
 	[RZ_SOC_RZV2H] = {
-		.soc_name              = "rzv2h",
+		.soc_name          = "rzv2h",
 		.scif0_base        = RZV2H_SCIF_BASE,
 		.sram_base         = RZV2H_SRAM_BASE,
 		.tzc_msram_base    = RZV2H_TZC400_M33_BASE,
@@ -131,6 +132,7 @@ void bl31_early_platform_setup2(u_register_t arg0,
 {
 	int ret;
 
+	bl31_params_base = (uintptr_t)arg0;
 	soc_id = arg1 >> 32;
 
 	/* initialize console driver */
@@ -149,6 +151,7 @@ void bl31_early_platform_setup2(u_register_t arg0,
 	memcpy(&from_bl2, (void *)arg0, sizeof(from_bl2));
 
 	INFO("BL31: Setup for SoC: %s\n", bl31_board_cfg[soc_id].soc_name);
+	INFO("BL31: BL2 passed params address = 0x%lx\n", (unsigned long)arg0);
 }
 
 void bl31_plat_arch_setup(void)
@@ -186,7 +189,7 @@ void bl31_platform_setup(void)
 		plat_security_setup();
 	}
 	
-#if !DEBUG_RZG2L_FPGA
+#if !DEBUG_FPGA
 	/* initialize GIC-600 */
 	plat_gic_driver_init();
 	plat_gic_init();

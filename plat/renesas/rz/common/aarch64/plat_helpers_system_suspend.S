@@ -21,6 +21,7 @@
 	.globl	plat_get_core_pos
 	.globl	bl2_enter_bl31
 	.extern	plat_set_my_stack
+	.extern bl31_params_base
 
 func plat_secondary_reset
 	mrs	x0, sctlr_el3
