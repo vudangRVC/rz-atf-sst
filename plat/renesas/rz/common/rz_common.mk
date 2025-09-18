@@ -171,7 +171,7 @@ BL31_SOURCES			+=	plat/common/plat_gicv3.c								\
 							plat/renesas/rz/common/rz_plat_sip_handler.c			\
 							plat/renesas/rz/common/rz_sip_svc.c						\
 							plat/renesas/rz/common/board_info.c						\
-							${GICV3_SOURCES}
+							${GICV3_SOURCES}										\
 
 ifneq (${TRUSTED_BOARD_BOOT},0)
 

@@ -10,6 +10,11 @@
 #include <lib/mmio.h>
 #include <assert.h>
 #include <board_info.h>
+#include <drivers/io/io_driver.h>
+#include <string.h>
+#include <emmc_def.h>
+
+extern void flush_dcache_range(uintptr_t addr, size_t size);
 
 /**
  * get_board_info_field - Read a 32-bit field from the board info region
@@ -40,6 +45,86 @@ uint32_t get_board_info_u32(uintptr_t flash_map_base, uintptr_t flash_size, size
 	}
 
 	return mmio_read_32(addr);
+}
+
+/**
+ * bl2_emmc_load_boardinfo() - Load board identification data from eMMC
+ *
+ * This routine reads a small board-info structure
+ * from a fixed sector window in the eMMC and publishes it
+ * into the SRAM mailbox shared with later stages (BL31/BL33).
+ *
+ * Return: 0 on success, <0 on failure (partition select, open, or read).
+ *
+ * Notes:
+ * - The mailbox is used by BL31 to determine the board variant.
+ */
+int bl2_emmc_load_boardinfo(uintptr_t emmc_handle)
+{
+	platform_desc_t tmp;
+	size_t bytes_read = 0;
+	int rc;
+	uintptr_t h = 0;
+
+	/* Compute byte window from eMMC defines of board identification */
+	const size_t bi_start_lba = BOARD_INFO_EMMC_SECTOR_START;
+	const size_t bi_sector_sz = BOARD_INFO_EMMC_SECTOR_SIZE;
+	const size_t bi_sector_cnt = BOARD_INFO_EMMC_SECTOR_COUNT;
+	const size_t bi_window_size = bi_sector_cnt * bi_sector_sz;
+	const size_t bi_offset = bi_start_lba * bi_sector_sz;
+	const size_t read_len = (sizeof(tmp) <= bi_window_size) ? sizeof(tmp) : bi_window_size;
+
+	const io_block_spec_t spec = {
+		.offset = bi_offset,
+		.length = read_len,
+	};
+
+	/* Select eMMC partition 1 */
+	if (emmc_select_partition(PARTITION_ID_BOOT_1) != EMMC_SUCCESS) {
+		ERROR("BL2: select BOOT#1 failed\n");
+		panic();
+	}
+
+	/* Open the I/O window and read data */
+	rc = io_open(emmc_handle, (uintptr_t)&spec, &h);
+	if (rc) {
+		ERROR("BL2: boardinfo(emmc) open rc=%d\n", rc);
+		goto fail_restore_user;
+	}
+
+	rc = io_read(h, (uintptr_t)&tmp, read_len, &bytes_read);
+	io_close(h);
+
+	if (rc || bytes_read != read_len) {
+		ERROR("BL2: boardinfo(emmc) read rc=%d bytes=%zu (exp=%zu)\n",
+			rc, bytes_read, read_len);
+		rc = (rc) ? rc : -1;
+		goto fail_restore_user;
+	}
+
+	/* Zero-pad if only a partial read occurred */
+	if (read_len < sizeof(tmp)) {
+		memset((uint8_t *)&tmp + read_len, 0, sizeof(tmp) - read_len);
+	}
+
+	/* Publish to SRAM mailbox */
+	struct board_mb *mb = (struct board_mb *)BOARD_MB_ADDR;
+	mb->desc  = tmp;
+	mb->size  = sizeof(tmp);
+	mb->magic = BOARD_MB_MAGIC;
+	flush_dcache_range((uintptr_t)mb, sizeof(*mb));
+
+	NOTICE("BL2: boardinfo(emmc) model=0x%x\"\n",
+		mb->desc.model_id);
+
+	/* Restore eMMC partition to USER so BL33 sees defaults */
+	(void)emmc_select_partition(PARTITION_ID_USER);
+	return 0;
+
+fail_restore_user:
+	/* Restore USER partition */
+	(void)emmc_select_partition(PARTITION_ID_USER);
+	return rc ? rc : -1;
 }
 
 /**
@@ -112,4 +197,3 @@ void get_chipid(uintptr_t otp_base, uint32_t *chipid)
     chipid[2] = mmio_read_32(otp_base + 0x8);
     chipid[3] = mmio_read_32(otp_base + 0xC);
 }
-
