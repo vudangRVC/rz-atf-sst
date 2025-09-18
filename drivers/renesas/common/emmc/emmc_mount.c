@@ -672,6 +672,10 @@ EMMC_ERROR_CODE rcar_emmc_mount(void)
 	/* Changing the data bus width */
 	result = emmc_bus_width(8);
 	if (result != EMMC_SUCCESS) {
+		ret = emmc_bus_width(4) != EMMC_SUCCESS);
+	}
+
+	if (result != EMMC_SUCCESS) {
 		emmc_write_error_info_func_no(EMMC_FUNCNO_BUS_WIDTH);
 		if (emmc_clock_ctrl(FALSE) != EMMC_SUCCESS) {
 			/* nothing to do. */

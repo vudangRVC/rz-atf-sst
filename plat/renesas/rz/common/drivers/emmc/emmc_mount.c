@@ -615,51 +615,101 @@ EMMC_ERROR_CODE emmc_set_request_mmc_clock(uint32_t *freq)
 	return emmc_clock_ctrl(TRUE);	/* clock on */
 }
 
+
+/* Choose the eMMC SDHI channel (0 or 1) */
+#ifndef EMMC_SDHI_CH
+#define EMMC_SDHI_CH   0u
+#endif
+
+/* Base resolver */
+#define SDHI_BASE(ch)   ((ch) == 0u ? MMC0_SD_BASE : MMC1_SD_BASE)
+
+/* Common SDHI register offsets on RZ/G2L-family */
+#define SD_EXTMODE      0x0D8u  /* host mode / width bits often here */
+
+static inline uint32_t sd_reg(unsigned ch, uint32_t off)
+{
+    return mmio_read_32(SDHI_BASE(ch) + off);
+}
+
+static inline void emmc_dump_status_regs(const char *tag)
+{
+    const unsigned ch = EMMC_SDHI_CH;
+
+    uint32_t info1 = sd_reg(ch, SD_INFO1);
+    uint32_t info2 = sd_reg(ch, SD_INFO2);
+    uint32_t err1  = sd_reg(ch, SD_ERR_STS1);
+    uint32_t err2  = sd_reg(ch, SD_ERR_STS2);
+    uint32_t clk   = sd_reg(ch, SD_CLK_CTRL);
+    uint32_t opt   = sd_reg(ch, SD_OPTION);
+    uint32_t extm  = sd_reg(ch, SD_EXTMODE);
+    uint32_t size  = sd_reg(ch, SD_SIZE);
+    uint32_t stop  = sd_reg(ch, SD_STOP);
+    uint32_t secc  = sd_reg(ch, SD_SECCNT);
+
+    NOTICE("EMMC DBG [%s] (ch=%u, base=0x%08lx)\n",
+           tag ? tag : "-", ch, (unsigned long)SDHI_BASE(ch));
+    NOTICE("  SD_INFO1=0x%08x  SD_INFO2=0x%08x  (CBSY=%u BRE=%u BWE=%u)\n",
+           info1, info2,
+           !!(info2 & SD_INFO2_CBSY), !!(info2 & SD_INFO2_BRE), !!(info2 & SD_INFO2_BWE));
+    NOTICE("  ERR_STS1=0x%08x  ERR_STS2=0x%08x\n", err1, err2);
+    NOTICE("  CLK_CTRL=0x%08x  OPTION=0x%08x  EXTMODE=0x%08x\n", clk, opt, extm);
+    NOTICE("  SIZE=0x%08x  STOP=0x%08x  SECCNT=0x%08x\n", size, stop, secc);
+}
+
 EMMC_ERROR_CODE emmc_mount(void)
 {
-	EMMC_ERROR_CODE result;
+    EMMC_ERROR_CODE result;
 
-	/* state check */
-	if ((mmc_drv_obj.initialize != TRUE)
-	    || (mmc_drv_obj.card_power_enable != TRUE)
-	    || ((GETR_32(SD_INFO2) & SD_INFO2_CBSY) != 0)
-	    ) {
-		emmc_write_error_info(EMMC_FUNCNO_MOUNT, EMMC_ERR_STATE);
-		return EMMC_ERR_STATE;
-	}
+    /* state check */
+    if ((mmc_drv_obj.initialize != TRUE)
+        || (mmc_drv_obj.card_power_enable != TRUE)
+        || ((GETR_32(SD_INFO2) & SD_INFO2_CBSY) != 0)) {
+        NOTICE("BL2: emmc_mount state check failed: "
+               "init=%d power=%d CBSY=%u\n",
+               mmc_drv_obj.initialize,
+               mmc_drv_obj.card_power_enable,
+               !!(GETR_32(SD_INFO2) & SD_INFO2_CBSY));
+        emmc_dump_status_regs("BL2 emmc_mount state check fail");
+        emmc_write_error_info(EMMC_FUNCNO_MOUNT, EMMC_ERR_STATE);
+        return EMMC_ERR_STATE;
+    }
 
-	/* initialize card (IDLE state --> Transfer state) */
-	result = emmc_card_init();
-	if (result != EMMC_SUCCESS) {
-		emmc_write_error_info_func_no(EMMC_FUNCNO_CARD_INIT);
-		if (emmc_clock_ctrl(FALSE) != EMMC_SUCCESS) {
-			/* nothing to do. */
-		}
-		return result;
-	}
+    /* initialize card (IDLE state --> Transfer state) */
+    result = emmc_card_init();
+    if (result != EMMC_SUCCESS) {
+        emmc_write_error_info_func_no(EMMC_FUNCNO_CARD_INIT);
+        (void)emmc_clock_ctrl(FALSE);
+        return result;
+    }
 
-	/* Switching high speed mode */
-	result = emmc_high_speed();
-	if (result != EMMC_SUCCESS) {
-		emmc_write_error_info_func_no(EMMC_FUNCNO_HIGH_SPEED);
-		if (emmc_clock_ctrl(FALSE) != EMMC_SUCCESS) {
-			/* nothing to do. */
-		}
-		return result;
-	}
+    /* Switching high speed mode */
+    result = emmc_high_speed();
+    if (result != EMMC_SUCCESS) {
+        emmc_write_error_info_func_no(EMMC_FUNCNO_HIGH_SPEED);
+        (void)emmc_clock_ctrl(FALSE);
+        return result;
+    }
 
-	/* Changing the data bus width */
+    /* Changing the data bus width */
 	result = emmc_bus_width(8);
 	if (result != EMMC_SUCCESS) {
-		emmc_write_error_info_func_no(EMMC_FUNCNO_BUS_WIDTH);
-		if (emmc_clock_ctrl(FALSE) != EMMC_SUCCESS) {
-			/* nothing to do. */
+		NOTICE("BL2: 8-bit failed, forcing 4-bit\n");
+		result = emmc_bus_width(4);
+		if (result != EMMC_SUCCESS) {
+			NOTICE("BL2: 4-bit fail\n");
+			panic();
 		}
+	}
+
+	if (result != EMMC_SUCCESS) {
+		emmc_write_error_info_func_no(EMMC_FUNCNO_BUS_WIDTH);
+		(void)emmc_clock_ctrl(FALSE);
 		return result;
 	}
 
-	/* mount complete */
-	mmc_drv_obj.mount = TRUE;
+    /* mount complete */
+    mmc_drv_obj.mount = TRUE;
 
-	return EMMC_SUCCESS;
+    return EMMC_SUCCESS;
 }
