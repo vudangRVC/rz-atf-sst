@@ -41,6 +41,8 @@ ifneq (${PLAT_SYSTEM_SUSPEND},0)
 override PLAT_SYSTEM_SUSPEND	:= 1
 endif
 
+$(eval $(call add_define,PLAT_SYSTEM_SUSPEND))
+
 # DEBUG helper flag to generate obj file
 ifneq (${DEBUG},0)
 CFLAGS += -save-temps=obj \
@@ -169,7 +171,6 @@ BL31_SOURCES			+=	plat/common/plat_gicv3.c								\
 							plat/renesas/rz/common/rz_plat_sip_handler.c			\
 							plat/renesas/rz/common/rz_sip_svc.c						\
 							plat/renesas/rz/common/board_info.c						\
-							${SD_SOURCES}											\
 							${GICV3_SOURCES}
 
 ifneq (${TRUSTED_BOARD_BOOT},0)
