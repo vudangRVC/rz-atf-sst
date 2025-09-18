@@ -10,6 +10,9 @@
 #include <lib/mmio.h>
 #include <assert.h>
 #include <board_info.h>
+#include <drivers/io/io_driver.h>
+#include <string.h>
+#include <emmc_def.h>
 
 /**
  * get_board_info_field - Read a 32-bit field from the board info region
@@ -40,6 +43,38 @@ uint32_t get_board_info_u32(uintptr_t flash_map_base, uintptr_t flash_size, size
 	}
 
 	return mmio_read_32(addr);
+}
+
+/**
+ * get_board_info_u32_emmc - Read a 32-bit field from the board info region in eMMC
+ *
+ * @board_info_offset:  LBA (sector) index where the board info structure starts.
+ * @field_offset:       Index (in 32-bit words) of the desired field within the structure.
+ *
+ * This function reads BOARD_INFO_EMMC_SECTOR_COUNT sectors of size
+ * BOARD_INFO_EMMC_SECTOR_SIZE from eMMC into a temporary buffer, then
+ * returns the 32-bit word located at the specified field offset.
+ *
+ * Returns the 32-bit value read from the eMMC board info region.
+ * Panics if the eMMC read fails.
+ */
+
+uint32_t get_board_info_u32_emmc(size_t board_info_offset,
+								 size_t field_offset)
+{
+	uint32_t buffer[BOARD_INFO_EMMC_SECTOR_COUNT * (BOARD_INFO_EMMC_SECTOR_SIZE / sizeof(uint32_t))];
+	uint32_t flags = 0;
+	uint32_t ret;
+
+	memset(buffer, 0, sizeof(buffer));
+
+	ret = emmc_read_sector(buffer, board_info_offset, BOARD_INFO_EMMC_SECTOR_COUNT, flags);
+	if (ret != EMMC_SUCCESS) {
+		NOTICE("eMMC read failed, error code = %d\n", ret);
+		panic();
+	}
+
+	return buffer[field_offset];
 }
 
 /**

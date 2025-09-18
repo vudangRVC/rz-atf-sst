@@ -52,6 +52,13 @@ typedef struct {
 	uint32_t    tzc_asram_base;
 	uint32_t    syc_timer_base;
 	uint32_t    sysc_base;
+	uint32_t	sysc_lsi_mode_reg_offset;
+	uint32_t	sysc_lsi_mode_mask;
+	uint32_t	sysc_boot_mode_esd;
+	uint32_t	sysc_boot_mode_emmc_1_8;
+	uint32_t	sysc_boot_mode_emmc_3_3;
+	uint32_t	sysc_boot_mode_spi_1_8;
+	uint32_t	sysc_boot_mode_spi_3_3;
 	uint32_t    cpg_base;
 	uint32_t    gicd_base;
 	uint32_t    gicr_base;

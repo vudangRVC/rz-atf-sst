@@ -29,6 +29,7 @@ Includes   <System Includes> , "Project Includes"
 #include "r_sdif.h"
 #include "sd.h"
 #include "sdmmc_iodefine.h"
+#include <common/debug.h>
 
 /******************************************************************************
 Typedef definitions
@@ -829,6 +830,7 @@ int32_t _sd_check_info2_err(st_sdhndl_t *p_hndl)
 	/* ---- search error bit ---- */
 	bit = _sd_bit_search(info2);
 
+	NOTICE("SD Check error\n");
 	if ((-1) != bit) {
 		_sd_set_err(p_hndl, s_info2_err_tbl[bit]);
 	}
