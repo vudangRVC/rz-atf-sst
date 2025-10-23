@@ -22,6 +22,8 @@
 	v2l: soc {
 		compatible = "simple-bus";
 		soc_id = <0x2>;
+		mb_base = <0x00010000>;
+		mmc_bid_sector_start = <0xFA>;
 		bl2_limit = <0x0002F000>;
 		enable_cold_boot = <0>;
 		spirom_fip_base = <0x2001D200>;
@@ -587,7 +589,7 @@
 		};
 
 		sdhi0: mmc@11c00000 {
-			compatible = "renesas,sdhi-r9a07g044",
+			compatible = "renesas,sdhi-r9a07g054",
 				     "renesas,rcar-gen3-sdhi";
 			reg = <0x0 0x11c00000 0x00 0x10000>;
 			clock-names = "core", "clkh", "cd", "aclk";
