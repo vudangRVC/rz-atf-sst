@@ -13,7 +13,7 @@
 #include <rz_fconf.h>
 #include <rz_dt.h>
 #include <lib/fconf/fconf.h>
-#include <lib/libfdt/libfdt.h>
+#include <libfdt.h>
 #include <board_info.h>
 
 #define	CPG_OFF			(0)

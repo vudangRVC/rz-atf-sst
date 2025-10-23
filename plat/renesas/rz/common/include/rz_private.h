@@ -48,6 +48,7 @@ typedef struct {
 	const char *soc_name;
 	uint32_t    scif0_base;
 	uint32_t    sram_base;
+	uint32_t    mb_base;
 	uint32_t    tzc_msram_base;
 	uint32_t    tzc_asram_base;
 	uint32_t    syc_timer_base;

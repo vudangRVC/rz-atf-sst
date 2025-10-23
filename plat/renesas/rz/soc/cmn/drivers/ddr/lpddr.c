@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <common/debug.h>
 #include <drivers/delay_timer.h>
-#include <lib/libfdt/libfdt.h>
+#include <libfdt.h>
 #include "ddr_regs.h"
 #include "rzv2h_def.h"
 #include "cpg.h"

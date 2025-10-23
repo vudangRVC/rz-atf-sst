@@ -1,6 +1,6 @@
 #include <common/debug.h>
 #include <lib/fconf/fconf.h>
-#include <lib/libfdt/libfdt.h>
+#include <libfdt.h>
 #include <platform_def.h>
 #include <rz_fconf.h>
 #include <rz_dt.h>
@@ -13,6 +13,7 @@ struct pfc_config_t pfc_config;
 struct scif_config_t scif_config;
 struct ddr_config_t ddr_config;
 struct spi_config_t spi_config;
+struct sdhi_config_t sdhi_config;
 
 extern u_register_t bootrom_param0;
 
@@ -63,6 +64,8 @@ int fconf_populate_common_config(uintptr_t config)
 
 	const char *common_props[] = {
 		"soc_id",
+		"mb_base",
+		"mmc_bid_sector_start",
 		"bl2_limit",
 		"enable_cold_boot",
 		"spirom_fip_base",
@@ -75,6 +78,8 @@ int fconf_populate_common_config(uintptr_t config)
 
 	uint32_t *common_targets[] = {
 		&common_config.soc_id,
+		&common_config.mb_base,
+		&common_config.mmc_bid_sector_start,
 		&common_config.bl2_limit,
 		&common_config.enable_cold_boot,
 		&common_config.spirom_fip_base,
@@ -275,21 +280,17 @@ int fconf_populate_pfc_config(uintptr_t config)
 	pfc_config.pfc_node = pfc_node;
 
 	const char *pfc_props[] = {
-		"pfc_type",
 		"pfc_mux_setup",
 		"pfc_qspi_setup",
 		"pfc_sd_setup",
-		"pfc_scif_setup",
 		"pfc_drive_setup",
 		"pfc_riic_pmic_setup",
 	};
 
 	uint32_t *targets[] = {
-		&pfc_config.pfc_type,
 		&pfc_config.pfc_mux_setup,
 		&pfc_config.pfc_qspi_setup,
 		&pfc_config.pfc_sd_setup,
-		&pfc_config.pfc_scif_setup,
 		&pfc_config.pfc_drive_setup,
 		&pfc_config.pfc_riic_pmic_setup,
 	};
@@ -535,6 +536,30 @@ const struct spi_config_t *spi_config_getter(void)
 }
 
 /**********************************************************************
+ * SDHI FCONF function
+ **********************************************************************/
+int fconf_populate_sdhi_config(uintptr_t config)
+{
+	void *fdt = (void *)config;
+
+	const char *sdhi_path = NULL;
+	if (bootrom_param0 == RZG2L_BL2_BASE) {
+		sdhi_path = "mmc@11c00000";
+	} else if (bootrom_param0 == RZV2H_BL2_BASE) {
+		sdhi_path = "mmc@15c00000";
+	}
+
+	read_prop_from_subnode(fdt, "/soc", sdhi_path, "reg", 1, &sdhi_config.mmc_base);
+
+	return 0;
+}
+
+const struct sdhi_config_t *sdhi_config_getter(void)
+{
+	return &sdhi_config;
+}
+
+/**********************************************************************
  * FCONF registration
  **********************************************************************/
 FCONF_REGISTER_POPULATOR(HW_CONFIG, common_config, fconf_populate_common_config);
@@ -545,3 +570,4 @@ FCONF_REGISTER_POPULATOR(HW_CONFIG, pfc_config, fconf_populate_pfc_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, scif_config, fconf_populate_scif_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, ddr_config, fconf_populate_ddr_config);
 FCONF_REGISTER_POPULATOR(HW_CONFIG, spi_config, fconf_populate_spi_config);
+FCONF_REGISTER_POPULATOR(HW_CONFIG, sdhi_config, fconf_populate_sdhi_config);

@@ -8,7 +8,7 @@
 /dts-v1/;
 
 / {
-	compatible = "renesas,r9a09g057h4-dev", "renesas,r9a09g057h4", "renesas,r9a09g057";
+	compatible = "renesas,r9a09g057h4", "renesas,r9a09g057";
 	model = "Renesas EVK Version 1 based on r9a09g057h4";
 	#address-cells = <2>;
 	#size-cells = <2>;
@@ -56,7 +56,8 @@
 	v2h: soc {
 		compatible = "simple-bus";
 		soc_id = <0x3>;
-		platform_core_count = <4>;
+		mb_base = <0x08120000>;
+		mmc_bid_sector_start = <0x2FA>;
 		bl2_limit = <0x08160000>;
 		enable_cold_boot = <1>;
 		spirom_fip_base = <0x20060000>;
@@ -67,6 +68,7 @@
 		sd_fip_size = <0x001A0000>;
 		#address-cells = <0x02>;
 		#size-cells = <0x02>;
+		ranges;
 
 		sysc: system-controller@10430000 {
 			compatible = "renesas,r9a09g057-sysc";
@@ -401,7 +403,7 @@
 
 				0x644 0x0000007F
 				0x820
-				0	
+				0
 			>;
 
 			cpg_reset_tbl = <
@@ -622,7 +624,7 @@
 				0x40c 0x10001000
 				0x410 0x01110111
 			>;
-		
+
 			cpg_pll_tbl = <
 				0x0A0 0x00010001
 				0 0
@@ -650,13 +652,19 @@
 			compatible = "renesas,r9a09g057-pfc";
 			reg = <0 0x10410000 0 0x10000>;
 
-			pfc_type 			= <1>;
-			pfc_mux_setup		= <0>;
+			pfc_mux_setup		= <1>;
 			pfc_qspi_setup		= <1>;
 			pfc_sd_setup		= <1>;
-			pfc_scif_setup		= <1>;
 			pfc_drive_setup		= <1>;
 			pfc_riic_pmic_setup	= <1>;
+
+			pfc_mux_reg_tbl = <
+				0 0 0
+				0 0 0
+				1 0x1030 0x0000000000000003
+				1 0x1C30 0x0000000000000000
+				1 0x1430 0x0000000000000000
+			>;
 
 			pfc_qspi_reg_tbl = <
 				0 0 0
@@ -677,17 +685,17 @@
 			pfc_sd_reg_tbl = <
 				0 0 0
 				0 0 0
-				1 0x1048 0x00030303
-				1 0x1C48 0x00000000
-				1 0x1448 0x00000000
-				1 0x1848 0x00000100
+				1 0x1038 0x00030003
+				1 0x1C38 0x00000000
+				1 0x1438 0x00000000
+				0 0 0
 
 				0 0 0
 				0 0 0
-				1 0x1050 0x03030303
-				1 0x1C50 0x00000000
-				1 0x1450 0x00000000
-				1 0x1850 0x01010101
+				1 0x1040 0x03030303
+				1 0x1C40 0x00000000
+				1 0x1440 0x00000000
+				0 0 0
 			>;
 		};
 
@@ -699,7 +707,7 @@
 		};
 
 		xspi: spi@11030000 {
-			compatible = "renesas,r9a09g057-rpc-if", "renesas,rzv2h-rpc-if";
+			compatible = "renesas,r9a09g057-rpc-if";
 			reg = <0x00 0x11030000 0x00 0x10000>;
 			reg-names = "regs", "dirmap", "wbuf";
 			power-domains = <&cpg>;
@@ -20138,7 +20146,7 @@
 				0x0000
 				0x0000
 				0x0000
-			>;		
+			>;
 
 			phyinit_2d = <
 				0x0204
@@ -36874,6 +36882,14 @@
 				732
 				761
 			>;
+		};
+
+		sdhi0: mmc@15c00000  {
+			compatible = "renesas,sdhi-r9a09g057";
+			reg = <0x0 0x15c00000 0 0x10000>;
+			power-domains = <&cpg>;
+			mmc-no-pin-volt-switch;
+			status = "disabled";
 		};
 	};
 };

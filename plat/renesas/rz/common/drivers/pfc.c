@@ -12,7 +12,7 @@
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
 #include <lib/fconf/fconf.h>
-#include <lib/libfdt/libfdt.h>
+#include <libfdt.h>
 #include <rz_fconf.h>
 #include <common/debug.h>
 
@@ -26,30 +26,9 @@ extern u_register_t dtb_base;
 #define PFC_REG_WRITE_64(reg, value)	mmio_write_64(PFC_REG_ADDR(reg), value)
 #define PFC_REG_READ(reg)				mmio_read_32(PFC_REG_ADDR(reg))
 
-#define PFC_TYPE_1		(0)
-#define PFC_TYPE_2		(1)
-
 static PFC_REGS  pfc_qspi_reg_tbl[PFC_QSPI_TBL_NUM];
 
 static PFC_REGS  pfc_sd_reg_tbl[PFC_SD_TBL_NUM];
-
-/* SCIF */
-static PFC_REGS pfc_scif_reg_tbl[PFC_TBL_LEN] = {
-	/* SCIF_RXD (P6.0), SCIF_TXD (P6.1) */
-	{
-		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PMC */
-		{ PFC_OFF, (uintptr_t)NULL,       0 },						/* PFC */
-		{ PFC_ON,  (uintptr_t)PFC_IOLH06, 0x0000000000000003 },		/* IOLH */
-		{ PFC_ON,  (uintptr_t)PFC_PUPD06, 0x0000000000000000 },		/* PUPD */
-		{ PFC_ON,  (uintptr_t)PFC_SR06,   0x0000000000000000 },		/* SR */
-		{ PFC_ON,  (uintptr_t)NULL,       0x0000000000000000 }		/* IEN */
-	},
-
-	/* Padding to make same length as other pin tables */
-	{
-		{0}
-	},
-};
 
 #if PLAT_SYSTEM_SUSPEND
 /* I2C8 */
@@ -77,7 +56,6 @@ static PFC_IO_DRIVE pfc_io_drive[SYS_BOOT_MODE_MAX] = {
 	{SYS_V2H_LSI_OTPPOC_EN_EMMC33_DS_MASK,	SYS_V2H_LSI_OTPPOC_EMMC33_E_MASK,	SYS_V2H_LSI_OTPPOC_EMMC33_E},
 	{SYS_V2H_LSI_OTPPOC_EN_SPI18_DS_MASK,	SYS_V2H_LSI_OTPPOC_SPI18_E_MASK,	SYS_V2H_LSI_OTPPOC_SPI18_E},
 	{SYS_V2H_LSI_OTPPOC_EN_SPI33_DS_MASK,	SYS_V2H_LSI_OTPPOC_SPI33_E_MASK,	SYS_V2H_LSI_OTPPOC_SPI33_E},
-	{SYS_V2H_LSI_OTPPOC_EN_SCIF_DS_MASK,	SYS_V2H_LSI_OTPPOC_SCIF_E_MASK,		SYS_V2H_LSI_OTPPOC_SCIF_E},
 };
 
 static const PFC_REGS * pfc_boot_mode_tbls[SYS_BOOT_MODE_MAX] = {
@@ -86,7 +64,6 @@ static const PFC_REGS * pfc_boot_mode_tbls[SYS_BOOT_MODE_MAX] = {
 	pfc_sd_reg_tbl,
 	pfc_qspi_reg_tbl,
 	pfc_qspi_reg_tbl,
-	pfc_scif_reg_tbl
 };
 
 static void pfc_mux_setup(void)
@@ -307,22 +284,6 @@ static void pfc_sd_setup(void)
 	}
 }
 
-static void pfc_scif_setup(void)
-{
-	// Reinit static pfc_scif_reg_tbl struct
-	int cnt;
-	for (cnt = 0; cnt < ARRAY_SIZE(pfc_scif_reg_tbl); cnt++) {
-		/* PUPD */
-		if (pfc_scif_reg_tbl[cnt].pupd.flg == PFC_ON) {
-			PFC_REG_WRITE_64(pfc_scif_reg_tbl[cnt].pupd.reg, pfc_scif_reg_tbl[cnt].pupd.val);
-		}
-		/* SR */
-		if (pfc_scif_reg_tbl[cnt].sr.flg == PFC_ON) {
-			PFC_REG_WRITE_64(pfc_scif_reg_tbl[cnt].sr.reg, pfc_scif_reg_tbl[cnt].sr.val);
-		}
-	}
-}
-
 static void pfc_drive_setup(void)
 {
 	static const uint64_t pfc_iolh_drive_tbl[4] = {0x0000000000000000, 0x0101010101010101, 0x0202020202020202, 0x0303030303030303};
@@ -379,7 +340,6 @@ void pfc_setup(void)
 	if (g_pfc_fconf_cfg->pfc_mux_setup) { pfc_mux_setup(); }
 	if (g_pfc_fconf_cfg->pfc_qspi_setup) { pfc_qspi_setup(); }
 	if (g_pfc_fconf_cfg->pfc_sd_setup) { pfc_sd_setup(); }
-	if (g_pfc_fconf_cfg->pfc_scif_setup) { pfc_scif_setup(); }
 	if (g_pfc_fconf_cfg->pfc_drive_setup) { pfc_drive_setup(); }
 	if (g_pfc_fconf_cfg->pfc_riic_pmic_setup) { pfc_riic_pmic_setup(); }
 }

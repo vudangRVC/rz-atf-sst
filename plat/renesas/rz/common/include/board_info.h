@@ -3,22 +3,26 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <sys.h>
 #include <rzg2l_def.h>
 
 /* Board information magic in SRAM  */
-#define BOARD_MB_MAGIC  0x424D4249u
-#define BOARD_MB_ADDR   (RZG2L_BOOTINFO_BASE + 0x800)
+#define BOARD_MB_MAGIC         0x424D4249u
+#define BOARD_MB_ADDR_OFFSET   (0x800)
 
 /* Offset range of board information within the QSPI flash region */
 #define BOARD_INFO_QSPI_OFFSET U(0x1C700)
 #define BOARD_INFO_QSPI_END    U(0x1CF0F)
 
-#define MAX_STRING_LEN           256
-
 /* Offset range of board information within the eMMC flash region */
-#define BOARD_INFO_EMMC_SECTOR_START U(250)
 #define BOARD_INFO_EMMC_SECTOR_COUNT U(5)
 #define BOARD_INFO_EMMC_SECTOR_SIZE  U(512)
+
+#define MAX_STRING_LEN           256
+
+/* Offset range of board information within the eSD flash region */
+#define BOARD_INFO_ESD_SECTOR_COUNT U(5)
+#define BOARD_INFO_ESD_SECTOR_SIZE  U(512)
 
 /* Offsets for various fields inside the board info region */
 #define OFFSET_MODEL_ID          0x00
@@ -65,23 +69,17 @@ struct board_mb {
 uint32_t get_board_info_u32(uintptr_t flash_map_base, uintptr_t flash_size, size_t board_info_offset, size_t field_offset);
 
 /**
- * get_board_info_string - Read a string field from the board info region
+ * get_board_info_u32_emmc - Read a 32-bitalue from eMMC
  *
- * @flash_base:           Base address of the memory-mapped QSPI flash.
- * @board_info_offset:    Offset to the start of the board info structure.
- * @field_offset:         Offset to a specific field within the structure.
- * @buf:                  Buffer to store the string.
- * @len:                  Length of the buffer.
- *
- * Reads a string from flash_base + board_info_offset + field_offset into buf.
- * Ensures the string is null-terminated.
+ * @board_info_offset:  LBA (sector) index where the board info structure starts.
+ * @field_offset:       Index (in 32-bit words) of the desired field within the structure.
  *
  * Example:
- *   char model_string[MAX_STRING_LEN];
- *   get_board_info_string(RZG2L_SPIROM_BASE, BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_STRING, model_string, sizeof(model_string));
+ *   uint32_t model = get_board_info_u32_emmc(BOARD_INFO_QSPI_OFFSET, OFFSET_MODEL_ID);
  */
-void get_board_info_string(uintptr_t flash_base, size_t board_info_offset, size_t field_offset, char *buf, size_t len);
+uint32_t get_board_info_u32_emmc(size_t board_info_offset, size_t field_offset);
 
+#if defined(PLAT_BOOT_DEVICE_EMMC) || !defined(PLAT_STORAGE_FIXED_BOOT)
 /**
  * bl2_emmc_load_boardinfo() - Load board identification data from eMMC
  *
@@ -95,25 +93,22 @@ void get_board_info_string(uintptr_t flash_base, size_t board_info_offset, size_
  * - The mailbox is used by BL31 to determine the board variant.
  */
 int bl2_emmc_load_boardinfo(uintptr_t sd_handle);
+#endif /* PLAT_BOOT_DEVICE_EMMC */
 
+#if defined(PLAT_BOOT_DEVICE_ESD) || !defined(PLAT_STORAGE_FIXED_BOOT)
 /**
- * get_chipid - Read the 128-bit Chip ID from OTP registers
+ * bl2_esd_load_boardinfo() - Load board identification data from eSD
  *
- * @otp_base: Base address of the OTP register space where Chip ID is stored.
- * @chipid:   Pointer to an array of at least 4 x uint32_t elements.
+ * This routine reads a small board-info structure
+ * from a fixed sector window in the eSD and publishes it
+ * into the SRAM mailbox shared with later stages (BL31/BL33).
  *
- * Reads four consecutive 32-bit values from the given OTP base address.
- * The values are stored in the provided @chipid buffer in order
- * (word0 → word3).
+ * Return: 0 on success, <0 on failure (partition select, open, or read).
  *
- * This function does not perform validation; it only retrieves the raw
- * Chip ID values from the specified base address. The caller is responsible
- * for selecting the correct OTP base depending on the SoC.
- *
- * Example:
- *   uint32_t chipid[4];
- *   get_chipid(RZV2H_OTP_BASE_CHIPID, chipid);
+ * Notes:
+ * - The mailbox is used by BL31 to determine the board variant.
  */
-void get_chipid(uintptr_t otp_base, uint32_t *chipid);
+int bl2_esd_load_boardinfo(uintptr_t sd_handle);
+#endif /* PLAT_BOOT_DEVICE_ESD */
 
 #endif /* BOARD_INFO_H */
