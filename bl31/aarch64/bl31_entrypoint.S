@@ -8,6 +8,7 @@
 
 #include <arch.h>
 #include <common/bl_common.h>
+#include <lib/xlat_tables/xlat_tables_defs.h>
 #include <el3_common_macros.S>
 #include <lib/pmf/aarch64/pmf_asm_macros.S>
 #include <lib/runtime_instr.h>

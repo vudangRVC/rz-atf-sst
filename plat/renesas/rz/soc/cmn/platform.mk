@@ -7,13 +7,15 @@
 include plat/renesas/rz/common/rz_common.mk
 include plat/renesas/rz/board/${BOARD}/rz_board.mk
 include lib/libfdt/libfdt.mk
+include lib/fconf/fconf.mk
 
 PLAT_INCLUDES	+=	-Iplat/renesas/rz/soc/cmn/include
 
 PLAT_BL_COMMON_SOURCES	+=	plat/renesas/rz/soc/cmn/drivers/pwrc/pwrc.c	\
 							plat/renesas/rz/soc/cmn/drivers/pwrc/pwrc_stack.S	\
 
-BL2_SOURCES				+=	lib/fconf/fconf_dyn_cfg_getter.c 	\
+BL2_SOURCES				+=	${FCONF_SOURCES}			\
+							${FCONF_DYN_SOURCES}			\
 							plat/renesas/rz/common/rz_dt.c		\
 							plat/renesas/rz/common/rz_fconf.c
 
@@ -29,4 +31,11 @@ dtbs: $(DTB_LIST:%=$(DTB_OUT)/%)
 $(DTB_OUT)/%.dtb: fdts/%.dts
 	@echo "  DTB     $@"
 	@mkdir -p $(DTB_OUT)
-	$(DTC) -I dts -O dtb -o $@ $<
+	$($(ARCH)-dtc) -I dts -O dtb -o $@ $<
+
+# For the cmn (multi-SoC) platform, per-board DTB embedding is handled by
+# firmware_compile.py at packaging time, so bl2_with_dtb is a no-op here.
+# The raw bl2-esd.bin produced is intentionally WITHOUT a DTB.
+.PHONY: bl2_with_dtb
+bl2_with_dtb:
+	@echo "[cmn] DTB embedding is done per-board by firmware_compile.py; skipping."

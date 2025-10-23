@@ -22,6 +22,7 @@ PLAT_DDR_ECC					:= 0
 PLAT_EMMC_WRITE_ENABLE			:= 0
 PLAT_SYSTEM_SUSPEND				:= 0
 ENABLE_PIE						:= 1
+INIT_UNUSED_NS_EL2				:= 1
 
 $(eval $(call add_define,PLAT_SOC_CMN))
 $(eval $(call add_define,PROTECTED_CHIPID))
@@ -94,12 +95,7 @@ RZ_TIMER_SOURCES		:=	drivers/delay_timer/generic_delay_timer.c				\
 
 DDR_SOURCES				:=	plat/renesas/rz/common/drivers/ddr/ddr.c
 
-EMMC_SOURCES			:=	plat/renesas/rz/common/drivers/emmc/emmc_interrupt.c	\
-							plat/renesas/rz/common/drivers/emmc/emmc_utility.c		\
-							plat/renesas/rz/common/drivers/emmc/emmc_mount.c		\
-							plat/renesas/rz/common/drivers/emmc/emmc_init.c			\
-							plat/renesas/rz/common/drivers/emmc/emmc_read.c			\
-							plat/renesas/rz/common/drivers/emmc/emmc_cmd.c			\
+EMMC_SOURCES			:=	plat/renesas/rz/common/drivers/emmc/rz_emmc.c
 
 SPI_MULTI_SOURCE 		:=	plat/renesas/rz/common/drivers/spi_multi/spi_multi.c	\
 							plat/renesas/rz/common/drivers/spi_multi/${SPI_FLASH}/spi_multi_device.c
@@ -107,19 +103,28 @@ SPI_MULTI_SOURCE 		:=	plat/renesas/rz/common/drivers/spi_multi/spi_multi.c	\
 XSPI_SOURCES			:=	plat/renesas/rz/common/drivers/xspi.c	\
 							plat/renesas/rz/common/drivers/io/io_xspidrv.c
 
-SD_SOURCES				:=	plat/renesas/rz/common/drivers/sd/sd_init.c				\
-							plat/renesas/rz/common/drivers/sd/sd_mount.c			\
-							plat/renesas/rz/common/drivers/sd/sd_util.c				\
-							plat/renesas/rz/common/drivers/sd/sd_cd.c				\
-							plat/renesas/rz/common/drivers/sd/sd_cmd.c				\
-							plat/renesas/rz/common/drivers/sd/sd_int.c				\
-							plat/renesas/rz/common/drivers/sd/sd_init.c				\
-							plat/renesas/rz/common/drivers/sd/sd_main.c				\
-							plat/renesas/rz/common/drivers/sd/sd_trns.c				\
-							plat/renesas/rz/common/drivers/sd/sd_read.c				\
-							plat/renesas/rz/common/drivers/sd/sd_write.c			\
-							plat/renesas/rz/common/drivers/sd/sd_dev_low.c			\
-							plat/renesas/rz/common/drivers/io/io_sddrv.c
+SD_SOURCES				:=	plat/renesas/rz/common/drivers/sd/esd_main.c
+
+ifdef PLAT_BL2_STORAGE
+ifeq (${PLAT_BL2_STORAGE},xspi)
+BL2_SOURCES			+=	${SPI_MULTI_SOURCE}		\
+						${XSPI_SOURCES}
+BL2_CPPFLAGS			+=	-DPLAT_BOOT_DEVICE_XSPI
+else ifeq (${PLAT_BL2_STORAGE},emmc)
+BL2_SOURCES			+=	${EMMC_SOURCES}
+BL2_CPPFLAGS			+=	-DPLAT_BOOT_DEVICE_EMMC
+else ifeq (${PLAT_BL2_STORAGE},esd)
+BL2_SOURCES			+=	${SD_SOURCES}
+BL2_CPPFLAGS			+=	-DPLAT_BOOT_DEVICE_ESD
+else
+$(error Unsupported PLAT_BL2_STORAGE value: ${PLAT_BL2_STORAGE})
+endif
+else
+BL2_SOURCES			+=	${EMMC_SOURCES}									\
+						${SPI_MULTI_SOURCE}								\
+						${XSPI_SOURCES}									\
+						${SD_SOURCES}
+endif
 
 BL_COMMON_SOURCES		+=	lib/cpus/aarch64/cortex_a55.S							\
 							drivers/arm/tzc/tzc400.c
@@ -151,13 +156,9 @@ BL2_SOURCES				+=	common/desc_image_load.c								\
 							plat/renesas/rz/common/drivers/pfc.c					\
 							plat/renesas/rz/common/board_info.c						\
 							${RZ_TIMER_SOURCES}										\
-							${EMMC_SOURCES}											\
-							${SPI_MULTI_SOURCE}										\
-							${XSPI_SOURCES}											\
 							${DDR_SOURCES}											\
 							${FDT_WRAPPERS_SOURCES}									\
-							${FCONF_SOURCES}										\
-							${SD_SOURCES}
+							${FCONF_SOURCES}
 
 # Include GICv3 driver files
 include drivers/arm/gic/v3/gicv3.mk
@@ -171,7 +172,7 @@ BL31_SOURCES			+=	plat/common/plat_gicv3.c								\
 							plat/renesas/rz/common/rz_plat_sip_handler.c			\
 							plat/renesas/rz/common/rz_sip_svc.c						\
 							plat/renesas/rz/common/board_info.c						\
-							${GICV3_SOURCES}										\
+							${GICV3_SOURCES}
 
 ifneq (${TRUSTED_BOARD_BOOT},0)
 
@@ -194,3 +195,31 @@ ifneq (${TRUSTED_BOARD_BOOT},0)
 	BL2_SOURCES			+=	${AUTH_SOURCES}
 
 endif
+
+.PHONY: bl2-xspi bl2-emmc bl2-esd bl2-all
+
+define PLAT_BL2_VARIANT_RULE
+bl2-$(1):
+	@echo "======================================="
+	@echo " Building BL2 for $(1)"
+	@echo "======================================="
+	rm -rf ${BUILD_PLAT}/bl2
+	mkdir -p ${BUILD_PLAT}/bl2
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2
+ifeq ($(1),esd)
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2_with_dtb
+endif
+	rm -f ${BUILD_PLAT}/bl2-$(1).bin
+	cp ${BUILD_PLAT}/bl2.bin ${BUILD_PLAT}/bl2-$(1).bin
+endef
+
+$(foreach variant,xspi emmc esd,$(eval $(call PLAT_BL2_VARIANT_RULE,$(variant))))
+
+# Build all storage variants of BL2
+bl2-all:
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} DEBUG=${DEBUG} bl2-xspi
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} DEBUG=${DEBUG} bl2-emmc
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} DEBUG=${DEBUG} bl2-esd
+	@echo "======================================="
+	@echo "All BL2 variants built successfully."
+	@echo "======================================="

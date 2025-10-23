@@ -11,8 +11,9 @@
 #include <drivers/io/io_driver.h>
 #include <drivers/io/io_storage.h>
 #include <r_sd_cfg.h>
-#include <r_sdif.h>
-#include <sd.h>
+#include <esdif.h>
+#include <esd.h>
+#include <rz_fconf.h>
 
 #include "io_common.h"
 #include "io_sddrv.h"
@@ -81,7 +82,7 @@ static int sddrv_block_read(io_entity_t *entity, uintptr_t buffer,
 	if (first_offset > 0) {
 		memset(sd_rw_buff, 0x00, SD_SECTOR_SIZE);
 
-		if (sd_read_sect(sd_port, (uint8_t *)sd_rw_buff, first_sector, 1) != SD_OK)
+		if (esd_read_sect(sd_port, (uint8_t *)sd_rw_buff, first_sector, 1) != SD_OK)
 			return -EIO;
 
 		buffer_offset = SD_SECTOR_SIZE - first_offset;
@@ -99,7 +100,7 @@ static int sddrv_block_read(io_entity_t *entity, uintptr_t buffer,
 	if (0 < sector_count && 0 < last_offset) {
 		memset(sd_rw_buff, 0x00, SD_SECTOR_SIZE);
 
-		if (sd_read_sect(sd_port, (uint8_t *)sd_rw_buff, last_sector, 1) != SD_OK)
+		if (esd_read_sect(sd_port, (uint8_t *)sd_rw_buff, last_sector, 1) != SD_OK)
 			return -EIO;
 
 		memcpy((uint8_t *) buffer + (length - last_offset), &sd_rw_buff[0], last_offset);
@@ -108,7 +109,7 @@ static int sddrv_block_read(io_entity_t *entity, uintptr_t buffer,
 
 	// middle sector
 	if (sector_count > 0) {
-		if (sd_read_sect(sd_port, (uint8_t *)(buffer + buffer_offset),
+		if (esd_read_sect(sd_port, (uint8_t *)(buffer + buffer_offset),
 				first_sector, sector_count) != SD_OK) {
 			return -EIO;
 		}
@@ -139,7 +140,7 @@ static int sddrv_block_write(io_entity_t *entity, const uintptr_t buffer,
 	if (first_offset > 0) {
 		memset(sd_rw_buff, 0x00, SD_SECTOR_SIZE);
 
-		if (sd_read_sect(sd_port, sd_rw_buff, first_sector, 1) != SD_OK)
+		if (esd_read_sect(sd_port, sd_rw_buff, first_sector, 1) != SD_OK)
 			return -EIO;
 
 		buffer_offset = SD_SECTOR_SIZE - first_offset;
@@ -147,7 +148,7 @@ static int sddrv_block_write(io_entity_t *entity, const uintptr_t buffer,
 
 		memcpy((uint8_t *)&sd_rw_buff[first_offset], (uint8_t *)buffer, buffer_offset);
 
-		if (sd_write_sect(sd_port, sd_rw_buff, first_sector, 1, SD_WRITE_WITH_PREERASE) != SD_OK)
+		if (esd_write_sect(sd_port, sd_rw_buff, first_sector, 1, SD_WRITE_WITH_PREERASE) != SD_OK)
 			return -EIO;
 
 		first_sector++;
@@ -160,12 +161,12 @@ static int sddrv_block_write(io_entity_t *entity, const uintptr_t buffer,
 	if ((sector_count > 0) && (last_offset > 0)) {
 		memset(sd_rw_buff, 0x00, SD_SECTOR_SIZE);
 
-		if (sd_read_sect(sd_port, sd_rw_buff, last_sector, 1) != SD_OK)
+		if (esd_read_sect(sd_port, sd_rw_buff, last_sector, 1) != SD_OK)
 			return -EIO;
 
 		memcpy((uint8_t *)&sd_rw_buff[0], (uint8_t *)buffer + (length - last_offset), last_offset);
 
-		if (sd_write_sect(sd_port, sd_rw_buff, last_sector, 1, SD_WRITE_WITH_PREERASE) != SD_OK)
+		if (esd_write_sect(sd_port, sd_rw_buff, last_sector, 1, SD_WRITE_WITH_PREERASE) != SD_OK)
 			return -EIO;
 
 		sector_count--;
@@ -173,7 +174,7 @@ static int sddrv_block_write(io_entity_t *entity, const uintptr_t buffer,
 
 	// middle sector
 	if (sector_count > 0) {
-		if (sd_write_sect(sd_port, (uint8_t *)buffer + buffer_offset, first_sector, sector_count, SD_WRITE_WITH_PREERASE) != SD_OK) {
+		if (esd_write_sect(sd_port, (uint8_t *)buffer + buffer_offset, first_sector, sector_count, SD_WRITE_WITH_PREERASE) != SD_OK) {
 			return -EIO;
 		}
 	}
@@ -250,34 +251,35 @@ static int sddrv_dev_open(const uintptr_t spec __attribute__ ((unused)),
 				io_dev_info_t **dev_info)
 {
 	uint16_t    type;
+	const struct sdhi_config_t * sdhi_fconf_cfg = sdhi_config_getter();
 
 	*dev_info = (io_dev_info_t *) &sddrv_dev_info;
 
-	if (sd_init(sd_port, SD_CFG_BASE, &sd_work[0], SD_CD_SOCKET) != SD_OK) {
-		ERROR("Failed to sd_init.\n");
+	if (esd_init(sd_port, sdhi_fconf_cfg->mmc_base, &sd_work[0], SD_CD_SOCKET) != SD_OK) {
+		ERROR("Failed to esd_init.\n");
 		panic();
 	}
 
 	/* Check if the card is inserted. *//* Cast to an appropriate type */
-	if (sd_check_media(sd_port) != SD_OK) {
-		ERROR("Failed to sd_check_media.\n");
+	if (esd_check_media(sd_port) != SD_OK) {
+		ERROR("Failed to esd_check_media.\n");
 		panic();
 	}
 
 	/* Initialize SD driver work buffer. *//* Cast to an appropriate type */
-	if (sd_set_buffer(sd_port, &sd_rw_buff[0], SD_SECTOR_SIZE) != SD_OK) {
-		ERROR("Failed to sd_set_buffer.\n");
+	if (esd_set_buffer(sd_port, &sd_rw_buff[0], SD_SECTOR_SIZE) != SD_OK) {
+		ERROR("Failed to esd_set_buffer.\n");
 		panic();
 	}
 
 	/* Mount SD card. *//* Cast to an appropriate type */
-	if (sd_mount(sd_port, SD_CFG_DRIVER_MODE, SD_VOLT_3_3) != SD_OK) {
-		ERROR("Failed to sd_mount.\n");
+	if (esd_mount(sd_port, SD_CFG_DRIVER_MODE, SD_VOLT_3_3) != SD_OK) {
+		ERROR("Failed to esd_mount.\n");
 		panic();
 	}
 
-	if (sd_get_type(sd_port, &type, NULL, NULL) != SD_OK) {
-		ERROR("Failed to sd_get_type.\n");
+	if (esd_get_type(sd_port, &type, NULL, NULL) != SD_OK) {
+		ERROR("Failed to esd_get_type.\n");
 		panic();
 	}
 

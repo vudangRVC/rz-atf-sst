@@ -9,18 +9,17 @@
 #include <arch.h>
 #include <asm_macros.S>
 #include <common/bl_common.h>
+#include <lib/xlat_tables/xlat_tables_defs.h>
 #include <el3_common_macros.S>
 
 	.globl	bl2_entrypoint
 
 #if BL2_IN_XIP_MEM || ENABLE_RME
 #define FIXUP_SIZE	0
-#else
- #if ENABLE_PIE
+#elif ENABLE_PIE
 #define FIXUP_SIZE	(RZCMN_RAM_MAX_SIZE)
- #else
+#else
 #define FIXUP_SIZE	((BL2_LIMIT) - (BL2_BASE))
- #endif
 #endif
 
 func bl2_entrypoint
