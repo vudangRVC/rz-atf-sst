@@ -1,0 +1,15 @@
+soc: rzg2l
+board: g2l100
+
+# Optional output dts path (repo-relative). If not specified, defaults to: fdts/<soc>-<board>.dts
+# output: fdts/rzg2l-sbc-ver2.dts
+
+spi:
+  protocol: spi_multi
+  flash_chip: AT25QL128A
+
+ddr:
+  type: ddr4
+  ddr sources: 
+    - plat/renesas/rz/common/drivers/ddr/param_swizzle_T1c.c
+    - plat/renesas/rz/soc/g2l/drivers/ddr/param_mc_C-010_D4-01-3.c
