@@ -168,7 +168,7 @@
 #define RZV2H_ELC_ERINTA55CLR(k)	(RZV2H_ELC + 0x0348 + ((k) * 0x004))
 
 /* Offset to the start of the board info structure in QSPI flash */
-#define RZV2H_BOARD_INFO_xSPI_OFFSET UL(0x120000) 
+#define RZV2H_BOARD_INFO_xSPI_OFFSET UL(0x5F300)
 
 /* RZV2H Chip ID OTP base address */
 #define RZV2H_OTP_BASE_CHIPID	(RZV2H_OTP_BASE + 0x1140)
