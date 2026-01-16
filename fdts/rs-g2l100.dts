@@ -91,6 +91,7 @@
 			cpg_selector_on_off = <1>;
 			cpg_early_setup = <1>;
 			cpg_mstop_setup = <0>;
+			cpg_rst_ddr_opt = <0x00000000>;
 
 			cpg_clk_on_tbl = <
 				0x0504 0x00030000

@@ -138,6 +138,11 @@ int fconf_populate_cpg_config(uintptr_t config)
 	read_prop_from_subnode(fdt, "/soc", cpg_path, "reg", 1, &cpg_config.cpg_base);
 	fconf_read_u32_props(fdt, cpg_node, cpg_props, (uint32_t **)cpg_targets, ARRAY_SIZE(cpg_props));
 
+	/* Specific for CPG type 0 (RZG2L, RZV2L) */
+	if (cpg_config.cpg_type == 0) {
+		read_prop_from_subnode(fdt, "/soc", cpg_path, "cpg_rst_ddr_opt", 0, &cpg_config.cpg_rst_ddr_opt);
+	}
+
 	return 0;
 }
 

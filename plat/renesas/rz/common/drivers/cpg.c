@@ -480,7 +480,7 @@ static void cpg_reset_setup(void)
 void cpg_active_ddr(void (*disable_phy)(void))
 {
 	/* Assert the reset of DDRTOP */
-	CPG_REG_WRITE(CPG_RST_DDR, 0x005F0000 | (CPG_RST_DDR_OPT_VALUE << 16));
+	CPG_REG_WRITE(CPG_RST_DDR, 0x005F0000 | (g_cpg_fconf_cfg->cpg_rst_ddr_opt << 16));
 	CPG_REG_WRITE(CPG_OTHERFUNC2_REG, 0x00010000);
 	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x0000005F) != 0x0000005F)
 		;
@@ -507,7 +507,7 @@ void cpg_active_ddr(void (*disable_phy)(void))
 	disable_phy();
 
 	/* De-assert axiY_ARESETn, regARESETn, reset_n */
-	CPG_REG_WRITE(CPG_RST_DDR, 0x005D005D | (CPG_RST_DDR_OPT_VALUE << 16) | CPG_RST_DDR_OPT_VALUE);
+	CPG_REG_WRITE(CPG_RST_DDR, 0x005D005D | (g_cpg_fconf_cfg->cpg_rst_ddr_opt << 16) | g_cpg_fconf_cfg->cpg_rst_ddr_opt);
 	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x0000005D) != 0x00000000)
 		;
 
@@ -517,7 +517,7 @@ void cpg_active_ddr(void (*disable_phy)(void))
 void cpg_reset_ddr_mc(void)
 {
 	/* Assert rst_n, axiY_ARESETn, regARESETn */
-	CPG_REG_WRITE(CPG_RST_DDR, 0x005C0000 | (CPG_RST_DDR_OPT_VALUE << 16));
+	CPG_REG_WRITE(CPG_RST_DDR, 0x005C0000 | (g_cpg_fconf_cfg->cpg_rst_ddr_opt << 16));
 	CPG_REG_WRITE(CPG_OTHERFUNC2_REG, 0x00010000);
 	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x0000005C) != 0x0000005C)
 		;
@@ -530,7 +530,7 @@ void cpg_reset_ddr_mc(void)
 	udelay(1);
 
 	/* De-assert axiY_ARESETn, regARESETn */
-	CPG_REG_WRITE(CPG_RST_DDR, 0x005C005C | (CPG_RST_DDR_OPT_VALUE << 16) | CPG_RST_DDR_OPT_VALUE);
+	CPG_REG_WRITE(CPG_RST_DDR, 0x005C005C | (g_cpg_fconf_cfg->cpg_rst_ddr_opt << 16) | g_cpg_fconf_cfg->cpg_rst_ddr_opt);
 	while ((CPG_REG_READ(CPG_RSTMON_DDR) & 0x0000005C) != 0x00000000)
 		;
 
