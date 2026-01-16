@@ -38,6 +38,7 @@ struct cpg_config_t {
 	uint32_t cpg_selector_on_off;
 	uint32_t cpg_early_setup;
 	uint32_t cpg_mstop_setup;
+	uint32_t cpg_rst_ddr_opt;
 };
 
 struct sysc_config_t {
