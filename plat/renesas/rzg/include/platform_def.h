@@ -155,6 +155,17 @@
 #define BL33_COMP_BASE		(BL33_BASE - BL33_COMP_SIZE)
 
 /*******************************************************************************
+ * Security Work RAM
+ ******************************************************************************/
+#ifdef RZG2_SECURE_BOOT
+#define SECURE_RAM_SIZE		U(0x00001000)
+#define BL2_SECURE_RAM		U(0x440FE000)
+#define BL2_SECURE_HEAP		U(0x48000000)
+#define KEYRING_OFFSET		U(0x00500000)
+#define KEYRING_LENGTH		U(0x00000510)
+#endif
+
+/*******************************************************************************
  * Platform specific page table and MMU setup constants
  ******************************************************************************/
 #if IMAGE_BL1
@@ -188,4 +199,13 @@
  ******************************************************************************/
 #define CACHE_WRITEBACK_SHIFT   (6)
 #define CACHE_WRITEBACK_GRANULE (1 << CACHE_WRITEBACK_SHIFT)
+
+/*******************************************************************************
+ * Size of the per-cpu data in bytes that should be reserved in the generic
+ * per-cpu data structure for the RCAR port.
+ ******************************************************************************/
+#if !USE_COHERENT_MEM
+#define PLAT_PCPU_DATA_SIZE	(2)
+#endif
+
 #endif /* PLATFORM_DEF_H */

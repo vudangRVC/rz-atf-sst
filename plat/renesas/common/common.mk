@@ -12,6 +12,7 @@ RESET_TO_BL31			:= 1
 GENERATE_COT			:= 1
 RESET_TO_BL2			:= 1
 ENABLE_SVE_FOR_NS		:= 0
+MULTI_CONSOLE_API		:= 1
 
 CRASH_REPORTING			:= 1
 HANDLE_EA_EL3_FIRST_NS		:= 1
@@ -76,7 +77,7 @@ ERRATA_A57_859972  := 1
 ERRATA_A57_813419  := 1
 ERRATA_A57_1319537 := 1
 
-PLAT_INCLUDES	:=	-Iplat/renesas/common/include/registers	\
+PLAT_INCLUDES	+=	-Iplat/renesas/common/include/registers	\
 			-Iplat/renesas/common/include		\
 			-Iplat/renesas/common
 
@@ -96,7 +97,6 @@ BL2_SOURCES	+=	${RCAR_GIC_SOURCES}				\
 			plat/renesas/common/aarch64/plat_helpers.S	\
 			plat/renesas/common/bl2_interrupt_error.c	\
 			plat/renesas/common/bl2_secure_setting.c	\
-			plat/renesas/common/plat_storage.c		\
 			plat/renesas/common/bl2_plat_mem_params_desc.c	\
 			plat/renesas/common/plat_image_load.c		\
 			plat/renesas/common/bl2_cpg_init.c		\
@@ -107,7 +107,6 @@ BL2_SOURCES	+=	${RCAR_GIC_SOURCES}				\
 			drivers/renesas/common/io/io_emmcdrv.c		\
 			drivers/renesas/common/io/io_memdrv.c		\
 			drivers/renesas/common/io/io_rcar.c		\
-			drivers/renesas/common/auth/auth_mod.c		\
 			drivers/renesas/common/rpc/rpc_driver.c		\
 			drivers/renesas/common/dma/dma_driver.c		\
 			drivers/renesas/common/avs/avs_driver.c		\
