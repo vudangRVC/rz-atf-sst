@@ -70,20 +70,32 @@
 /*******************************************************************************
  * FW_CONFIG specific defines.
  *******************************************************************************/
+#ifndef FW_CONFIG_BASE
 #define FW_CONFIG_BASE                          (0x42EFF440)
+#endif
+#ifndef FW_CONFIG_LIMIT
 #define FW_CONFIG_LIMIT                         (FW_CONFIG_BASE + 10000)
+#endif
 
 /*******************************************************************************
  * HW_CONFIG specific defines.
  *******************************************************************************/
+#ifndef HW_CONFIG_BASE
 #define HW_CONFIG_BASE                          (0x00010000)
+#endif
+#ifndef HW_CONFIG_LIMIT
 #define HW_CONFIG_LIMIT                         (HW_CONFIG_BASE + 5000)
+#endif
 
 /*******************************************************************************
  * SOC_FW_CONFIG specific defines.
  *******************************************************************************/
+#ifndef SOC_FW_CONFIG_BASE
 #define SOC_FW_CONFIG_BASE                      (0x0001FF80)
+#endif
+#ifndef SOC_FW_CONFIG_LIMIT
 #define SOC_FW_CONFIG_LIMIT                     (SOC_FW_CONFIG_BASE + 10000)
+#endif
 
 /*******************************************************************************
  * Realm Monitor Management Firmware specific defines.
