@@ -25,6 +25,9 @@
 #include <rzg2l_def.h>
 #include <rz_private.h>
 #include <drivers/delay_timer.h>
+#include <lib/fconf/fconf.h>
+#include <rz_dt.h>
+#include <rz_fconf.h>
 
 static const mmap_region_t rzg2l_mmap[] = {
 #if TRUSTED_BOARD_BOOT
@@ -86,11 +89,20 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 {
 	int ret;
 
+	/* Validate DTB is valid */
+	if (dt_validation(RZG2L_DTB_BASE) < 0) {
+		panic();
+	}
+
+	/* Populate HW_CONFIG device tree with the mapped address */
+	fconf_populate("HW_CONFIG", RZG2L_DTB_BASE);
+
 	/* early setup Clock and Reset */
 	cpg_early_setup();
 
 	/* initialize SYC */
-	syc_init(RZG2L_SYC_INCK_HZ);
+	uint32_t rzg2l_syc_inck_hz = FCONF_GET_PROPERTY(hw_config, sysc_config, syc_inck_hz);
+	syc_init(rzg2l_syc_inck_hz);
 
 	/* initialize Timer */
 	generic_delay_timer_init();
@@ -100,25 +112,6 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 
 	/* setup Clock and Reset */
 	cpg_setup();
-
-	/* USB 2.0 Phy workaround for RZ/G2L,LC	*/
-	if (((mmio_read_32(SYS_LSI_DEVID) & 0x0FFFFFFF) == 0x841C447) &&
-	    ((mmio_read_32(0x11861124) & 0xf00) == 0x700) &&
-	    ((mmio_read_32(0x11861128) & 0xf00) == 0x700))
-	{
-		mmio_write_32(CPG_CLKON_USB, 0x000F000F);
-		while ((mmio_read_32(CPG_CLKMON_USB) & 0x0000000F) != 0x0000000F)
-			;
-		mmio_write_32(CPG_RST_USB, 0x000F000F);
-		while ((mmio_read_32(CPG_RSTMON_USB) & 0x0000000F) != 0x00000000)
-			;
-		mmio_write_32(0x11c40014, 0x00021506);
-		mmio_write_32(0x11c40010, 0x01021506);
-
-		mmio_write_32(CPG_CLKON_USB, 0x000F0000);
-		while ((mmio_read_32(CPG_CLKMON_USB) & 0x00000000) != 0x00000000)
-			;
-	}
 
 	/* initialize console driver */
 	ret = console_rzg2l_register(
