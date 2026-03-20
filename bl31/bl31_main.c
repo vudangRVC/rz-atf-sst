@@ -234,7 +234,8 @@ void __no_pauth bl31_main(u_register_t arg0, u_register_t arg1, u_register_t arg
 #endif
 
 	console_flush();
-	console_switch_state(CONSOLE_FLAG_RUNTIME);
+	/* RZ/G2L: console already registered with RUNTIME flag, no need to switch */
+	// console_switch_state(CONSOLE_FLAG_RUNTIME);
 }
 
 void __no_pauth bl31_warmboot(void)
