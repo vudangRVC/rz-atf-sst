@@ -12,16 +12,24 @@ OUTPUT_ARCH(PLATFORM_LINKER_ARCH)
 ENTRY(bl2_entrypoint)
 
 MEMORY {
+#if ENABLE_PIE
+    RAM (rwx): ORIGIN = RZG2L_BL2_BASE, LENGTH = (RZCMN_RAM_MAX_SIZE)
+#else
     RAM (rwx): ORIGIN = BL2_BASE, LENGTH = BL2_LIMIT - BL2_BASE
+#endif
 }
 
 SECTIONS {
     RAM_REGION_START = ORIGIN(RAM);
     RAM_REGION_LENGTH = LENGTH(RAM);
+#if ENABLE_PIE
+    . = 0x0;  /* Start at zero for PIE */
+#else
     . = BL2_BASE;
 
     ASSERT(. == ALIGN(PAGE_SIZE),
         "BL2_BASE address is not aligned on a page boundary.")
+#endif
 
 #if SEPARATE_CODE_AND_RODATA
     .text . : {
@@ -90,6 +98,15 @@ SECTIONS {
     } >RAM
 #endif /* SEPARATE_CODE_AND_RODATA */
 
+#if ENABLE_PIE
+    /* PIE fixup table */
+    .pie_fixup : {
+        __PIE_FIXUP_START__ = .;
+        KEEP(*(.pie_fixup))
+        __PIE_FIXUP_END__ = .;
+    }
+#endif
+
     __RW_START__ = .;
 
     DATA_SECTION >RAM
@@ -131,5 +148,4 @@ SECTIONS {
         __COHERENT_RAM_END_UNALIGNED__ - __COHERENT_RAM_START__;
 #endif /* USE_COHERENT_MEM */
 
-    ASSERT(. <= BL2_LIMIT, "BL2 image has exceeded its limit.")
 }

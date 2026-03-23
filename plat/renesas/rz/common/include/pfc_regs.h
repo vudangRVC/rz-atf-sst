@@ -729,5 +729,4 @@ typedef struct {
 	PFC_REG_UINT64	ien;
 } PFC_REGS;
 
-
 #endif	/* __PFC_REGS_H__ */

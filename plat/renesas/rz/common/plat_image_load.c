@@ -7,12 +7,11 @@
 #include <common/desc_image_load.h>
 #include <arch_helpers.h>
 #include <platform_def.h>
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#else
 #include <rzg2l_def.h>
-#endif
-
+#include <rzv2h_def.h>
+#include <lib/fconf/fconf.h>
+#include <rz_dt.h>
+#include <rz_fconf.h>
 
 bl_load_info_t *plat_get_bl_image_load_info(void)
 {
@@ -26,7 +25,9 @@ bl_params_t *plat_get_next_bl_params(void)
 
 void plat_flush_next_bl_params(void)
 {
+	uintptr_t bl2_limit = FCONF_GET_PROPERTY(hw_config, common_config, bl2_limit);
+
 	/* Ensure this RAM region is flushed before MMU is turned off otherwise this data will no longer be visible */
-	flush_dcache_range((uintptr_t)PARAMS_BASE, (size_t)PARAMS_SIZE);
+	flush_dcache_range((uintptr_t)bl2_limit, (size_t)PARAMS_SIZE);
 }
 

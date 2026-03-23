@@ -22,6 +22,12 @@
 	 * -----------------------------------------------------
 	 */
 
+	.section .bss.bl31, "aw", %nobits
+	.align 3
+	.global bl31_params_base
+bl31_params_base:
+	.quad 0
+
 func bl31_entrypoint
 	/* ---------------------------------------------------------------
 	 * Stash the previous bootloader arguments x0 - x3 for later use.
@@ -31,6 +37,14 @@ func bl31_entrypoint
 	mov	x21, x1
 	mov	x22, x2
 	mov	x23, x3
+
+	/* ---------------------------------------------------------------
+	 * Save arg0 (params base address) into global bl31_params_base.
+	 * ---------------------------------------------------------------
+	 */
+	adrp	x24, bl31_params_base
+	add	x24, x24, :lo12:bl31_params_base
+	str	x20, [x24]
 
 #if !RESET_TO_BL31
 	/* ---------------------------------------------------------------------

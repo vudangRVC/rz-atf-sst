@@ -11,5 +11,11 @@ void cpg_early_setup(void);
 void cpg_setup(void);
 void cpg_active_ddr(void (*disable_phy)(void));
 void cpg_reset_ddr_mc(void);
+void cpg_ddr0_part1(void);
+void cpg_ddr0_part2(void);
+void cpg_ddr1_part1(void);
+void cpg_ddr1_part2(void);
+void cpg_prepare_suspend(void);
+void cpg_ddr_pwrokin_off(uint8_t base);
 
 #endif /* __CPG_H__ */

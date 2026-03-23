@@ -7,6 +7,11 @@
 include plat/renesas/rz/common/rz_common.mk
 include plat/renesas/rz/board/${BOARD}/rz_board.mk
 
+# G2L-specific overrides for individual platform builds
+ENABLE_PIE := 0
+PROGRAMMABLE_RESET_ADDRESS := 1
+RESET_TO_BL31 := 0
+
 # RZ/G2L boots U-Boot at EL1, EL2 is implemented but unused
 # Must initialize EL2 registers to prevent U-Boot boot failures
 INIT_UNUSED_NS_EL2 := 1
@@ -16,9 +21,12 @@ ifdef REMOVE_UBOOT
 $(eval $(call add_define,REMOVE_UBOOT))
 endif
 
-PLAT_INCLUDES	+=	-Iplat/renesas/rz/soc/g2l/include
+PLAT_INCLUDES	+=	-Iplat/renesas/rz/soc/g2l/include \
+			-Iplat/renesas/rz/soc/cmn/include
 
 DDR_SOURCES += plat/renesas/rz/soc/g2l/drivers/ddr/ddr_g2l.c
+
+PLAT_BL_COMMON_SOURCES += plat/renesas/rz/soc/g2l/plat_stubs.c
 
 include lib/libfdt/libfdt.mk
 
@@ -53,7 +61,8 @@ BL2_BASE := 0x13000
 endif
 
 SRAM_LIMIT := $(shell printf "%d" 0x1D000)
-BL2_BIN_LIMIT := $(shell grep 'RZG2L_BINARY_LIMIT_SIZE' plat/renesas/rz/common/include/rzg2l_def.h | sed -E 's/.*\((0x[0-9A-Fa-f]+)\).*/\1/')
+RZG2L_DTB_BASE_HEX := $(shell grep 'define RZG2L_DTB_BASE' plat/renesas/rz/common/include/rzg2l_def.h | sed -E 's/.*\((0x[0-9A-Fa-f]+)\).*/\1/')
+BL2_BIN_LIMIT := $(shell printf "0x%X" $$(( $(RZG2L_DTB_BASE_HEX) - $(BL2_BASE) )))
 BL2_BIN_LIMIT_DEC := $(shell printf "%d" $(BL2_BIN_LIMIT))
 
 # Rule for creating the merged BL2 with DTB file

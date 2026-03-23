@@ -7,7 +7,7 @@
 #include <ddr_internal.h>
 #include <sys_regs.h>
 
-void ddr_ctrl_reten_en_n(uint8_t val)
+void ddr_ctrl_reten_en_n(uint8_t val, uint8_t soc_id)
 {
 	val &= 1;
 	if ((mmio_read_32(SYS_LSI_DEVID) >> 28) + 1 > 1)
