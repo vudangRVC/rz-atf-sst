@@ -8,6 +8,7 @@
 #define IO_SDDRV_H
 
 struct io_dev_connector;
-int32_t register_io_dev_sddrv(const io_dev_connector_t **connector);
+
+int register_io_dev_sddrv(const io_dev_connector_t **connector);
 
 #endif /* IO_SDDRV_H */
