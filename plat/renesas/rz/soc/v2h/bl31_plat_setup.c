@@ -14,14 +14,11 @@
 #include <scifa.h>
 #include <plat_tzc_def.h>
 #include <rz_private.h>
-#if PLAT_SOC_RZV2H
-#include <rzv2h_soc_def.h>
-#define SYC_BASE	RZ_SOC_SYC_BASE
-#else
-#include <rzg2l_def.h>
-#define SYC_BASE	RZG2L_SYC_BASE
-#endif
+
 #include <pwrc.h>
+#include <board_info.h>
+#include <rzv2h_soc_def.h>
+#include <lib/mmio.h>
 
 static console_t rzv2h_bl31_console;
 static bl2_to_bl31_params_mem_t from_bl2;
@@ -101,21 +98,14 @@ void bl31_plat_arch_setup(void)
 				MT_DEVICE | MT_RW | MT_SECURE),
 		MAP_REGION_FLAT(RZV2H_DDR0_BASE, RZV2H_DDR0_SIZE,
 				MT_MEMORY | MT_RW | MT_SECURE),
+		MAP_REGION_FLAT(RZV2H_XSPI_MEMORY_MAP_BASE, RZV2H_XSPI_SIZE,
+				MT_MEMORY | MT_RW | MT_SECURE),
 		{0}
 	};
 
 	setup_page_tables(bl31_regions, rzv2h_mmap);
 	enable_mmu_el3(0);
 	plat_copy_code_to_system_ram();
-}
-
-void bl31_platform_setup(void)
-{
-	/* initialize GIC-600 */
-	plat_gic_driver_init();
-	plat_gic_init();
-
-	pwrc_setup();
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
@@ -129,4 +119,30 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 		return next_image_info;
 	else
 		return NULL;
+}
+
+void rzv2h_pass_board_id(void)
+{
+	/* Read model and revision id from xSPI */
+	uint32_t model = get_board_info_u32(RZV2H_XSPI_MEMORY_MAP_BASE, RZV2H_XSPI_SIZE, RZV2H_BOARD_INFO_xSPI_OFFSET, OFFSET_MODEL_ID);
+	uint32_t revision = get_board_info_u32(RZV2H_XSPI_MEMORY_MAP_BASE, RZV2H_XSPI_SIZE, RZV2H_BOARD_INFO_xSPI_OFFSET, OFFSET_REVISION);
+
+	/* Get entry point info for BL33 */
+	entry_point_info_t *bl33_ep_info = bl31_plat_get_next_image_ep_info(NON_SECURE);
+
+	if (bl33_ep_info != NULL) {
+		bl33_ep_info->args.arg2 = model;
+		bl33_ep_info->args.arg3 = revision;
+	}
+}
+
+void bl31_platform_setup(void)
+{
+	/* initialize GIC-600 */
+	plat_gic_driver_init();
+	plat_gic_init();
+
+	pwrc_setup();
+
+	rzv2h_pass_board_id();
 }
