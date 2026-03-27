@@ -211,7 +211,8 @@ void bl2_el3_plat_arch_setup(void)
 
 		setup_page_tables(bl2_regions, rzcmn_mmap);
 		enable_mmu_el3(0);
-	} 
+		inv_dcache_range((uintptr_t)&ddr_config, sizeof(ddr_config));
+	}
 	// (soc_id == RZ_SOC_RZV2H)
 	else
 	{
@@ -241,6 +242,7 @@ void bl2_el3_plat_arch_setup(void)
 
 		setup_page_tables(bl2_v2h_regions, rzv2h_mmap);
 		enable_mmu_el3(0);
+		inv_dcache_range((uintptr_t)&ddr_config, sizeof(ddr_config));
 	}
 }
 

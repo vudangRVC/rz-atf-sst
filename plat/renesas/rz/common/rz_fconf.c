@@ -38,17 +38,28 @@ void fconf_read_u32_props(const void *fdt, int node_offset,
 }
 
 void fconf_set_array_props(const void *fdt, int node_offset,
-						const char * prop_names,
-						uint32_t * target_ptrs)
+						const char *prop_names,
+						uint32_t *target_ptrs,
+						size_t max_count)
 {
 	int len;
 	const fdt32_t *val = fdt_getprop(fdt, node_offset, prop_names, &len);
 
-	for (size_t i = 0; i < (size_t)(len / sizeof(uint32_t)); i += 2) {
-		uint32_t reg = fdt32_to_cpu(val[i]);
-		uint32_t val32 = fdt32_to_cpu(val[i+1]);
-		target_ptrs[i]   = reg;
-		target_ptrs[i+1] = val32;
+	if (!val || len <= 0) {
+		WARN("Missing or invalid array property: %s\n", prop_names);
+		return;
+	}
+
+	size_t count = (size_t)len / sizeof(uint32_t);
+	if (count > max_count) {
+		WARN("Array property %s has %zu entries, clamping to %zu\n",
+		     prop_names, count, max_count);
+		count = max_count;
+	}
+
+	for (size_t i = 0; i + 1 < count; i += 2) {
+		target_ptrs[i]   = fdt32_to_cpu(val[i]);
+		target_ptrs[i+1] = fdt32_to_cpu(val[i+1]);
 	}
 }
 
@@ -243,7 +254,8 @@ int fconf_populate_sysc_config(uintptr_t config)
 
 	read_prop_from_subnode(fdt, "/soc", sysc_path, "reg", 1, &sysc_config.sysc_base);
 	fconf_read_u32_props(fdt, sysc_node, sysc_props, (uint32_t **)targets, ARRAY_SIZE(sysc_props));
-	fconf_set_array_props(fdt, sysc_node, "sys_acctl", &sysc_config.sys_acctl[0]);
+	fconf_set_array_props(fdt, sysc_node, "sys_acctl", &sysc_config.sys_acctl[0],
+			      ARRAY_SIZE(sysc_config.sys_acctl));
 
 	return 0;
 }
@@ -352,7 +364,16 @@ int fconf_populate_ddr_config(uintptr_t config)
 	void *fdt = (void *)config;
 
 	int soc_node = fdt_path_offset(fdt, "/soc");
+	if (soc_node < 0) {
+		ERROR("FCONF DDR: /soc node not found: %d\n", soc_node);
+		return -1;
+	}
+
 	int ddr_node = fdt_subnode_offset(fdt, soc_node, "memory@40000000");
+	if (ddr_node < 0) {
+		ERROR("FCONF DDR: memory@40000000 node not found: %d\n", ddr_node);
+		return -1;
+	}
 
 	const char *ddr_props[] = {
 		"ddr_type",
@@ -362,7 +383,14 @@ int fconf_populate_ddr_config(uintptr_t config)
 		&ddr_config.ddr_type,
 	};
 
+	/* Initialize ddr_type to sentinel so we can detect parse failure */
+	ddr_config.ddr_type = UINT32_MAX;
 	fconf_read_u32_props(fdt, ddr_node, ddr_props, (uint32_t **) ddr_targets, ARRAY_SIZE(ddr_targets));
+
+	if (ddr_config.ddr_type == UINT32_MAX) {
+		ERROR("FCONF DDR: ddr_type property missing or unreadable\n");
+		return -1;
+	}
 
 	/* Specific initilize for DDR4 */
 	if (ddr_config.ddr_type == 0) {
@@ -445,16 +473,28 @@ int fconf_populate_ddr_config(uintptr_t config)
 		};
 		
 		fconf_read_u32_props(fdt, ddr_node, ddr4_props, (uint32_t **) ddr4_targets, ARRAY_SIZE(ddr4_targets));
-		
-		fconf_set_array_props(fdt, ddr_node, "swizzle_mc_tbl", &ddr_config.swizzle_mc_tbl[0]);
-		fconf_set_array_props(fdt, ddr_node, "swizzle_phy_tbl", &ddr_config.swizzle_phy_tbl[0]);
-		fconf_set_array_props(fdt, ddr_node, "mc_odt_pins_tbl", &ddr_config.mc_odt_pins_tbl[0]);
-		fconf_set_array_props(fdt, ddr_node, "mc_mr1_tbl", &ddr_config.mc_mr1_tbl[0]);
-		fconf_set_array_props(fdt, ddr_node, "mc_mr2_tbl", &ddr_config.mc_mr2_tbl[0]);
-		fconf_set_array_props(fdt, ddr_node, "mc_mr5_tbl", &ddr_config.mc_mr5_tbl[0]);
-		fconf_set_array_props(fdt, ddr_node, "mc_mr6_tbl", &ddr_config.mc_mr6_tbl[0]);
-		fconf_set_array_props(fdt, ddr_node, "mc_init_tbl", &ddr_config.mc_init_tbl[0]);
-		fconf_set_array_props(fdt, ddr_node, "mc_phy_settings_tbl", &ddr_config.mc_phy_settings_tbl[0]);
+
+		fconf_set_array_props(fdt, ddr_node, "swizzle_mc_tbl", &ddr_config.swizzle_mc_tbl[0],
+				      ARRAY_SIZE(ddr_config.swizzle_mc_tbl));
+
+		fconf_set_array_props(fdt, ddr_node, "swizzle_phy_tbl", &ddr_config.swizzle_phy_tbl[0],
+				      ARRAY_SIZE(ddr_config.swizzle_phy_tbl));
+
+		fconf_set_array_props(fdt, ddr_node, "mc_odt_pins_tbl", &ddr_config.mc_odt_pins_tbl[0],
+				      ARRAY_SIZE(ddr_config.mc_odt_pins_tbl));
+		fconf_set_array_props(fdt, ddr_node, "mc_mr1_tbl", &ddr_config.mc_mr1_tbl[0],
+				      ARRAY_SIZE(ddr_config.mc_mr1_tbl));
+		fconf_set_array_props(fdt, ddr_node, "mc_mr2_tbl", &ddr_config.mc_mr2_tbl[0],
+				      ARRAY_SIZE(ddr_config.mc_mr2_tbl));
+		fconf_set_array_props(fdt, ddr_node, "mc_mr5_tbl", &ddr_config.mc_mr5_tbl[0],
+				      ARRAY_SIZE(ddr_config.mc_mr5_tbl));
+		fconf_set_array_props(fdt, ddr_node, "mc_mr6_tbl", &ddr_config.mc_mr6_tbl[0],
+				      ARRAY_SIZE(ddr_config.mc_mr6_tbl));
+		fconf_set_array_props(fdt, ddr_node, "mc_init_tbl", &ddr_config.mc_init_tbl[0],
+				      ARRAY_SIZE(ddr_config.mc_init_tbl));
+
+		fconf_set_array_props(fdt, ddr_node, "mc_phy_settings_tbl", &ddr_config.mc_phy_settings_tbl[0],
+				      ARRAY_SIZE(ddr_config.mc_phy_settings_tbl));
 	}
 
 	return 0;

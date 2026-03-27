@@ -11,6 +11,7 @@
 #include <sys.h>
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
+#include <common/debug.h>
 #include <lib/fconf/fconf.h>
 #include <libfdt.h>
 #include <rz_fconf.h>
@@ -97,9 +98,16 @@ static void pfc_mux_setup(void)
 	int len;
 
 	const fdt32_t *prop = fdt_getprop(fdt, g_pfc_fconf_cfg->pfc_node, "pfc_mux_reg_tbl", &len);
-
-	
+	if (!prop || len <= 0) {
+		WARN("pfc_mux_setup: pfc_mux_reg_tbl missing\n");
+		return;
+	}
 	for (i = 0; i < (len / sizeof(uint32_t)); i += 15, j++) {
+		if (j >= (int)ARRAY_SIZE(pfc_mux_reg_tbl)) {
+			WARN("pfc_mux_setup: DTB has more entries than array[%zu], clamping\n",
+			     ARRAY_SIZE(pfc_mux_reg_tbl));
+			break;
+		}
 		/* PMC */
 		pfc_mux_reg_tbl[j].pmc.flg = fdt32_to_cpu(prop[i]);
 		pfc_mux_reg_tbl[j].pmc.reg = fdt32_to_cpu(prop[i + 1]);
@@ -165,7 +173,16 @@ static void pfc_qspi_setup(void)
 	int len;
 
 	const fdt32_t *prop = fdt_getprop(fdt, g_pfc_fconf_cfg->pfc_node, "pfc_qspi_reg_tbl", &len);
+	if (!prop || len <= 0) {
+		WARN("pfc_qspi_setup: pfc_qspi_reg_tbl missing\n");
+		return;
+	}
 	for (i = 0; i < (len / sizeof(uint32_t)); i += 9, j++) {
+		if (j >= (int)ARRAY_SIZE(pfc_qspi_reg_tbl)) {
+			WARN("pfc_qspi_setup: DTB has more entries than array[%zu], clamping\n",
+			     ARRAY_SIZE(pfc_qspi_reg_tbl));
+			break;
+		}
 		/* IOLH */
 		pfc_qspi_reg_tbl[j].iolh.flg = fdt32_to_cpu(prop[i]);
 		pfc_qspi_reg_tbl[j].iolh.reg = fdt32_to_cpu(prop[i + 1]);
@@ -210,7 +227,16 @@ static void pfc_sd_setup(void)
 	PFC_REG_WRITE_32(PFC_SD_ch1, 0);
 
 	const fdt32_t *prop = fdt_getprop(fdt, g_pfc_fconf_cfg->pfc_node, "pfc_sd_reg_tbl", &len);
+	if (!prop || len <= 0) {
+		WARN("pfc_sd_setup: pfc_sd_reg_tbl missing\n");
+		return;
+	}
 	for (i = 0; i < (len / sizeof(uint32_t)); i += 18, j++) {
+		if (j >= (int)ARRAY_SIZE(pfc_sd_reg_tbl)) {
+			WARN("pfc_sd_setup: DTB has more entries than array[%zu], clamping\n",
+			     ARRAY_SIZE(pfc_sd_reg_tbl));
+			break;
+		}
 		/* PMC */
 		pfc_sd_reg_tbl[j].pmc.flg = fdt32_to_cpu(prop[i]);
 		pfc_sd_reg_tbl[j].pmc.reg = fdt32_to_cpu(prop[i + 1]);

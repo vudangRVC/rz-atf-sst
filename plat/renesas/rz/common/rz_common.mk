@@ -21,7 +21,7 @@ DEBUG_FPGA						:= 0
 PLAT_DDR_ECC					:= 0
 PLAT_EMMC_WRITE_ENABLE			:= 0
 PLAT_SYSTEM_SUSPEND				:= 0
-ENABLE_PIE						:= 1
+ENABLE_PIE						?= 1
 
 $(eval $(call add_define,PLAT_SOC_CMN))
 $(eval $(call add_define,PROTECTED_CHIPID))
