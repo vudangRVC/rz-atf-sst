@@ -278,7 +278,7 @@ const plat_psci_ops_t rzcmn_plat_psci_ops = {
 	.system_off							= rzcmn_system_off,
 	.pwr_domain_suspend					= rzcmn_pwr_domain_suspend,
 	.pwr_domain_suspend_finish			= rzcmn_pwr_domain_suspend_finish,
-	.pwr_domain_pwr_down_wfi			= rzcmn_pwr_domain_pwr_down_wfi,
+	.pwr_domain_pwr_down				= rzcmn_pwr_domain_pwr_down_wfi,
 #if PLAT_SYSTEM_SUSPEND
 	.get_sys_suspend_power_state		= rzcmn_get_sys_suspend_power_state,
 #endif /* PLAT_SYSTEM_SUSPEND */
