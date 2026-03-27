@@ -100,8 +100,6 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		if(enable_cold_boot) {
 			params->boot_kind = RZ_COLD_BOOT;
 		}
-
-		bl_mem_params->ep_info.args.arg0 = bl2_limit;
 		params->soc_id = soc_id;
 		break;
 
@@ -176,6 +174,10 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	if (enable_pwrc_setup) {
 		pwrc_setup();
 	}
+
+	/* Pass bl2 limit (params base) as arg0 to BL31. */
+	uintptr_t bl2_limit = FCONF_GET_PROPERTY(hw_config, common_config, bl2_limit);
+	bl_mem_params_desc_ptr[0].ep_info.args.arg0 = (uintptr_t)bl2_limit;
 }
 
 void bl2_el3_plat_arch_setup(void)
