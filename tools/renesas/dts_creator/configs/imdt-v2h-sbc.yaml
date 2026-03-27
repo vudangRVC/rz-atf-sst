@@ -2,7 +2,7 @@ soc: rzv2h
 board: sbc
 
 # Optional output dts path (repo-relative). If not specified, defaults to: fdts/<soc>-<board>.dts
-output: fdts/rzv2h-sbc-ver1.dts
+output: fdts/imdt-v2h-sbc.dts
 
 spi:
   protocol: xspi
