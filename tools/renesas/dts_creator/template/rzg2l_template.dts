@@ -22,6 +22,8 @@
 	g2l: soc {
 		compatible = "simple-bus";
 		soc_id = <0x1>;
+		mb_base = <0x00010000>;
+		mmc_bid_sector_start = <0xFA>;
 		bl2_limit = <0x0002F000>;
 		enable_cold_boot = <0>;
 		spirom_fip_base = <0x2001D200>;

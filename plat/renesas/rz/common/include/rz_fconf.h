@@ -15,9 +15,12 @@
 #define hw_config__scif_config_getter(prop) scif_config.prop
 #define hw_config__ddr_config_getter(prop) ddr_config.prop
 #define hw_config__spi_config_getter(prop) spi_config.prop
+#define hw_config__sdhi_config_getter(prop) sdhi_config.prop
 
 struct common_config_t {
 	uint32_t soc_id;
+	uint32_t mb_base;
+	uint32_t mmc_bid_sector_start;
 	uint32_t bl2_limit;
 	uint32_t enable_cold_boot;
 	uint32_t spirom_fip_base;
@@ -73,15 +76,12 @@ struct syc_config_t {
 struct pfc_config_t {
 	uint32_t pfc_node;
 	uint32_t pfc_base;
-	uint32_t pfc_type;
 	uint32_t pfc_mux_setup;
 	uint32_t pfc_qspi_setup;
 	uint32_t pfc_sd_setup;
-	uint32_t pfc_scif_setup;
 	uint32_t pfc_drive_setup;
 	uint32_t pfc_riic_pmic_setup;
 };
-
 
 struct scif_config_t {
 	uint32_t scif_base;
@@ -156,6 +156,10 @@ struct spi_config_t {
     uint32_t drdrenr;
 };
 
+struct sdhi_config_t {
+	uint32_t mmc_base;
+};
+
 extern struct common_config_t common_config;
 extern struct cpg_config_t cpg_config;
 extern struct syc_config_t syc_config;
@@ -164,6 +168,7 @@ extern struct pfc_config_t pfc_config;
 extern struct scif_config_t scif_config;
 extern struct ddr_config_t ddr_config;
 extern struct spi_config_t spi_config;
+extern struct sdhi_config_t sdhi_config;
 
 const struct common_config_t *common_config_getter(void);
 const struct cpg_config_t *cpg_config_getter(void);
@@ -173,5 +178,6 @@ const struct sysc_config_t *sysc_config_getter(void);
 const struct scif_config_t *scif_config_getter(void);
 const struct ddr_config_t *ddr_config_getter(void);
 const struct spi_config_t *spi_config_getter(void);
+const struct sdhi_config_t *sdhi_config_getter(void);
 
 #endif	/* __RZ_CONFIG_H__ */
