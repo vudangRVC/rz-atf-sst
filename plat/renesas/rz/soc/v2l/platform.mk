@@ -27,13 +27,12 @@ ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb: fdts/${DTB_FILE_NAME}.dts | ${BUILD_PLA
 # Define paths for the BL2 binary and DTB
 BOARD_NAME := $(shell echo $(BOARD) | awk -F'_' '{print $$1}')
 
-# Define the input file and target for the merged binary
-# BL2_ELF is used as source to always extract a clean raw binary (avoids
-# dirty bl2.bin when bl2_with_dtb is called multiple times for different boards)
-BL2_ELF    := ${BUILD_PLAT}/bl2.elf
+# BL2_ELF: TF-A places the ELF at <build>/<plat>/<mode>/bl2/bl2.elf.
+# Always use the ELF as source to extract a clean raw binary, avoiding
+# the case where bl2.bin already contains a merged DTB from a prior run.
+BL2_ELF    := ${BUILD_PLAT}/bl2/bl2.elf
 BL2_DTB    := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}.dtb
 BL2_OUTPUT := ${BUILD_PLAT}/bl2_with_dtb-${BOARD_NAME}.bin
-BL2_FINAL  := ${BUILD_PLAT}/bl2.bin
 
 ifeq (${TRUSTED_BOARD_BOOT}, 0)
 BL2_BASE := 0x12000
@@ -45,25 +44,25 @@ SRAM_LIMIT := $(shell printf "%d" 0x1D000)
 BL2_BIN_LIMIT := $(shell grep 'RZG2L_BINARY_LIMIT_SIZE' plat/renesas/rz/common/include/rzg2l_def.h | sed -E 's/.*\((0x[0-9A-Fa-f]+)\).*/\1/')
 BL2_BIN_LIMIT_DEC := $(shell printf "%d" $(BL2_BIN_LIMIT))
 
-# Rule for creating the merged BL2 with DTB file.
-# Always extract a fresh raw binary from bl2.elf via objcopy so this rule is
-# safe to call multiple times (e.g. for different boards) without corrupting bl2.bin.
+# Rule for creating the merged BL2+DTB binary.
+# Extracts a fresh raw binary from bl2.elf each time so that calling this
+# rule multiple times (e.g. different boards in one build session) is safe.
 bl2_with_dtb: ${BL2_ELF} ${BL2_DTB}
 	@echo "Embedding DTB into BL2 with dynamic padding..."
-	@$(OC) -O binary ${BL2_ELF} ${BUILD_PLAT}/bl2_raw.bin; \
-	BL2_SIZE=$$(wc -c < ${BUILD_PLAT}/bl2_raw.bin | awk '{print $$1}'); \
+	@$(CROSS_COMPILE)objcopy -O binary ${BL2_ELF} /tmp/bl2_raw_$$$$.bin; \
+	BL2_SIZE=$$(wc -c < /tmp/bl2_raw_$$$$.bin | awk '{print $$1}'); \
 	PADDING=$$(($(BL2_BIN_LIMIT_DEC) - $$BL2_SIZE)); \
 	if [ $$PADDING -lt 0 ]; then \
 		echo "Error: BL2 size exceeds available space before BL2_BIN_LIMIT ($(BL2_BIN_LIMIT_DEC))"; \
 		echo "INFO: BL2 size : $$BL2_SIZE bytes"; \
-		rm -f ${BUILD_PLAT}/bl2_raw.bin; \
+		rm -f /tmp/bl2_raw_$$$$.bin; \
 		exit 1; \
 	fi; \
 	DTB_SIZE=$$(wc -c < ${BL2_DTB} | awk '{print $$1}'); \
-	cat ${BUILD_PLAT}/bl2_raw.bin > bl2_padded.bin; \
-	dd if=/dev/zero bs=1 count=$$PADDING >> bl2_padded.bin; \
-	cat bl2_padded.bin ${BL2_DTB} > ${BL2_OUTPUT}; \
-	rm -f bl2_padded.bin ${BUILD_PLAT}/bl2_raw.bin; \
+	cat /tmp/bl2_raw_$$$$.bin > /tmp/bl2_padded_$$$$.bin; \
+	dd if=/dev/zero bs=1 count=$$PADDING >> /tmp/bl2_padded_$$$$.bin 2>/dev/null; \
+	cat /tmp/bl2_padded_$$$$.bin ${BL2_DTB} > ${BL2_OUTPUT}; \
+	rm -f /tmp/bl2_raw_$$$$.bin /tmp/bl2_padded_$$$$.bin; \
 	MERGED_SIZE=$$(wc -c < ${BL2_OUTPUT} | awk '{print $$1}'); \
 	if [ $$MERGED_SIZE -gt $(SRAM_LIMIT) ]; then \
 		echo "Error: Total size of BL2 + padding + DTB ($$MERGED_SIZE bytes) exceeds SRAM limit ($(SRAM_LIMIT) bytes)"; \
@@ -77,4 +76,3 @@ bl2_with_dtb: ${BL2_ELF} ${BL2_DTB}
 	echo "INFO: Total merged size  : $$MERGED_SIZE bytes"; \
 	echo "INFO: BL2 limit size     : 0x$$(printf '%X' $$BL2_BINARY_LIMIT_SIZE)"; \
 	echo "INFO: DTB base address   : 0x$$(printf '%X' $$DTB_BASE)"
-	mv -f ${BL2_OUTPUT} ${BL2_FINAL}
