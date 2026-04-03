@@ -143,7 +143,7 @@ static void pfc_qspi_setup(void)
 	int len;
 
 	const fdt32_t *prop = fdt_getprop(fdt, g_pfc_fconf_cfg->pfc_node, "pfc_qspi_reg_tbl", &len);
-	for (i = 0; i < (len / sizeof(uint32_t)); i += 9, j++) {
+	for (i = 0; i < (len / sizeof(uint32_t)) && j < PFC_QSPI_TBL_NUM; i += 9, j++) {
 		/* IOLH */
 		pfc_qspi_reg_tbl[j].iolh.flg = fdt32_to_cpu(prop[i]);
 		pfc_qspi_reg_tbl[j].iolh.reg = fdt32_to_cpu(prop[i + 1]);
@@ -189,7 +189,7 @@ static void pfc_sd_setup(void)
 	PFC_REG_WRITE_32(PFC_SD_ch1, 0);
 
 	const fdt32_t *prop = fdt_getprop(fdt, g_pfc_fconf_cfg->pfc_node, "pfc_sd_reg_tbl", &len);
-	for (i = 0; i < (len / sizeof(uint32_t)); i += 18, j++) {
+	for (i = 0; i < (len / sizeof(uint32_t)) && j < PFC_SD_TBL_NUM; i += 18, j++) {
 		if (j == 1) {
 			/* PMC */
 			pfc_sd_reg_tbl[j].pmc.flg = fdt32_to_cpu(prop[i]);
