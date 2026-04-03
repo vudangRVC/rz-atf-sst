@@ -205,6 +205,9 @@ bl2-$(1):
 	$(MAKE) clean
 	$(call SHELL_DELETE_ALL, ${BUILD_PLAT}/bl2/*)
 	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2
+ifeq ($(1),esd)
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2_with_dtb
+endif
 	$(call SHELL_DELETE,${BUILD_PLAT}/bl2-$(1).bin)
 	$(call SHELL_COPY,${BUILD_PLAT}/bl2.bin,${BUILD_PLAT}/bl2-$(1).bin)
 endef
