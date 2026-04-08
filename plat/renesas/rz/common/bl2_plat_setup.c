@@ -175,9 +175,11 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 		pwrc_setup();
 	}
 
-	/* Pass bl2 limit (params base) as arg0 to BL31. */
+	/* Pass bl2 limit (params base) as arg0, soc_id as arg1 (upper 32 bits) to BL31. */
 	uintptr_t bl2_limit = FCONF_GET_PROPERTY(hw_config, common_config, bl2_limit);
+	uint32_t soc_id_val = FCONF_GET_PROPERTY(hw_config, common_config, soc_id);
 	bl_mem_params_desc_ptr[0].ep_info.args.arg0 = (uintptr_t)bl2_limit;
+	bl_mem_params_desc_ptr[0].ep_info.args.arg1 = ((u_register_t)soc_id_val << 32);
 }
 
 void bl2_el3_plat_arch_setup(void)
