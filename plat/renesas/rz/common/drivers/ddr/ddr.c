@@ -11,7 +11,7 @@
 #include <ddr_internal.h>
 #include <cpg.h>
 #include <lib/fconf/fconf.h>
-#include <lib/libfdt/libfdt.h>
+#include <libfdt.h>
 #include <lpddr.h>
 #include <rz_fconf.h>
 

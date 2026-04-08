@@ -15,7 +15,7 @@
 #include <libfdt.h>
 #include <common/debug.h>
 #include <lib/fconf/fconf.h>
-#include <lib/libfdt/libfdt.h>
+#include <libfdt.h>
 #include <rz_fconf.h>
 #include <assert.h>
 #include <rz_dt.h>

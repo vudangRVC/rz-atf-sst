@@ -7,13 +7,15 @@
 include plat/renesas/rz/common/rz_common.mk
 include plat/renesas/rz/board/${BOARD}/rz_board.mk
 include lib/libfdt/libfdt.mk
+include lib/fconf/fconf.mk
 
 PLAT_INCLUDES	+=	-Iplat/renesas/rz/soc/cmn/include
 
 PLAT_BL_COMMON_SOURCES	+=	plat/renesas/rz/soc/cmn/drivers/pwrc/pwrc.c	\
 							plat/renesas/rz/soc/cmn/drivers/pwrc/pwrc_stack.S	\
 
-BL2_SOURCES				+=	lib/fconf/fconf_dyn_cfg_getter.c 	\
+BL2_SOURCES				+=	${FCONF_SOURCES}			\
+							${FCONF_DYN_SOURCES}			\
 							plat/renesas/rz/common/rz_dt.c		\
 							plat/renesas/rz/common/rz_fconf.c
 

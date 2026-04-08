@@ -10,7 +10,7 @@
 #include "ddr_private.h"
 #include <common/debug.h>
 #include <lib/fconf/fconf.h>
-#include <lib/libfdt/libfdt.h>
+#include <libfdt.h>
 
 static int8_t dwc_ddrphy_cdd_int(uint8_t val);
 static int8_t dwc_ddrphy_cdd_abs(uint8_t val);

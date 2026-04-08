@@ -12,7 +12,7 @@
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
 #include <lib/fconf/fconf.h>
-#include <lib/libfdt/libfdt.h>
+#include <libfdt.h>
 #include <rz_fconf.h>
 #include <common/debug.h>
 

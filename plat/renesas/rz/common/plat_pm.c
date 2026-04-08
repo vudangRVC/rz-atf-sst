@@ -239,7 +239,7 @@ static void rzcmn_pwr_domain_suspend_finish(const psci_power_state_t *target_sta
 	plat_copy_code_to_system_ram();
 }
 
-static void __dead2 rzcmn_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
+static void rzcmn_pwr_domain_pwr_down(const psci_power_state_t *target_state)
 {
 #if PLAT_SYSTEM_SUSPEND
 	if (SYSTEM_PWR_STATE(target_state) == PLAT_MAX_OFF_STATE) {
@@ -278,7 +278,7 @@ const plat_psci_ops_t rzcmn_plat_psci_ops = {
 	.system_off							= rzcmn_system_off,
 	.pwr_domain_suspend					= rzcmn_pwr_domain_suspend,
 	.pwr_domain_suspend_finish			= rzcmn_pwr_domain_suspend_finish,
-	.pwr_domain_pwr_down_wfi			= rzcmn_pwr_domain_pwr_down_wfi,
+	.pwr_domain_pwr_down				= rzcmn_pwr_domain_pwr_down,
 #if PLAT_SYSTEM_SUSPEND
 	.get_sys_suspend_power_state		= rzcmn_get_sys_suspend_power_state,
 #endif /* PLAT_SYSTEM_SUSPEND */
