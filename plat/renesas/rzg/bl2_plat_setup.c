@@ -73,6 +73,7 @@ extern void rcar_swdt_init(void);
 extern void rcar_rpc_init(void);
 extern void rcar_dma_init(void);
 extern void rzg_pfc_init(void);
+extern void bl2_ecc_init(uint32_t major, uint32_t minor);
 
 static void bl2_init_generic_timer(void);
 
@@ -746,6 +747,9 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 		break;
 	}
 
+	major = 0;
+	minor = 0;
+
 	if ((product == PRR_PRODUCT_M3) &&
 	    ((reg & RCAR_MAJOR_MASK) == PRR_PRODUCT_20)) {
 		if ((reg & PRR_CUT_MASK) == RCAR_M3_CUT_VER11) {
@@ -786,6 +790,13 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 
 	if (type == BOARD_UNKNOWN || rev == BOARD_REV_UNKNOWN) {
 		NOTICE("BL2: Board is %s Rev.---\n", GET_BOARD_NAME(type));
+	} else if (type == BOARD_EK874_RZ_G2E) {
+		char board_rev;
+
+		board_rev = (char) rev;
+		NOTICE("BL2: Board is %s Rev.%s\n",
+			GET_BOARD_NAME(type), &board_rev);
+
 	} else {
 		NOTICE("BL2: Board is %s Rev.%d.%d\n",
 		       GET_BOARD_NAME(type),
@@ -876,6 +887,8 @@ lcm_state:
 		}
 		rzg_qos_init();
 	}
+
+	bl2_ecc_init(major, minor);
 
 	/* Set up FDT */
 	ret = fdt_create_empty_tree(fdt, sizeof(fdt_blob));

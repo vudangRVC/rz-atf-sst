@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+PLAT_INCLUDES	+=	-Iplat/renesas/rzg/include
+
 include plat/renesas/common/common.mk
 
 ifndef LSI
@@ -220,13 +222,34 @@ $(eval $(call add_define,RCAR_SYSTEM_RESET_KEEPON_DDR))
 RZG_SOC :=1
 $(eval $(call add_define,RZG_SOC))
 
+# Process RZG_DRAM_ECC flag
+ifndef RZG_DRAM_ECC
+RZG_DRAM_ECC :=0
+endif
+$(eval $(call add_define,RZG_DRAM_ECC))
+
+# Process RZG_DRAM_ECC_FULL flag
+# 0 : ECC Full mode will not be applied
+# 1 : ECC Full mode dual channel will be applied
+# 2 : ECC Full mode single channel will be applied
+ifndef RZG_DRAM_ECC_FULL
+RZG_DRAM_ECC_FULL :=0
+endif
+$(eval $(call add_define,RZG_DRAM_ECC_FULL))
+
+# RZ/G2N and RZ/G2E do not support ECC Full mode dual channel.
+ifeq (${LSI}, $(filter ${LSI}, G2E G2N))
+  ifeq (${RZG_DRAM_ECC_FULL},1)
+    $(error "Error: RZ/${LSI} does not support ECC Full mode dual channel")
+  endif
+endif
+
 include drivers/renesas/common/ddr/ddr.mk
 include drivers/renesas/rzg/qos/qos.mk
 include drivers/renesas/rzg/pfc/pfc.mk
 include lib/libfdt/libfdt.mk
 
-PLAT_INCLUDES	+=	-Iplat/renesas/rzg/include		\
-			-Idrivers/renesas/common/ddr		\
+PLAT_INCLUDES	+=	-Idrivers/renesas/common/ddr		\
 			-Idrivers/renesas/rzg/qos		\
 			-Idrivers/renesas/rzg/board		\
 			-Idrivers/renesas/common		\
@@ -237,11 +260,30 @@ PLAT_INCLUDES	+=	-Iplat/renesas/rzg/include		\
 			-Idrivers/renesas/common/scif		\
 			-Idrivers/renesas/common/emmc		\
 			-Idrivers/renesas/common/pwrc		\
-			-Idrivers/renesas/common/timer		\
 			-Idrivers/renesas/common/io
 
 BL2_SOURCES	+=	plat/renesas/rzg/bl2_plat_setup.c	\
+			plat/renesas/rzg/bl2_fusa.c		\
+			plat/renesas/rzg/plat_storage.c		\
+			drivers/renesas/rzg/auth/auth_mod.c	\
+			drivers/renesas/rzg/auth/tbbr/tbbr_cot_bl2.c \
 			drivers/renesas/rzg/board/board.c
+
+BL31_SOURCES	+=	plat/renesas/rzg/rzg_sip_svc.c
+
+ifeq (${TRUSTED_BOARD_BOOT},1)
+$(eval $(call add_define, PLAT_TBBR_IMG_DEF))
+endif
+
+# Process RZG2_SECURE_BOOT flag
+ifndef RZG2_SECURE_BOOT
+RZG2_SECURE_BOOT := 0
+endif
+$(eval $(call add_define,RZG2_SECURE_BOOT))
+
+ifneq (${RZG2_SECURE_BOOT},0)
+    include drivers/renesas/rzg/auth/tsip/tsip.mk
+endif
 
 # build the layout images for the bootrom and the necessary srecords
 rzg: rzg_layout_create rzg_srecord
@@ -251,13 +293,13 @@ distclean realclean clean: clean_layout_tool clean_srecord
 LAYOUT_TOOLPATH ?= tools/renesas/rzg_layout_create
 
 clean_layout_tool:
-	$(s)echo "clean layout tool"
-	$(q)${MAKE} -C ${LAYOUT_TOOLPATH} clean
+	@echo "clean layout tool"
+	${Q}${MAKE} -C ${LAYOUT_TOOLPATH} clean
 
 .PHONY: rzg_layout_create
 rzg_layout_create:
-	$(s)echo "generating layout srecs"
-	$(q)${MAKE} CPPFLAGS="-D=AARCH64" --no-print-directory -C ${LAYOUT_TOOLPATH}
+	@echo "generating layout srecs"
+	${Q}${MAKE} CPPFLAGS="-D=AARCH64" --no-print-directory -C ${LAYOUT_TOOLPATH}
 
 # srecords
 SREC_PATH	= ${BUILD_PLAT}
@@ -265,16 +307,27 @@ BL2_ELF_SRC	= ${SREC_PATH}/bl2/bl2.elf
 BL31_ELF_SRC	= ${SREC_PATH}/bl31/bl31.elf
 
 clean_srecord:
-	$(s)echo "clean bl2 and bl31 srecs"
+	@echo "clean bl2 and bl31 srecs"
 	rm -f ${SREC_PATH}/bl2.srec ${SREC_PATH}/bl31.srec
 
-$(SREC_PATH)/bl2.srec: $(BL2_ELF_SRC)
-	$(s)echo "generating srec: $(SREC_PATH)/bl2.srec"
-	$(q)$($(ARCH)-oc) -O srec --srec-forceS3 $(BL2_ELF_SRC)  $(SREC_PATH)/bl2.srec
-
-$(SREC_PATH)/bl31.srec: $(BL31_ELF_SRC)
-	$(s)echo "generating srec: $(SREC_PATH)/bl31.srec"
-	$(q)$($(ARCH)-oc) -O srec --srec-forceS3 $(BL31_ELF_SRC) $(SREC_PATH)/bl31.srec
-
 .PHONY: rzg_srecord
-rzg_srecord: $(SREC_PATH)/bl2.srec $(SREC_PATH)/bl31.srec
+rzg_srecord: $(BL2_ELF_SRC) $(BL31_ELF_SRC)
+	@echo "generating srec: ${SREC_PATH}/bl2.srec"
+	$(Q)$(OC) -O srec --srec-forceS3 ${BL2_ELF_SRC}  ${SREC_PATH}/bl2.srec
+	@echo "generating srec: ${SREC_PATH}/bl31.srec"
+	$(Q)$(OC) -O srec --srec-forceS3 ${BL31_ELF_SRC} ${SREC_PATH}/bl31.srec
+
+.PHONY: sectools_make sectools_clean
+sectools: sectools_make
+distclean realclean clean: sectools_clean
+
+SIGNFW_PATH		?= tools/renesas/rzg_security_tools/sign_fw
+ENCRYPTFW_PATH	?= tools/renesas/rzg_security_tools/encrypt_fw
+
+sectools_make:
+	${Q}${MAKE} --no-print-directory -C ${SIGNFW_PATH}
+	${Q}${MAKE} --no-print-directory -C ${ENCRYPTFW_PATH}
+
+sectools_clean:
+	${Q}${MAKE} --no-print-directory -C ${SIGNFW_PATH} clean
+	${Q}${MAKE} --no-print-directory -C ${ENCRYPTFW_PATH} clean
