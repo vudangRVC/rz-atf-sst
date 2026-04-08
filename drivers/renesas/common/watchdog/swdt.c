@@ -49,14 +49,21 @@ extern void gicd_set_icenabler(uintptr_t base, unsigned int id);
 #define WTCSRA_INIT_DATA		(WTCSRA_UPPER_BYTE + 0x0FU)
 #define WTCSRB_INIT_DATA		(WTCSRB_UPPER_BYTE + 0x21U)
 
+#if (RZG_DRAM_ECC == 1)
+#define WTCNT_COUNT_8p13k		(0U)
+#define WTCNT_COUNT_8p22k		(0U)
+#define WTCNT_COUNT_7p81k		(0U)
+#else /* (RZG_DRAM_ECC == 1) */
 #if RCAR_LSI == RCAR_D3
 #define WTCNT_COUNT_8p13k		(0x10000U - 40760U)
 #else
 #define WTCNT_COUNT_8p13k		(0x10000U - 40687U)
 #endif
-#define WTCNT_COUNT_8p13k_H3VER10	(0x10000U - 20343U)
 #define WTCNT_COUNT_8p22k		(0x10000U - 41115U)
 #define WTCNT_COUNT_7p81k		(0x10000U - 39062U)
+#endif
+
+#define WTCNT_COUNT_8p13k_H3VER10	(0x10000U - 20343U)
 #define WTCSRA_CKS_DIV16		(0x00000002U)
 
 static void swdt_disable(void)
@@ -75,9 +82,8 @@ static void swdt_disable(void)
 	gicd_set_icenabler(RCAR_GICD_BASE, ARM_IRQ_SEC_WDT);
 }
 
-void rcar_swdt_init(void)
+void rcar_swdt_init_counter(void)
 {
-	uint32_t rmsk, sr;
 #if (RCAR_LSI != RCAR_E3) && (RCAR_LSI != RCAR_D3) && (RCAR_LSI != RZ_G2E)
 	uint32_t reg, val, product_cut, chk_data;
 
@@ -87,12 +93,6 @@ void rcar_swdt_init(void)
 	reg = mmio_read_32(RCAR_MODEMR);
 	chk_data = reg & CHECK_MD13_MD14;
 #endif
-	/* stop watchdog */
-	if (mmio_read_32(SWDT_WTCSRA) & SWDT_ENABLE)
-		mmio_write_32(SWDT_WTCSRA, WTCSRA_UPPER_BYTE);
-
-	mmio_write_32(SWDT_WTCSRA, WTCSRA_UPPER_BYTE |
-		      WTCSRA_WOVFE | WTCSRA_CKS_DIV16);
 
 #if (RCAR_LSI == RCAR_E3) || (RCAR_LSI == RZ_G2E)
 	mmio_write_32(SWDT_WTCNT, WTCNT_UPPER_BYTE | WTCNT_COUNT_7p81k);
@@ -121,6 +121,20 @@ void rcar_swdt_init(void)
 
 	mmio_write_32(SWDT_WTCNT, val);
 #endif
+}
+void rcar_swdt_init(void)
+{
+	uint32_t rmsk, sr;
+
+	/* stop watchdog */
+	if (mmio_read_32(SWDT_WTCSRA) & SWDT_ENABLE)
+		mmio_write_32(SWDT_WTCSRA, WTCSRA_UPPER_BYTE);
+
+	mmio_write_32(SWDT_WTCSRA, WTCSRA_UPPER_BYTE |
+		      WTCSRA_WOVFE | WTCSRA_CKS_DIV16);
+
+	rcar_swdt_init_counter();
+
 	rmsk = mmio_read_32(RST_WDTRSTCR) & WDTRSTCR_MASK_ALL;
 	rmsk |= SWDT_RSTMSK | WDTRSTCR_UPPER_BYTE;
 	mmio_write_32(RST_WDTRSTCR, rmsk);

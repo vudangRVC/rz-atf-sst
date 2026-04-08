@@ -1,12 +1,10 @@
 #
-# Copyright (c) 2018-2025, Renesas Electronics Corporation. All rights reserved.
+# Copyright (c) 2018-2021, Renesas Electronics Corporation. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
 include plat/renesas/common/common.mk
-
-ENABLE_STACK_PROTECTOR	:= strong
 
 ifndef LSI
   $(error "Error: Unknown LSI. Please use LSI=<LSI name> to specify the LSI")
@@ -147,13 +145,6 @@ ifndef RCAR_RPC_HYPERFLASH_LOCKED
 RCAR_RPC_HYPERFLASH_LOCKED := 1
 endif
 $(eval $(call add_define,RCAR_RPC_HYPERFLASH_LOCKED))
-
-# Support A/B switching with RPC HYPERFLASH access by default
-# Use together with https://github.com/marex/abloader .
-ifndef RCAR_RPC_HYPERFLASH_ABLOADER
-RCAR_RPC_HYPERFLASH_ABLOADER := 0
-endif
-$(eval $(call add_define,RCAR_RPC_HYPERFLASH_ABLOADER))
 
 # Process RCAR_SECURE_BOOT flag
 ifndef RCAR_SECURE_BOOT
@@ -318,9 +309,7 @@ include drivers/renesas/rcar/qos/qos.mk
 include drivers/renesas/rcar/pfc/pfc.mk
 include lib/libfdt/libfdt.mk
 
-PLAT_INCLUDES	+=	-Iplat/renesas/rcar/include		\
-			-Iplat/renesas/common/include		\
-			-Idrivers/renesas/common/ddr		\
+PLAT_INCLUDES	+=	-Idrivers/renesas/common/ddr		\
 			-Idrivers/renesas/rcar/qos		\
 			-Idrivers/renesas/rcar/board		\
 			-Idrivers/renesas/rcar/cpld/		\
@@ -332,10 +321,11 @@ PLAT_INCLUDES	+=	-Iplat/renesas/rcar/include		\
 			-Idrivers/renesas/common/scif		\
 			-Idrivers/renesas/common/emmc		\
 			-Idrivers/renesas/common/pwrc		\
-			-Idrivers/renesas/common/timer		\
 			-Idrivers/renesas/common/io
 
 BL2_SOURCES	+=	plat/renesas/rcar/bl2_plat_setup.c	\
+			plat/renesas/common/plat_storage.c		\
+			drivers/renesas/common/auth/auth_mod.c	\
 			drivers/renesas/rcar/board/board.c
 
 ifeq (${RCAR_GEN3_BL33_GZIP},1)
@@ -343,10 +333,6 @@ include lib/zlib/zlib.mk
 
 BL2_SOURCES	+=	common/image_decompress.c               \
 			$(ZLIB_SOURCES)
-endif
-
-ifneq (${ENABLE_STACK_PROTECTOR},0)
-BL_COMMON_SOURCES	+=	plat/renesas/common/rcar_stack_protector.c
 endif
 
 ifeq (${RCAR_GEN3_ULCB},1)
@@ -361,13 +347,13 @@ distclean realclean clean: clean_layout_tool clean_srecord
 LAYOUT_TOOLPATH ?= tools/renesas/rcar_layout_create
 
 clean_layout_tool:
-	$(s)echo "clean layout tool"
-	$(q)${MAKE} -C ${LAYOUT_TOOLPATH} clean
+	@echo "clean layout tool"
+	${Q}${MAKE} -C ${LAYOUT_TOOLPATH} clean
 
 .PHONY: rcar_layout_tool
 rcar_layout_tool:
-	$(s)echo "generating layout srecs"
-	$(q)${MAKE} CPPFLAGS="-D=AARCH64" --no-print-directory -C ${LAYOUT_TOOLPATH}
+	@echo "generating layout srecs"
+	${Q}${MAKE} CPPFLAGS="-D=AARCH64" --no-print-directory -C ${LAYOUT_TOOLPATH}
 
 # srecords
 SREC_PATH	= ${BUILD_PLAT}
@@ -375,16 +361,12 @@ BL2_ELF_SRC	= ${SREC_PATH}/bl2/bl2.elf
 BL31_ELF_SRC	= ${SREC_PATH}/bl31/bl31.elf
 
 clean_srecord:
-	$(s)echo "clean bl2 and bl31 srecs"
+	@echo "clean bl2 and bl31 srecs"
 	rm -f ${SREC_PATH}/bl2.srec ${SREC_PATH}/bl31.srec
 
-$(SREC_PATH)/bl2.srec: $(BL2_ELF_SRC)
-	$(s)echo "generating srec: $(SREC_PATH)/bl2.srec"
-	$(q)$($(ARCH)-oc) -O srec --srec-forceS3 $(BL2_ELF_SRC)  $(SREC_PATH)/bl2.srec
-
-$(SREC_PATH)/bl31.srec: $(BL31_ELF_SRC)
-	$(s)echo "generating srec: $(SREC_PATH)/bl31.srec"
-	$(q)$($(ARCH)-oc) -O srec --srec-forceS3 $(BL31_ELF_SRC) $(SREC_PATH)/bl31.srec
-
 .PHONY: rcar_srecord
-rcar_srecord: $(SREC_PATH)/bl2.srec $(SREC_PATH)/bl31.srec
+rcar_srecord: $(BL2_ELF_SRC) $(BL31_ELF_SRC)
+	@echo "generating srec: ${SREC_PATH}/bl2.srec"
+	$(Q)$(OC) -O srec --srec-forceS3 ${BL2_ELF_SRC}  ${SREC_PATH}/bl2.srec
+	@echo "generating srec: ${SREC_PATH}/bl31.srec"
+	$(Q)$(OC) -O srec --srec-forceS3 ${BL31_ELF_SRC} ${SREC_PATH}/bl31.srec
