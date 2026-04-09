@@ -22,6 +22,7 @@ PLAT_DDR_ECC					:= 0
 PLAT_EMMC_WRITE_ENABLE			:= 0
 PLAT_SYSTEM_SUSPEND				:= 0
 ENABLE_PIE						:= 1
+INIT_UNUSED_NS_EL2				:= 1
 
 $(eval $(call add_define,PLAT_SOC_CMN))
 $(eval $(call add_define,PROTECTED_CHIPID))
@@ -202,23 +203,22 @@ bl2-$(1):
 	@echo "======================================="
 	@echo " Building BL2 for $(1)"
 	@echo "======================================="
-	$(MAKE) clean
-	$(call SHELL_DELETE_ALL, ${BUILD_PLAT}/bl2/*)
+	rm -rf ${BUILD_PLAT}/bl2
 	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2
 ifeq ($(1),esd)
 	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2_with_dtb
 endif
-	$(call SHELL_DELETE,${BUILD_PLAT}/bl2-$(1).bin)
-	$(call SHELL_COPY,${BUILD_PLAT}/bl2.bin,${BUILD_PLAT}/bl2-$(1).bin)
+	rm -f ${BUILD_PLAT}/bl2-$(1).bin
+	cp ${BUILD_PLAT}/bl2.bin ${BUILD_PLAT}/bl2-$(1).bin
 endef
 
 $(foreach variant,xspi emmc esd,$(eval $(call PLAT_BL2_VARIANT_RULE,$(variant))))
 
 # Build all storage variants of BL2
 bl2-all:
-	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2-xspi
-	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2-emmc
-	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2-esd
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} DEBUG=${DEBUG} bl2-xspi
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} DEBUG=${DEBUG} bl2-emmc
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} DEBUG=${DEBUG} bl2-esd
 	@echo "======================================="
 	@echo "All BL2 variants built successfully."
 	@echo "======================================="

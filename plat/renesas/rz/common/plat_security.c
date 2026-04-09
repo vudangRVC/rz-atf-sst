@@ -60,7 +60,7 @@ void plat_access_control_setup(void)
 		if (sys_acctl[i].reg == 0U) {
 			break;
 		}
-		uint32_t val = mmio_read_32(((uintptr_t)sysc_fconf_cfg->sysc_base + sys_acctl[i].reg) & (~sys_acctl[i].msk));
+		uint32_t val = mmio_read_32((uintptr_t)sysc_fconf_cfg->sysc_base + sys_acctl[i].reg) & (~sys_acctl[i].msk);
 
 		val |= (sys_acctl[i].val & sys_acctl[i].msk);
 

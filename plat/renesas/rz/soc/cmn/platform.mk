@@ -31,7 +31,7 @@ dtbs: $(DTB_LIST:%=$(DTB_OUT)/%)
 $(DTB_OUT)/%.dtb: fdts/%.dts
 	@echo "  DTB     $@"
 	@mkdir -p $(DTB_OUT)
-	$(DTC) -I dts -O dtb -o $@ $<
+	$($(ARCH)-dtc) -I dts -O dtb -o $@ $<
 
 # For the cmn (multi-SoC) platform, per-board DTB embedding is handled by
 # firmware_compile.py at packaging time, so bl2_with_dtb is a no-op here.
