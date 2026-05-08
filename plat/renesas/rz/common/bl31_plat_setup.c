@@ -65,6 +65,7 @@ bl31_board_cfg_t bl31_board_cfg[] = {
 		.soc_name          = "rzg2l",
 		.scif0_base        = RZG2L_SCIF0_BASE,
 		.sram_base         = RZG2L_SRAM_BASE,
+		.mb_base           = RZG2L_BOOTINFO_BASE,
 		.tzc_msram_base    = RZG2L_TZC_MSRAM_BASE,
 		.tzc_asram_base    = RZG2L_TZC_ASRAM_BASE,
 		.syc_timer_base    = RZG2L_SYC_BASE,
@@ -93,6 +94,7 @@ bl31_board_cfg_t bl31_board_cfg[] = {
 		.soc_name          = "rzv2l",
 		.scif0_base        = RZG2L_SCIF0_BASE,
 		.sram_base         = RZG2L_SRAM_BASE,
+		.mb_base           = RZG2L_BOOTINFO_BASE,
 		.tzc_msram_base    = RZG2L_TZC_MSRAM_BASE,
 		.tzc_asram_base    = RZG2L_TZC_ASRAM_BASE,
 		.syc_timer_base    = RZG2L_SYC_BASE,
@@ -121,6 +123,7 @@ bl31_board_cfg_t bl31_board_cfg[] = {
 		.soc_name          = "rzv2h",
 		.scif0_base        = RZV2H_SCIF_BASE,
 		.sram_base         = RZV2H_SRAM_BASE,
+		.mb_base           = RZV2H_MAILBOX_BASE,
 		.tzc_msram_base    = RZV2H_TZC400_M33_BASE,
 		.tzc_asram_base    = RZV2H_TZC400_A55_BASE,
 		.syc_timer_base    = RZV2H_SYC_BASE,
@@ -185,6 +188,8 @@ void bl31_plat_arch_setup(void)
 						MT_CODE | MT_SECURE),
 		MAP_REGION_FLAT(BL_RO_DATA_BASE, BL_RO_DATA_END - BL_RO_DATA_BASE,
 						MT_RO_DATA | MT_SECURE),
+		MAP_REGION_FLAT(bl31_board_cfg[soc_id].mb_base, RZV2H_MAILBOX_SIZE,
+						MT_MEMORY | MT_RW | MT_SECURE),
 		{0}
 	};
 
@@ -210,7 +215,7 @@ void bl31_platform_setup(void)
 	if (bl31_board_cfg[soc_id].enable_tzc_setup == true) {
 		plat_security_setup();
 	}
-	
+
 #if !DEBUG_FPGA
 	/* initialize GIC-600 */
 	plat_gic_driver_init();
@@ -224,13 +229,14 @@ void bl31_platform_setup(void)
 	uint32_t model = 0;
 	boot_mode_t boot_mode = sys_get_boot_mode();
 
-	if (boot_mode == SYS_BOOT_MODE_SPI_1_8 ||
-		boot_mode == SYS_BOOT_MODE_SPI_3_3) {
+	if ((boot_mode == SYS_BOOT_MODE_SPI_1_8) ||
+		(boot_mode == SYS_BOOT_MODE_SPI_3_3)) {
 		/* Read model and revision id from QSPI */
 		model = get_board_info_u32(RZG2L_SPIROM_BASE, RZG2L_SPIROM_SIZE, bl31_board_cfg[soc_id].board_info_qspi_offset, OFFSET_MODEL_ID);
-	} else if  (boot_mode == SYS_BOOT_MODE_EMMC_1_8 || boot_mode == SYS_BOOT_MODE_EMMC_3_3) {
+	} else if ((boot_mode == SYS_BOOT_MODE_EMMC_1_8) || (boot_mode == SYS_BOOT_MODE_EMMC_3_3) || (boot_mode == SYS_BOOT_MODE_ESD)) {
 
-		const volatile struct board_mb *mb = (const volatile struct board_mb *)(BOARD_MB_ADDR);
+		uintptr_t board_info_offset = bl31_board_cfg[soc_id].mb_base + BOARD_MB_ADDR_OFFSET;
+		const volatile struct board_mb *mb = (const volatile struct board_mb *)(board_info_offset);
 
 		if (mb->magic == BOARD_MB_MAGIC && mb->size == sizeof(platform_desc_t)) {
 			/* Copy out of volatile mailbox to a local buffer */
@@ -239,10 +245,10 @@ void bl31_platform_setup(void)
 
 			model = d.model_id;
 
-			NOTICE("BL31: boardinfo: model=0x%x\"\n", model);
+			NOTICE("BL31: boardinfo: model=0x%x\n", model);
 		} else {
 			NOTICE("BL31: boardinfo: mailbox absent/invalid at 0x%lx\n",
-				(unsigned long)BOARD_MB_ADDR);
+				(unsigned long)board_info_offset);
 		}
 	} else {
 		ERROR("BL31: Unknown boot mode %d\n", boot_mode);

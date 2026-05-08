@@ -54,6 +54,8 @@
 	v2h: soc {
 		compatible = "simple-bus";
 		soc_id = <0x3>;
+		mb_base = <0x08120000>;
+		mmc_bid_sector_start = <0x2FA>;
 		bl2_limit = <0x08160000>;
 		enable_cold_boot = <1>;
 		spirom_fip_base = <0x20060000>;
