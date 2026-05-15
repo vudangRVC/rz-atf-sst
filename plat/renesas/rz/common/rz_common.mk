@@ -204,7 +204,7 @@ bl2-$(1):
 	@echo "======================================="
 	$(MAKE) clean
 	$(call SHELL_DELETE_ALL, ${BUILD_PLAT}/bl2/*)
-	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} SPD=${SPD} bl2
 	$(call SHELL_DELETE,${BUILD_PLAT}/bl2-$(1).bin)
 	$(call SHELL_COPY,${BUILD_PLAT}/bl2.bin,${BUILD_PLAT}/bl2-$(1).bin)
 endef
@@ -213,9 +213,9 @@ $(foreach variant,xspi emmc esd,$(eval $(call PLAT_BL2_VARIANT_RULE,$(variant)))
 
 # Build all storage variants of BL2
 bl2-all:
-	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2-xspi
-	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2-emmc
-	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} bl2-esd
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} SPD=${SPD} bl2-xspi
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} SPD=${SPD} bl2-emmc
+	$(MAKE) PLAT=${PLAT} BOARD=${BOARD} PLAT_BL2_STORAGE=$(1) DEBUG=${DEBUG} SPD=${SPD} bl2-esd
 	@echo "======================================="
 	@echo "All BL2 variants built successfully."
 	@echo "======================================="
