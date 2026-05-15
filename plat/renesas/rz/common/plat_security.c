@@ -146,23 +146,23 @@ static void plat_tzc_ddr_setup(void)
 
 		{
 			/* Region 1: */
-			.base = PLAT_FW_TZC_PROT_DRAM01_BASE,
-			.end  = PLAT_FW_TZC_PROT_DRAM01_END,
+			.base = PLAT_FW_TZC_PROT_DRAM1_BASE,
+			.end  = PLAT_FW_TZC_PROT_DRAM1_END,
 			.sec_attr = TZC_REGION_S_RDWR,
 			.nsaid_permissions = PLAT_TZC_REGION_ACCESS_S_UNPRIV
 		},
 
 		{
 			/* Region 2: */
-			.base = PLAT_TEE_TZC_PROT_DRAM01_BASE,
-			.end  = PLAT_TEE_TZC_PROT_DRAM01_END,
+			.base = PLAT_TEE_TZC_PROT_DRAM1_BASE,
+			.end  = PLAT_TEE_TZC_PROT_DRAM1_END,
 			.sec_attr = TZC_REGION_S_RDWR,
 			.nsaid_permissions = PLAT_TZC_REGION_ACCESS_S_UNPRIV
 		},
 
 		{
 			/* Region 3: */
-			.base = PLAT_TEE_TZC_PROT_DRAM01_END + 1,
+			.base = PLAT_TEE_TZC_PROT_DRAM1_END + 1,
 			.end  = UL(0xFFFFFFFFF),
 			.sec_attr = TZC_REGION_S_NONE,
 			.nsaid_permissions = PLAT_TZC_REGION_ACCESS_NS_UNPRIV
