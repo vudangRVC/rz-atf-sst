@@ -62,6 +62,11 @@
 #define RZG2L_DTB_LIMIT             (RZG2L_BL2_LIMIT)
 #define RZG2L_DTB_BASE              (0x2A000)
 
+/* Non-secure DTB address passed to OP-TEE (BL32 arg2) for DT node injection.
+ * Must match U-Boot fdt_addr (confirmed from boot log: fdt blob at 0x48000000).
+ */
+#define RZG2L_NS_DTB_ADDR           (0x48000000)
+
 /* Boot Info base address */
 #define RZG2L_BOOTINFO_BASE         (RZG2L_SRAM_BASE)
 

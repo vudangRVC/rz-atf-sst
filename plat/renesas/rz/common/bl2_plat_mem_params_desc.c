@@ -52,6 +52,8 @@ static bl_mem_params_node_t bl2_mem_params_descs[] = {
 		.ep_info.pc = BL32_BASE,
 		.ep_info.spsr = SPSR_64(MODE_EL1, MODE_SP_ELX,
 			DISABLE_ALL_EXCEPTIONS),
+		/* arg2: NS DTB addr — OP-TEE injects firmware/optee node here */
+		.ep_info.args.arg2 = RZG2L_NS_DTB_ADDR,
 
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
 			image_info_t, 0),
