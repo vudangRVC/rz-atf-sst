@@ -12,6 +12,8 @@ int console_rcar_register(uintptr_t base, uint32_t clk, uint32_t baud,
 void scif_console_set_regs(uint32_t fsr, uint32_t tdr);
 int console_rcar_init(uintptr_t base_addr, uint32_t uart_clk,
 		      uint32_t baud_rate);
+uint32_t rcar_gen4_scif_get_mode(void);
+uint32_t rcar_gen4_scif_get_baudrate(void);
 int console_rcar_putc(int c, console_t *pconsole);
 int console_rcar_flush(console_t *pconsole);
 

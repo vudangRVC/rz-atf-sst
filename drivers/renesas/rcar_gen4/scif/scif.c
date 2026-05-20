@@ -60,13 +60,33 @@
 #define MODEMR_HSCIF_DLMODE_1843200	2U
 #define MODEMR_HSCIF_DLMODE_3000000	3U
 
+uint32_t rcar_gen4_scif_get_mode(void)
+{
+	return ((mmio_read_32(RST_MODEMR0) & RST_MODEMR0_MD31) >> 31U) |
+	       ((mmio_read_32(RST_MODEMR1) & RST_MODEMR1_MD32) << 1U);
+}
+
+uint32_t rcar_gen4_scif_get_baudrate(void)
+{
+	switch (rcar_gen4_scif_get_mode()) {
+	case MODEMR_HSCIF_DLMODE_921600:
+		return 921600U;
+	case MODEMR_HSCIF_DLMODE_1843200:
+		return 1843200U;
+	case MODEMR_HSCIF_DLMODE_3000000:
+		return 3000000U;
+	case MODEMR_SCIF_DLMODE:
+	default:
+		return 0U;
+	}
+}
+
 int console_rcar_init(uintptr_t base_addr, uint32_t uart_clk,
 		      uint32_t baud_rate)
 {
 	uint32_t modemr, mstpcr, mstpsr, mstpbit;
 
-	modemr = ((mmio_read_32(RST_MODEMR0) & RST_MODEMR0_MD31) >> 31U) |
-		 ((mmio_read_32(RST_MODEMR1) & RST_MODEMR1_MD32) << 1U);
+	modemr = rcar_gen4_scif_get_mode();
 
 	if (modemr == MODEMR_HSCIF_DLMODE_3000000 ||
 	    modemr == MODEMR_HSCIF_DLMODE_1843200 ||

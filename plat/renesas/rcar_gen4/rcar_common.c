@@ -6,6 +6,7 @@
 
 #include <assert.h>
 
+#include <common/debug.h>
 #include <drivers/console.h>
 #include "scif.h"
 
@@ -20,6 +21,8 @@ void plat_ea_handler(unsigned int ea_reason, uint64_t syndrome, void *cookie,
 void rcar_console_boot_init(void)
 {
 	static console_t rcar_boot_console = { 0 };
+	uint32_t baudrate;
+	uint32_t mode;
 	int ret;
 
 	ret = console_rcar_register(0, 0, 0, &rcar_boot_console);
@@ -27,6 +30,16 @@ void rcar_console_boot_init(void)
 		panic();
 
 	console_set_scope(&rcar_boot_console, CONSOLE_FLAG_BOOT);
+
+	mode = rcar_gen4_scif_get_mode();
+	baudrate = rcar_gen4_scif_get_baudrate();
+	if (baudrate != 0U) {
+		NOTICE("R-Car Gen4 console: MD32:MD31=0x%x, baudrate=%u\n",
+		       mode, baudrate);
+	} else {
+		NOTICE("R-Car Gen4 console: MD32:MD31=0x%x, SCIF mode\n",
+		       mode);
+	}
 }
 
 void rcar_console_runtime_init(void)
