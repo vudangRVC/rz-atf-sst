@@ -130,12 +130,6 @@ void bl31_platform_setup(void)
 extern const spd_pm_ops_t opteed_pm;
 static spd_pm_ops_t rcar_opteed_pm;
 
-void bl31_plat_runtime_setup(void)
-{
-	memcpy(&rcar_opteed_pm, &opteed_pm, sizeof(rcar_opteed_pm));
-	rcar_opteed_pm.svc_migrate_info = rcar_pwrc_cpu_migrate_info;
-	psci_register_spd_pm_hook(&rcar_opteed_pm);
-}
 #else
 const spd_pm_ops_t rcar_pm = {
 	.svc_migrate_info = rcar_pwrc_cpu_migrate_info,
@@ -144,7 +138,13 @@ const spd_pm_ops_t rcar_pm = {
 
 void bl31_plat_runtime_setup(void)
 {
+#ifdef SPD_opteed
+	memcpy(&rcar_opteed_pm, &opteed_pm, sizeof(rcar_opteed_pm));
+	rcar_opteed_pm.svc_migrate_info = rcar_pwrc_cpu_migrate_info;
+	psci_register_spd_pm_hook(&rcar_opteed_pm);
+#else
 	psci_register_spd_pm_hook(&rcar_pm);
+#endif
 
 	rcar_console_runtime_init();
 	console_switch_state(CONSOLE_FLAG_RUNTIME);
